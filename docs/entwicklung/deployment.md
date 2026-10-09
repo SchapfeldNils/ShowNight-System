@@ -46,8 +46,7 @@ localhost innerhalb des Nginx-Containers bezeichnet den Nginx-Container, nicht d
 - Nicht bestehende Portainer-/Proxy-Stacks löschen oder rekonfigurieren, um das neue System zu starten.
 
 ## Noch zu erfassen
-Proxy-Image/Produkt und Containername; tatsächlicher Proxy-Netzwerkname; Portainer-Deploymentmodus; VM-System/Ressourcen; Domain-DNS und TLS-Zustand; Zugriff und Sicherungsziel; SMTP-Postfachdaten.
-Fehlende Angaben sind kein Blocker für Code und konfigurierbare Stackvorlagen. Reale Bereitstellung bleibt ein gesondert nachzuweisender Schritt.
+Die vorab offenen Proxy-/Netz-/VM-/Portainer-/DNS-/Zugriffsparameter sind inzwischen tatsächlich erfasst. Nach ausdrücklicher Betreiberfreigabe erfolgte die Zielbereitstellung mit erster externer Sicherung und isoliertem Restore; [Zielabnahme](netcup-abnahme.md). Regelmäßiges unabhängiges Sicherungs-/Schlüsselziel und Aufbewahrung bleiben offen.
 
 ## Abnahme
 Vorhandene Webseiten nach Anschluss weiter erreichbar; Systemadresse per HTTPS erreichbar; Login/API/Uploads/WebSockets funktionieren; app/postgres/worker nach Neustart mit persistenten Daten; keine öffentliche Datenbank; SMTP nur nach konfiguriertem Test; Backup/Restore in separater Testumgebung. Ergebnisse im Abnahmeplan S1 dokumentieren.
@@ -56,9 +55,9 @@ Vorhandene Webseiten nach Anschluss weiter erreichbar; Systemadresse per HTTPS e
 
 ### Tatsächliche Bestandsaufnahme vom 9. Oktober 2026
 
-Betreiber hat den Portainer-Zielendpoint bestätigt. Authentifiziert geprüft: Ubuntu 24.04.3 LTS, ARM64/aarch64, 6 CPUs, 8 GiB RAM, 512 GiB Datenträger; Docker 29.1.5, Compose 5.0.1, Portainer 2.45.2 und **Nginx Proxy Manager 2.13.6**. Das bestehende Proxy-Netz und die genaue Proxy-IP sind ermittelt; private Operator-Konfiguration enthält die tatsächlichen Werte. Bestehende Nginx-Konfiguration besteht `nginx -t`. SSH-Schlüssel im bestehenden Administrationskonto ergänzt, bestehende Schlüssel erhalten und gesichert; strikte Hostschlüsselprüfung und SSH-Anmeldung erfolgreich. Keine VM-/Proxy-Neuinstallation und kein ShowNight-Stack gestartet.
+Betreiber hat den Portainer-Zielendpoint bestätigt. Authentifiziert geprüft: Ubuntu 24.04.3 LTS, ARM64/aarch64, 6 CPUs, 8 GiB RAM, 512 GiB Datenträger; Docker 29.1.5, Compose 5.0.1, Portainer 2.45.2 und **Nginx Proxy Manager 2.13.6**. Das bestehende Proxy-Netz und die genaue Proxy-IP sind ermittelt; private Operator-Konfiguration enthält die tatsächlichen Werte. Bestehende Nginx-Konfiguration besteht `nginx -t`. SSH-Schlüssel im bestehenden Administrationskonto ergänzt, bestehende Schlüssel erhalten und gesichert; strikte Hostschlüsselprüfung und SSH-Anmeldung erfolgreich. Keine VM-/Proxy-Neuinstallation. Nach zusätzlicher Betreiberfreigabe neuen ShowNight-Stack gestartet; [Zielabnahme](netcup-abnahme.md).
 
-A/AAAA der geplanten Systemdomain existieren bereits, zeigen jedoch auf ein anderes Ziel als die bestätigte VM. Im bestehenden Proxy Manager gibt es noch keinen Host für die Systemdomain. DNS-Zielkorrektur, eigener Proxy-Host/HTTPS und externe Sicherung sind Freischaltungsschritte; vorhandene MX-/andere Domains erhalten. Konkrete Zugangsdaten, private Schlüssel und vollständiges Infrastrukturinventar bleiben außerhalb Git.
+A/AAAA zeigten bei der Vorprüfung auf Webhosting und waren bei der autorisierten Freischaltung bereits auf das bestätigte VM-Ziel umgestellt. Keine DNS-Zone erneut gespeichert. Neuer eigener Proxy-Host/HTTPS im bestehenden Manager ergänzt; vorhandene sechs Proxy-Hosts erhalten. Externe erste Sicherung und isolierter Restore geprüft. Konkrete Zugangsdaten, private Schlüssel und vollständiges Infrastrukturinventar bleiben außerhalb Git.
 
 ### Geprüfte Images aus GitHub Actions
 
@@ -70,15 +69,15 @@ Artefakt entpacken, `image-info.txt` mit gewünschtem Commit/Architektur verglei
 docker load -i shownight-arm64.tar.gz
 ```
 
-Der importierte Tag lautet `shownight:94ca03ed9ed7207b9cb71ac039e081da9ee12996-arm64`. Bei späterem Workflow statt dieses Tags den tatsächlichen geprüften Artefakttag verwenden. App, Worker und Datenbank sowie Migration/Backup/Restore wurden im CI-Stack getestet; dies ersetzt den Zielnachweis S1-12 nicht.
+Der importierte Tag lautet `shownight:94ca03ed9ed7207b9cb71ac039e081da9ee12996-arm64`. Bei späterem Workflow statt dieses Tags den tatsächlichen geprüften Artefakttag verwenden. App, Worker und Datenbank sowie Migration/Backup/Restore wurden im CI-Stack getestet; zusätzlicher tatsächlicher Zielnachweis steht in [S1-12](netcup-abnahme.md). Docker mit containerd kann den OCI-Manifestdigest als Image-ID ausgeben, während der klassische CI-Imagestore den Konfigurationsdigest meldet. Bei abweichender Anzeige Archiv-SHA256, Konfigurationsdigest und sämtliche RootFS-Layer vergleichen, nicht nur Tag oder angezeigte Image-ID.
 
 ### Besonderheit des bestätigten Nginx Proxy Managers
 
 Neuen Proxy Host nur für die Systemdomain vorbereiten: Scheme `http`, Forward Hostname `shownight-app`, Port `3000`, WebSockets aktiv. `deploy/nginx-proxy-manager-advanced.conf.template` in **Advanced** dieses Hosts verwenden, Alias gegebenenfalls angleichen. Die Vorlage definiert einen eigenen Root-Locationblock; NPM 2.13.6 erkennt ihn und lässt seinen Standardblock weg. Die generische `nginx-location.conf.template` samt http-map nicht ungeprüft in dieses Feld kopieren. Zertifikat und Force SSL ausschließlich über den vorhandenen Manager. Keine globale Proxydatei ändern und keine fremden Proxy-Hosts ersetzen. Nach Speichern Nginxprüfung und reale HTTP/HTTPS/WSS-/Uploadprüfung durchführen.
 
-Verhalten anhand [NPM-Konfigurationslogik 2.13.6](https://github.com/NginxProxyManager/nginx-proxy-manager/blob/v2.13.6/backend/internal/nginx.js) und [offizieller Anleitung](https://nginxproxymanager.com/advanced-config/) überprüft; neue Route bisher nicht angewendet.
+Verhalten anhand [NPM-Konfigurationslogik 2.13.6](https://github.com/NginxProxyManager/nginx-proxy-manager/blob/v2.13.6/backend/internal/nginx.js) und [offizieller Anleitung](https://nginxproxymanager.com/advanced-config/) überprüft; nach Betreiberfreigabe neue Systemroute angewendet und geprüft.
 
-Beide gelieferten Vorlagen am vorhandenen NPM-Nginx mit separaten temporären Konfigurationen erfolgreich durch `nginx -t` geprüft. Dies prüft Syntax und Direktiven im tatsächlichen Proxyprodukt; HTTPS, WebSocketroute und Uploadpfad zur neuen App sind erst nach freigegebener Bereitstellung am Ziel nachweisbar.
+Beide gelieferten Vorlagen am vorhandenen NPM-Nginx mit separaten temporären Konfigurationen erfolgreich durch `nginx -t` geprüft. Nach freigegebener Bereitstellung auch tatsächliche HTTPS-/WebSocketroute und PNG-Uploadpfad zur neuen App am Ziel nachgewiesen. Prüfung nahe Größenlimit bleibt offen.
 
 `Dockerfile`, `deploy/compose.yaml`, `deploy/.env.production.example`, `deploy/nginx-location.conf.template`, `deploy/backup.sh` und `deploy/restore.sh` sind jetzt vorhanden. Die Vorlage startet **app, postgres, worker**, keinen Proxy. Tatsächliche Prüfergebnisse stehen in [status.md](status.md); ein erfolgreicher CI-Containerstart ist kein Netcup-Nachweis. Lokaler Entwicklungsstart: [s1-start.md](s1-start.md).
 

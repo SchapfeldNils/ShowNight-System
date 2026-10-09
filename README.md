@@ -2,7 +2,7 @@
 
 Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Veranstaltungsformen.
 
-**Projektstatus:** S1-Implementierung auf Arbeitsbranch. Bedienbare Onlinevorbereitung ist vorhanden; vollständige Veranstaltungsfreigabe und reales Netcup-Deployment sind ausstehend. [Aktuelle Prüfergebnisse und Grenzen](docs/entwicklung/status.md).
+**Projektstatus:** S1-Implementierung auf Arbeitsbranch, Onlinevorbereitung auf Netcup bereitgestellt und geprüft. Vollständige Veranstaltungs-/Hardwarefreigabe bleibt ausstehend. [Aktuelle Prüfergebnisse und Grenzen](docs/entwicklung/status.md), [Netcup-Zielabnahme](docs/entwicklung/netcup-abnahme.md).
 
 ## Software starten
 
@@ -41,9 +41,9 @@ MFA ist für Admin/Leitung verpflichtend. Keine Standardkennwörter. Demo und Ge
 
 Entwicklungsarbeit erfolgt über Arbeitsbranches und Pull Requests. S1: `feat/s1-online-server`, [GitHub-Arbeitspaket #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1). Kein automatischer Merge. Die weiterführenden Fachkapitel beschreiben weiterhin den Zielumfang.
 
-## Geplante Onlineadresse
+## Onlineadresse
 
-**https://eventmanagement.jungschuetzen-flueren.de** (D014). Die Adresse ist festgelegt; eine bereits erfolgte Bereitstellung ist damit nicht bestätigt. [Domain und E-Mail-Konfiguration](docs/entwicklung/domain-email.md).
+**https://eventmanagement.jungschuetzen-flueren.de** (D014). S1 nach ausdrücklicher Betreiberfreigabe am 9. Oktober 2026 bereitgestellt, HTTPS/IPv4/IPv6/MFA/Upload/WSS und Backup/isolierter Restore geprüft. Mailadapter konfiguriert, Versand weiterhin ausgeschaltet. [Zielabnahme](docs/entwicklung/netcup-abnahme.md), [Domain und E-Mail-Konfiguration](docs/entwicklung/domain-email.md).
 
 ## Aktuelle Startreihenfolge
 
