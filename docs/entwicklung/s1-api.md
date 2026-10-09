@@ -25,7 +25,7 @@ Systemadmin ist in S1 ein breites Verwaltungsprofil; Eventleitung bleibt eventbe
 | --- | --- |
 | GET/POST `/events`; GET/PATCH `/events/:id` | Sichtbare Events; Anlage mit name und optionaler template; Revision, Datum/Ort/Module |
 | GET `/teams`; GET/POST `/events/:id/teams` | Rechtegefilterte Teams; vorhandenes Team oder name neu zuordnen |
-| POST `/events/:id/teams/:teamId/members` | Globale Mitgliedschaft nach Verwaltungsrecht; Konto muss im Leitungsumfang sein |
+| POST `/events/:id/teams/:teamId/members` | Globale Mitgliedschaft nach Verwaltungsrecht; Konto und alle verknüpften Events/Privatshows müssen im Leitungsumfang sein |
 | GET/POST `/shows`; GET `/shows/:id` | Unabhängige Shows; mit `?eventId=` Veranstaltungskopien |
 | PATCH `/shows/:id` | expectedRevision, Name/Beschreibung/geordnete Einsätze; Medienbereich prüfen |
 | POST `/events/:id/show-copies` | sourceShowId/sourceRevision, neue Kopie und neue Cue-IDs, Herkunft pinnen |

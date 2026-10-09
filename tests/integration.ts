@@ -351,6 +351,65 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
             .statusCode,
           404,
         );
+        const ownedTeam = await request(
+          "/events/" + eventId + "/teams",
+          "POST",
+          { name: "Leitungsteam" },
+          leaderAuth,
+        );
+        assert.equal(ownedTeam.statusCode, 200, ownedTeam.body);
+        const ownedTeamId = ownedTeam.json().id;
+        const memberPath = `/events/${eventId}/teams/${ownedTeamId}/members`;
+        assert.equal(
+          (await request(memberPath, "POST", { userId: leadId }, leaderAuth))
+            .statusCode,
+          200,
+        );
+        assert.equal(
+          (
+            await request("/events/" + otherId + "/teams", "POST", {
+              teamId: ownedTeamId,
+            })
+          ).statusCode,
+          200,
+        );
+        assert.equal(
+          (await request(memberPath, "POST", { userId: memberId }, leaderAuth))
+            .statusCode,
+          403,
+        );
+        assert.equal(
+          (await request("/events/" + otherId, "GET", undefined, memberAuth))
+            .statusCode,
+          404,
+        );
+        // Also protect independent private shows linked by an administrator.
+        await db.query(
+          "DELETE FROM event_teams WHERE event_id=$1 AND team_id=$2",
+          [otherId, ownedTeamId],
+        );
+        assert.equal(
+          (
+            await request("/shows/" + sourceId + "/teams", "POST", {
+              teamId: ownedTeamId,
+            })
+          ).statusCode,
+          200,
+        );
+        assert.equal(
+          (await request(memberPath, "POST", { userId: memberId }, leaderAuth))
+            .statusCode,
+          403,
+        );
+        assert.equal(
+          (await request("/shows/" + sourceId, "GET", undefined, memberAuth))
+            .statusCode,
+          404,
+        );
+        await db.query(
+          "DELETE FROM show_teams WHERE show_id=$1 AND team_id=$2",
+          [sourceId, ownedTeamId],
+        );
         assert.equal(
           (
             await request(

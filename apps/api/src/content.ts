@@ -243,6 +243,7 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
         );
       } else {
         teamId = input.teamId;
+        await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [teamId]);
         if (
           !req.actor.admin &&
           !(
@@ -274,37 +275,57 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
   app.post("/api/v1/events/:id/teams/:teamId/members", async (req) => {
     const p = z.object({ id, teamId: id }).parse(req.params),
       input = z.strictObject({ userId: id }).parse(req.body);
-    await eventAccess(db, req.actor, p.id, true);
-    if (
-      !(
-        await db.query(
-          "SELECT 1 FROM event_teams WHERE event_id=$1 AND team_id=$2",
-          [p.id, p.teamId],
-        )
-      ).rowCount
-    )
-      forbidden();
-    if (
-      !req.actor.admin &&
-      (!(
-        await db.query("SELECT 1 FROM teams WHERE id=$1 AND created_by=$2", [
-          p.teamId,
-          req.actor.id,
-        ])
-      ).rowCount ||
+    return transaction(db, async (c) => {
+      await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [p.teamId]);
+      await eventAccess(c, req.actor, p.id, true);
+      if (
         !(
-          await db.query(
-            "SELECT 1 FROM grants WHERE event_id=$1 AND user_id=$2",
-            [p.id, input.userId],
+          await c.query(
+            "SELECT 1 FROM event_teams WHERE event_id=$1 AND team_id=$2",
+            [p.id, p.teamId],
           )
-        ).rowCount)
-    )
-      forbidden();
-    await db.query(
-      "INSERT INTO team_members(team_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-      [p.teamId, input.userId],
-    );
-    return { added: true };
+        ).rowCount
+      )
+        forbidden();
+      if (
+        !req.actor.admin &&
+        (!(
+          await c.query("SELECT 1 FROM teams WHERE id=$1 AND created_by=$2", [
+            p.teamId,
+            req.actor.id,
+          ])
+        ).rowCount ||
+          !(
+            await c.query(
+              "SELECT 1 FROM grants WHERE event_id=$1 AND user_id=$2",
+              [p.id, input.userId],
+            )
+          ).rowCount)
+      )
+        forbidden();
+      // Membership is global: every linked event/private show must be within
+      // the creator's administration scope before this mutation can grant access.
+      if (
+        !req.actor.admin &&
+        (
+          await c.query(
+            `SELECT 1 FROM event_teams et WHERE et.team_id=$1 AND NOT EXISTS
+       (SELECT 1 FROM grants g WHERE g.event_id=et.event_id AND g.user_id=$2 AND g.role='leitung')
+       UNION ALL SELECT 1 FROM show_teams st JOIN shows s ON s.id=st.show_id
+       WHERE st.team_id=$1 AND ((s.event_id IS NULL AND s.created_by<>$2) OR
+       (s.event_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM grants g WHERE g.event_id=s.event_id AND g.user_id=$2 AND g.role='leitung')))
+       LIMIT 1`,
+            [p.teamId, req.actor.id],
+          )
+        ).rowCount
+      )
+        forbidden();
+      await c.query(
+        "INSERT INTO team_members(team_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+        [p.teamId, input.userId],
+      );
+      return { added: true };
+    });
   });
   app.get("/api/v1/shows", async (req) => {
     const q = z.object({ eventId: id.optional() }).parse(req.query);
@@ -444,33 +465,38 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
   app.post("/api/v1/shows/:id/teams", async (req) => {
     const showId = id.parse((req.params as any).id),
       input = z.strictObject({ teamId: id }).parse(req.body);
-    const s = await showAccess(db, req.actor, showId, true);
-    if (s.event_id) {
-      await eventAccess(db, req.actor, s.event_id, true);
-      if (
+    return transaction(db, async (c) => {
+      await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [
+        input.teamId,
+      ]);
+      const s = await showAccess(c, req.actor, showId, true);
+      if (s.event_id) {
+        await eventAccess(c, req.actor, s.event_id, true);
+        if (
+          !(
+            await c.query(
+              "SELECT 1 FROM event_teams WHERE event_id=$1 AND team_id=$2",
+              [s.event_id, input.teamId],
+            )
+          ).rowCount
+        )
+          forbidden();
+      } else if (
+        !req.actor.admin &&
         !(
-          await db.query(
-            "SELECT 1 FROM event_teams WHERE event_id=$1 AND team_id=$2",
-            [s.event_id, input.teamId],
-          )
+          await c.query("SELECT 1 FROM teams WHERE id=$1 AND created_by=$2", [
+            input.teamId,
+            req.actor.id,
+          ])
         ).rowCount
       )
         forbidden();
-    } else if (
-      !req.actor.admin &&
-      !(
-        await db.query("SELECT 1 FROM teams WHERE id=$1 AND created_by=$2", [
-          input.teamId,
-          req.actor.id,
-        ])
-      ).rowCount
-    )
-      forbidden();
-    await db.query(
-      "INSERT INTO show_teams(show_id,team_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-      [showId, input.teamId],
-    );
-    return { assigned: true };
+      await c.query(
+        "INSERT INTO show_teams(show_id,team_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+        [showId, input.teamId],
+      );
+      return { assigned: true };
+    });
   });
   app.get("/api/v1/shows/:id/history", async (req) => {
     const showId = id.parse((req.params as any).id);
