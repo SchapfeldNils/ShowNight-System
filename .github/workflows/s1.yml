@@ -2,7 +2,8 @@ name: S1 checks
 on:
   pull_request:
   push:
-    branches: [feat/s1-online-server]
+    branches: [main]
+  workflow_dispatch:
 concurrency:
   group: s1-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -42,3 +43,19 @@ jobs:
         run: |
           docker build -t shownight:ci .
           sh tests/container-smoke.sh
+      - name: Export verified image for installation
+        env:
+          IMAGE_TAG: shownight:${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.arch }}
+        run: |
+          docker tag shownight:ci "$IMAGE_TAG"
+          docker image inspect "$IMAGE_TAG" --format '{{.Id}} {{.Os}}/{{.Architecture}}' > .local/container/image-info.txt
+          docker run --rm --entrypoint ffmpeg "$IMAGE_TAG" -version >> .local/container/image-info.txt
+          docker save "$IMAGE_TAG" | gzip > .local/container/shownight-${{ matrix.arch }}.tar.gz
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: shownight-image-${{ matrix.arch }}
+          retention-days: 7
+          compression-level: 0
+          path: |
+            .local/container/shownight-${{ matrix.arch }}.tar.gz
+            .local/container/image-info.txt
