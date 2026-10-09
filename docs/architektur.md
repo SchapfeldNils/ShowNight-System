@@ -171,3 +171,8 @@ Die Quellen belegen Eigenschaften der Bausteine. Die konkrete Eignung für unser
 - [Daslight 5](https://www.daslight.com/en/daslight5): OSC-Mapping und Interface-/Lizenzabhängigkeiten.
 - [Stream Deck SDK](https://docs.elgato.com/streamdeck/sdk/introduction/getting-started/), [SDK-Repository](https://github.com/elgatosf/streamdeck): eigene Adapterentwicklung.
 - [FFmpeg Filter](https://ffmpeg.org/ffmpeg-filters.html): loudnorm und ebur128 als Analyse-/Verarbeitungsbausteine.
+
+
+## Aktuelle Entwicklungsreihenfolge – D013
+Am 9. Oktober 2026 wurde ausdrücklich festgelegt: zuerst Netcup-fähiger Online-Server, danach Windows-Agenten, dann lokaler Windows-Server/Medienausgabe und erster vollständiger Showablauf. Technische Prototypen der Geräte-/Renderingwege bleiben früh erforderlich. Die bestehende Online-/Offlineverteilung und Architektur ändern sich dadurch nicht.
+Die konkretisierten technischen Startentwürfe stehen in [Datenmodell](entwicklung/datenmodell.md), [Schnittstellen](entwicklung/schnittstellen.md) und [Abnahmeplan](entwicklung/abnahmeplan.md). Code-Schemas/Migrationen und tatsächlich verifizierte Komponentenstände entstehen während Implementierung.

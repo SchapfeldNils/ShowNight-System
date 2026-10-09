@@ -20,12 +20,13 @@ Der Funktionsumfang ist weitgehend beschrieben. Die folgenden Punkte sind noch n
 | O13 | Auslieferung | Installer, bebildertes Handbuch und Gesamtabnahme | Reale Tests einschließlich Ausfällen |
 | O14 | Mobilgeräte | Moderatorgerät und konkrete Teilnehmer-/Jury-/Einlassgeräte | Browser- und Netztests |
 
-## Nächste Planung
+## Aktueller Übergabestand
+D004–D012 bestätigen Veranstaltungserstellung, Showvorbereitung, Editor, Live-Regie, Versionen, Aktivierung, Zuordnungen, persönliche Vorschau und Durchläufe.
+Die drei technischen Startdokumente und der Codex-Prompt sind vorbereitet:
+[Datenmodell](../entwicklung/datenmodell.md), [Schnittstellen](../entwicklung/schnittstellen.md), [Abnahmeplan](../entwicklung/abnahmeplan.md), [Startprompt](../entwicklung/codex-startprompt.md).
 
-1. [Veranstaltung anlegen](veranstaltung-anlegen.md): Bediengrundlagen bestätigt (D004); verbleibende Detailfragen bei Umsetzung konkretisieren.
-2. Show anlegen und im Team vorbereiten.
-3. Szene gestalten und Medien einsetzen.
-4. Vorschau, GO und Eingriffe im Livebetrieb.
-5. Ergebnisse in Anforderungen und Architektur übernehmen.
+D013: zuerst Netcup-Server, dann Windows-Agenten. Code-Schemas/Migrationen und Nachweise werden agil umgesetzt. Keine pauschale weitere Fragenrunde ist Voraussetzung für S1.
 
-Die Reihenfolge ist ein Arbeitsvorschlag. Neue Detailfragen werden ergänzt; bestehende Entscheidungen werden nicht ohne ausdrückliche Änderung ersetzt.
+## Offen für echtes Zieldeployment
+VM-Betriebssystem, Ressourcen/Architektur, Domain/DNS, autorisierter Zugang, vorhandene Dienste/Ports, Mail und externes Sicherungsziel. Keine dieser Angaben ist als bereits vorhanden oder geprüft bestätigt.
+Technische Hardware-/Synchronitätsnachweise O01–O14 bleiben bestehen. Weitere Produktfragen gezielt anhand der Implementierung klären.

@@ -13,7 +13,7 @@
 - Umsetzung: Markdown als bearbeitbarer Dokumentationsstand; Word als datierter Export. Offene Fragen werden getrennt von bestätigten Entscheidungen geführt.
 
 ## D003 – Entwicklungsübergabe
-- Status: bestätigt
+- Status: bestätigt; ursprüngliche Startreihenfolge durch D013 präzisiert
 - Datum: 9. Oktober 2026
 - Antwort: alle zehn Optionen A bestätigt.
 - Entscheidungen: [vollständige Antworten](entwicklungsuebergabe.md).
@@ -83,6 +83,15 @@
 - Antworten: 1A bis 10A (Groß-/Kleinschreibung ohne Bedeutung).
 - Regeln: [vollständige Antworten](durchlaeufe.md), Fachregeln in Gesamtkonzept, Anforderungen und Datenmodell.
 - Ergebnis: bewusster Start ohne ersten GO, isolierte Simulationsprobe, expliziter Showwechsel, vorbereitete Wechsel-/Abschlussaktionen und erhaltene Durchlaufhistorie.
+
+## D013 – Agiler Start: Netcup-Server vor Windows-Agenten
+- Status: bestätigt durch ausdrücklichen Auftrag
+- Datum: 9. Oktober 2026
+- Auftrag: drei technische Übergabedokumente vorbereiten und Startprompt erstellen; Entwicklung mit Netcup-Server beginnen, danach Agent für die Rechner.
+- Reihenfolge: S1 Online-Server, S2 Windows-Agenten, S3 lokaler Server/Medienausgabe, S4 vollständiger Showablauf.
+- D003 bleibt hinsichtlich Gesamtumfang, PR-Arbeit, Simulation, Design und Fertigkriterien bestehen. Nur die anfängliche Reihenfolge wird präzisiert.
+- Dokumente: [Datenmodell](../entwicklung/datenmodell.md), [Schnittstellen](../entwicklung/schnittstellen.md), [Abnahmeplan](../entwicklung/abnahmeplan.md), [Startprompt](../entwicklung/codex-startprompt.md).
+- Technische Schemas/Bezeichner sind abgeleitete Implementierungsvorschläge, keine zusätzlich bestätigten Produktregeln.
 
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.

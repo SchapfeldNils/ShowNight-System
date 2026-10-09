@@ -1,24 +1,28 @@
-# Entwicklungsplan
+# Entwicklungsplan – Server zuerst, danach Agenten
 
-Status: Arbeitsgliederung zur Umsetzung der bestätigten Entwicklungsrichtung. Die Reihenfolge späterer Fachmodule kann begründet angepasst werden. Alle Fachmodule bleiben Teil der ersten vollständigen Veranstaltungsfreigabe.
+Stand: 9. Oktober 2026. D013 ersetzt die frühere unmittelbare Startreihenfolge aus D003; Gesamtumfang und technische Risikoprüfung bleiben bestehen.
 
-| Paket | Ergebnis | Prüfkriterium |
+| Paket | Ergebnis | Abnahme |
 | --- | --- | --- |
-| E01 Grundlagen | Repository-Struktur, Start-/Build-Anleitung, Demo, minimale Entitäten und Verträge | Reproduzierbarer Start, Schemas und dokumentierte Befehle |
-| E02 Technische Prototypen | Windows-Bildausgabe; VDJ-/Daslight-/Vorhöradapter jeweils simuliert und praktisch prüfbar | Ergebnisse getrennt nach Simulation und realer Technik; offene Rückmeldungen markiert |
-| E03 Erster vollständiger Ablauf | Veranstaltung, Show, Szene, Medien, Vorschau, GO und Publikumsausgabe | Fertigkriterien im Entwicklungsauftrag einschließlich zwei Regiefenstern |
-| E04 Livebetrieb erweitern | Timer, Pausen, Controller, Kameras, Übergänge und Unterbrechungen | Betroffene F-/A-Fälle einschließlich Wiederverbindung und Ausfälle |
-| E05 Organisation | Rollen, Teams, Aufgaben, Helfer, Proben und Bühnenbau | Rechte, Zusammenarbeit und Versionen geprüft |
-| E06 Spiele und Moderation | Quiz, Tablets, Jury, Punkte, Karten und Moderationsansicht | Regieeingriffe, Fristen und Veröffentlichungen geprüft |
-| E07 Verkauf | Shop, Saalplan, Reservierungen, Zahlungen und Einlass | Kein Doppelverkauf; zentrale Scanentscheidung und Ersatzwege geprüft |
-| E08 Ergänzende Module | Sponsoring, öffentliche Seiten und einfache Einnahmen/Ausgaben | Rechte und keine doppelte Zählung bestätigter Zahlungen |
-| E09 Auslieferung | Online-/Offline-Abgleich, Installer, Handbuch und Sicherungen vollständig | Gesamt-Abnahme am realen Aufbau vor Generalprobe |
+| S1 Netcup-Server | Gemeinsames Projekt, API/Web, PostgreSQL, Auth/Rechte/MFA, Event/Show/Medienvorbereitung, Paketmanifest, Deployment/Sicherung | S1-01–S1-12 in abnahmeplan.md; reale VM-Prüfung bei Zugang |
+| S2 Windows-Agenten | Paarung, Profile, Fähigkeiten, Heartbeats, Diagnose, Idempotenz, simulierte und verifizierte Realadapter | S2-01–S2-08; tatsächliche Gerätegrenzen sichtbar |
+| S3 Lokaler Betrieb | Lokaler Server/SQLite, vollständige Pakete, Windows-Medienprozess, HDMI und separate Ausgabe | L-01/L-12/L-13; reale Windows-/Ausgabeprüfung |
+| S4 Durchgängiger Showablauf | Szene, persönliche Vorschau, gemeinsames GO-Ziel, Ausgabe, Durchläufe und Versionen | L-02–L-11; zwei gleichberechtigte Regien |
+| S5 Liveausbau | Voller Editor, Kameras, Ton, Licht, Controller, Timer und Übergänge | Betroffene F-/A-Fälle, L-14 und reale Last-/Synchronitätsmessungen |
+| S6 Organisation | Teams, Aufgaben, Helfer, Kalender, Proben, Bühne, Requisiten und Kostüme | A18/A21/A22 |
+| S7 Spiele und Moderation | Quiz, Tablets, Jury, Buzzer, Wertung, Karten und Moderatoransicht | A12/A23/A29 |
+| S8 Verkauf | Shop/Saalplan, Gruppen, Zahlungen, Tickets und Einlass | A24–A27 |
+| S9 Ergänzungen | Sponsoren, Öffentlichkeit und einfache Einnahmen/Ausgaben | A28 |
+| S10 Auslieferung | Vollständiger Abgleich, Installer, bebilderte Anleitung, Sicherung/Rückfall und Gesamttest | A01–A30 einschließlich A17/A30 |
 
-## Pro Arbeitspaket
-Benennte F-/A-Anforderungen, nutzbarer Ablauf, notwendige Daten-/Schnittstellenänderungen, angemessene Tests, aktuelle Dokumentation, bekannte Einschränkungen und Pull Request.
+Reihenfolge späterer Fachmodule kann begründet angepasst werden. Alle vereinbarten Module bleiben Teil der vollständigen ersten Veranstaltungsfreigabe. Früh in S2/S3 müssen die riskanten Geräte-/Renderingwege geprüft werden; keine breite Fachmodulentwicklung vor den wesentlichen technischen Nachweisen.
 
-## Frühe technische Nachweise
-Windows-Rendering mit tatsächlichem Ausgabegerät; getrennte Vorschau und Publikumston; FLX4-Zugriff neben Virtual DJ; Virtual-DJ-/Daslight-Kommandos und Rückmeldungen; Livekamera-/Ton-Verzögerung; musikgebundene Videoausgabe. Messbare Grenzen vor Abnahme festlegen, keine Präzisionsgarantie aus gleichzeitigem Befehlsversand ableiten.
+## Agile Lieferung
+Je Paket: nutzbarer Ablauf, Daten-/Schnittstellenänderungen, angemessene Tests, Startanleitung, bekannte Grenzen, aktualisierte Dokumentation und eigener PR. Keine automatischen Merges.
+Codex beginnt S1 mit konfigurierbaren Deploymentvorlagen. Fehlende reale Zugangsdaten blockieren nur den Zieldeploymentnachweis. S2 folgt der nutzbaren Servergrundlage und braucht keine bezahlten Zusatzplugins.
 
-## Weitere Planungsarbeit
-Gesamt-Datenmodell, Schnittstellenbeschreibung und präziser Abnahmeplan sind noch zu konkretisieren. Bereits vorhandene A01–A30 sind die Ausgangsbasis; neue Nachweise bekommen nachvollziehbare Zuordnung.
+## Erforderliche Netcup-Angaben vor echtem Deployment
+VM/System, Architektur/Ressourcen und Datenträger; Domain/DNS; autorisierter SSH-/Adminzugang; bestehende Dienste/Ports; TLS- und Mail-Einrichtung; externe Sicherung. Noch nicht vorhanden oder nicht erhoben: als offen kennzeichnen. Keine Produktionswerte erraten und keine vorhandene VM pauschal überschreiben.
+
+## Dokumente
+[Datenmodell](datenmodell.md), [Schnittstellen](schnittstellen.md), [Abnahmeplan](abnahmeplan.md), [Startprompt](codex-startprompt.md). Der Windows-Hauptrechner bleibt der lokale Liveprozessor; die Cloud ist kein Ersatz für HDMI-/Bühnenausgabe.

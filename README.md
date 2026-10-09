@@ -19,10 +19,17 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 - [Entwicklungsauftrag für Codex](docs/entwicklung/auftrag.md)
 - [Arbeitsregeln](AGENTS.md)
 - [Arbeitspakete](docs/entwicklung/arbeitspakete.md)
-- [Fachliches Datenmodell für den ersten Ablauf](docs/entwicklung/datenmodell.md)
+- [Datenmodell mit technischem Startentwurf](docs/entwicklung/datenmodell.md)
+- [Schnittstellen und Zustandsprotokoll](docs/entwicklung/schnittstellen.md)
+- [Abnahmeplan für Server, Agenten und ersten Showablauf](docs/entwicklung/abnahmeplan.md)
+- [Startprompt für Codex](docs/entwicklung/codex-startprompt.md)
 - [Bestätigte Entwicklungsentscheidungen](docs/planung/entwicklungsuebergabe.md)
 
 Entwicklungsarbeit erfolgt künftig über Arbeitsbranches und Pull Requests. Die initiale Dokumentationsablage und diese Planungsaktualisierung liegen auf main. Es wurde noch keine Software implementiert.
+
+## Aktuelle Startreihenfolge
+
+**Netcup-fähiger Server → Windows-Agenten → lokaler Server/Medienausgabe → durchgängiger Showablauf.** D013 präzisiert die frühere Reihenfolge. Die Entwicklungsübergabe liegt vor; tatsächlich implementierte und getestete Funktionen werden erst während Entwicklung dokumentiert. Fehlende Zielzugänge sind offene Deploymentnachweise.
 
 ## Verbindliche Grundlagen
 

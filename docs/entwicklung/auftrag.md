@@ -1,36 +1,29 @@
 # Entwicklungsauftrag für Codex
 
-Stand: 9. Oktober 2026. Entwicklungsrichtung durch Nils bestätigt; siehe [Antworten](../planung/entwicklungsuebergabe.md).
+Stand: 9. Oktober 2026. Aktuelle Reihenfolge: D013. Bedienregeln: D004–D012.
 
-## Ziel
-Implementiere das modulare ShowNight-System gemäß [Gesamtkonzept](../gesamtkonzept.md) und [Anforderungen](../anforderungen.md). Die vollständige erste Veranstaltungsfassung umfasst sämtliche vereinbarten Module, Installation, Dokumentation und reale Abnahme. Zwischenstände dienen Entwicklung und Prüfung und sind keine fertige Veranstaltungsfassung.
+## Ziel und Umfang
+Modulares ShowNight-Veranstaltungssystem gemäß Gesamtkonzept und F01–F50 entwickeln. Erste vollständige Veranstaltungsfreigabe enthält sämtliche vereinbarten Module, Installation, Dokumentation und reale Abnahme. Agile Zwischenstände sind keine fertige Veranstaltungsfassung.
 
-## Erster Auftrag
-Starte mit Projektgrundlage und einem durchgängig nutzbaren Ablauf:
-Veranstaltung anlegen → Show zuordnen → Szene mit Medien gestalten → getrennte Vorschau → manuelles GO → eigene Bildausgabe ohne OBS.
+## Jetzt beginnen
+**S1: Server für Netcup. Danach S2: Windows-Agenten.** Anschließend S3 lokaler Windows-Server/Medienausgabe und S4 durchgängiger Showablauf.
+Die frühere direkte Startbeschreibung „sofort vollständiger Showablauf“ wird durch D013 in diese Reihenfolge eingeordnet. Technische Risikoprototypen bleiben früh vorgesehen.
 
-Lege die gemeinsamen Grundlagen für Benutzer, eventbezogene Rechte, Speicherung und serverseitigen Livezustand an. Der erste Ablauf soll zwei gleichberechtigte Regiefenster unterstützen. Technische Prototypen für Windows-Ausgabe, Virtual DJ, Daslight und Vorhören haben früh Vorrang vor breiter Verwaltungsentwicklung.
+S1 liefert gemeinsamen API-/Webkern, PostgreSQL, Benutzer/Rechte/MFA, Event/Show/Medienvorbereitung, Konfliktschutz, Paketmanifest, Demo, Health, konfigurierbares Deployment und Sicherung/Wiederherstellung.
+S2 liefert Geräteidentität/Paarung, Agentprofile, Diagnose, Fähigkeiten, Heartbeats und sichere Befehle. Reale VDJ-/Daslight-/Vorhörwege prüfen; unbekannte Hardware blockiert nur die entsprechenden realen Nachweise.
+S3/S4 führen vollständigen lokalen Offlinebetrieb und eigene Bildausgabe ein. Netcup gibt keine HDMI-/Bühnenbilder aus.
 
-## Arbeitsrahmen
-- Lies AGENTS.md. Liefere Arbeitsbranch und Pull Request je Arbeitspaket.
-- Architektur 2.0 ist Ausgangsbasis: React/TypeScript, API in Node.js/TypeScript, Online-PostgreSQL und lokales SQLite sowie separate native Windows-Medienkomponente.
-- Bewerte Kompatibilität und Lizenzen vor konkreter Abhängigkeitseinführung. Größeren Umbau begründen und abstimmen.
-- Baue Browser-Demo mit synthetischer Veranstaltung und deutlich markierten Geräteadaptern.
-- Erarbeite Windows-Testversion für reale Ausgabe und Geräteprüfungen. Ohne vorhandene Windows-/Hardwareumgebung verbleiben diese Nachweise ausdrücklich offen.
-- Ordne benötigte Entitäten und API-Verträge für den ersten Ablauf schriftlich und als Code-Schemas, bevor mehrere Komponenten darauf aufbauen. Entwürfe kennzeichnen; noch offene Produktregeln nicht erfinden.
-- Originale ShowNight-Grafiken/Farben sind Designgrundlage. Verfügbarkeit prüfen; fehlende Quellen festhalten.
+## Arbeitsgrundlage
+- [AGENTS.md](../../AGENTS.md): Entwicklung je Branch/PR, keine selbständigen Merges.
+- [Datenmodell](datenmodell.md): gemeinsame Entitäten, Felder und Zustände als technischer Startentwurf.
+- [Schnittstellen](schnittstellen.md): Transport, Auth, CRUD, Befehle, Ereignisse, Agenten und Pakete.
+- [Abnahmeplan](abnahmeplan.md): S1/S2/L-Prüfungen mit erwarteten Ergebnissen.
+- [Arbeitspakete](arbeitspakete.md): Reihenfolge und Umfang.
+- [Startprompt](codex-startprompt.md): direkt nutzbarer Codex-Auftrag.
 
-## Fertigkriterien für den ersten Ablauf
-1. Veranstaltung, Show, Szene und Medien bleiben nach Neustart erhalten.
-2. Vorschau verändert die Publikumsanzeige nicht; GO übernimmt bewusst die gewählte Szene.
-3. Zwei berechtigte Regiefenster sehen denselben serverseitigen Zustand; konkurrierendes GO führt nicht zu unbeabsichtigtem doppeltem Fortschritt.
-4. Simulierte und echte Ausgaben sind erkennbar; simulierte Rückmeldung wird nicht als Hardwarebeweis geführt.
-5. Start-/Build-Anleitung und passende Prüfungen sind vorhanden, tatsächliche Ergebnisse und Einschränkungen dokumentiert.
-6. Browser-Demo funktioniert; Windows-Ausgabe ist separat nachgewiesen oder als offener Nachweis ausgewiesen. Die vollständige Arbeitspaketabnahme erfolgt erst nach erforderlichem realem Nachweis.
+Architektur bleibt Ausgangsbasis: React/TypeScript, Fastify/Node.js, Online-PostgreSQL und lokales SQLite, getrennte Windows-Medienkomponente. Reversible technische Details begründet anpassen, grundlegende Produkt-/Architekturänderungen abstimmen.
+Nur kostenlose zusätzliche Komponenten; deutsche UI, bestehende ShowNight-Originalgestaltung soweit vorhanden. Simulation deutlich markieren; keine behauptete reale Synchronität ohne Messung.
 
-## Noch kein vollständiger technischer Vertrag
-Das Gesamt-Datenmodell, endgültige APIs, genaue Synchronitätsgrenzen und Teile der Bedienabläufe sind noch auszuarbeiten. Sie blockieren das Projektgerüst und isolierte technische Prototypen nicht. Sie müssen vor betroffener produktiver Implementierung konkretisiert werden.
-[Offene Punkte](../planung/offene-punkte.md) und [bestätigte Bedienregeln](../planung/veranstaltung-anlegen.md) gelten weiter.
-
-
-Die Bedienregeln D004 sind in der ersten Veranstaltungserstellung umzusetzen; siehe verbindlichen Bedienablauf in Anforderungen. Noch ungeklärte Vorlagen-/Abhängigkeitsdetails bleiben als solche zu dokumentieren.
+## Definition of Done
+Nutzbarer Ablauf, passende Prüfungen, nachvollziehbare Start-/Installationsanleitung, aktualisierte Dokumentation und bekannte Grenzen. Tatsächlich getestete Plattformen und technische Rückmeldungen benennen. Fehlender Netcup-Zugang bedeutet kein Deploymentnachweis; fehlende Windows-Hardware bedeutet keine Geräteabnahme.
+Status im Zuge der Implementierung in docs/entwicklung/status.md führen. Vorhandene F-/A-Kennungen erhalten und Tests zuordnen.
