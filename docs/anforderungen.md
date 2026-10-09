@@ -642,3 +642,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Controller-GO ist nach einer Betätigung erst nach Loslassen erneut auslösbar. Doppelte Übertragungen derselben Betätigung werden ignoriert. Dies ergänzt die serverseitige Absicherung und ersetzt sie nicht.
 
 Die Sperre betrifft weitere Bildübernahmen während des Übergangs, nicht pauschal unabhängige Musik-, Licht-, Timer- oder Unterbrechungsaktionen. Zwei berechtigte Regien bleiben jederzeit gleichberechtigt. Technische Rückmeldungen und tatsächliche Ausgabe müssen geprüft werden; Simulation gilt nicht als reale Bestätigung.
+
+
+## Verbindliche Daten- und Versionsregeln (D008)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Eine unabhängig vorbereitete Show wird als eigene Veranstaltungskopie aufgenommen. Spätere Änderungen der Vorlage werden bewusst übernommen, nicht automatisch.
+2. Änderungen gemeinsam verwendeter Szenenvorlagen werden angezeigt; Übernahme ist je Verwendung bewusst auswählbar.
+3. Verwendete Medien können nicht gelöscht werden. Das System zeigt die betroffenen Verwendungen.
+4. Shows und Szenen werden zunächst in einen wiederherstellbaren Papierkorb verschoben. Eine Papierkorbaktion hebt Verwendungs-/Live-Schutzregeln nicht auf. Aufbewahrungsdauer und endgültige Löschung bleiben zu konkretisieren.
+5. Wenn zwei Personen dasselbe gemeinsam bearbeitbare Textfeld ändern, wird ein Konflikt angezeigt und beide Fassungen bleiben zur Auswahl erhalten. Die bestehende exklusive Szenenbearbeitung bleibt unverändert.
+6. Bei Verbindungsverlust werden ungespeicherte Änderungen lokal als Wiederherstellungsentwurf gehalten und später abgeglichen. Ein lokaler Entwurf ist keine bestätigte Serverspeicherung. Er ersetzt keine Offline-Livefreigabe und umgeht weder Rechteprüfung noch Szenensperren.
+7. Die Änderungshistorie besteht aus automatischem Verlauf und benennbaren Ständen, beispielsweise „Generalprobe“.
+8. Ein älterer Stand wird bei Wiederherstellung als neue aktuelle Fassung übernommen. Der bisherige Verlauf bleibt erhalten; eine Wiederherstellung aktiviert nicht automatisch den Livebestand.
+9. Beim Vergleich werden geänderte Inhalte hervorgehoben; für Szenen gibt es zusätzlich eine Bildvorschau.
+10. Inhaltsänderungen während einer laufenden Veranstaltung werden als Entwurf gespeichert. Übernahme in den Livebestand erfolgt ausschließlich durch ausdrückliche berechtigte Aktion.
+
+Die Regeln präzisieren vorhandene Versionierung, bewusste Aktivierung und Konfliktbehandlung. Technische Datenschemata und Protokolle sind daraus abzuleiten. Konkrete Speicherintervalle, Papierkorbfristen und der sichere Ablauf einer Aktivierung während laufender Ausgabe sind noch zu spezifizieren; vorhandene Liveinhalte werden nicht durch bloßes Speichern ausgetauscht.
