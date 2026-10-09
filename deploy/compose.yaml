@@ -1,0 +1,91 @@
+name: ${STACK_NAME:-shownight}
+services:
+  postgres:
+    image: postgres:17.9-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shownight
+      POSTGRES_DB: shownight
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a random hexadecimal database password}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U shownight -d shownight"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+  app:
+    image: ${SHOWNIGHT_IMAGE:?Set a versioned image tag or digest}
+    restart: unless-stopped
+    init: true
+    environment: &app-env
+      DATABASE_URL: postgres://shownight:${POSTGRES_PASSWORD}@postgres:5432/shownight
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://eventmanagement.jungschuetzen-flueren.de}
+      HOST: 0.0.0.0
+      PORT: 3000
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?Set a random 64-character hex key}
+      MEDIA_ROOT: /data/media
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-104857600}
+      FFPROBE_PATH: /usr/bin/ffprobe
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
+      MAIL_MODE: ${MAIL_MODE:-test}
+      MAIL_DELIVERY_ENABLED: ${MAIL_DELIVERY_ENABLED:-false}
+      DEMO_ENABLED: ${DEMO_ENABLED:-false}
+    volumes:
+      - media:/data/media
+    networks:
+      backend:
+      proxy:
+        aliases: ["${PROXY_APP_ALIAS:-shownight-app}"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+  worker:
+    image: ${SHOWNIGHT_IMAGE:?Set a versioned image tag or digest}
+    command: [node, dist/api/worker-main.js]
+    restart: unless-stopped
+    init: true
+    environment:
+      <<: *app-env
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_TLS_MODE: ${SMTP_TLS_MODE:-implicit}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-}
+      MAIL_REPLY_TO: ${MAIL_REPLY_TO:-}
+    volumes:
+      - media:/data/media:ro
+    networks: [backend]
+    depends_on:
+      postgres: { condition: service_healthy }
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+volumes:
+  database:
+    name: ${DB_VOLUME_NAME:-shownight-database}
+  media:
+    name: ${MEDIA_VOLUME_NAME:-shownight-media}
+networks:
+  backend:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK_NAME:?Set the existing external proxy network name}

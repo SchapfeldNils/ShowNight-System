@@ -1,0 +1,27 @@
+# Include within the EXISTING HTTPS server block for
+# eventmanagement.jungschuetzen-flueren.de. Preserve existing TLS directives.
+# Substitute the actual proxy alias and upload limit manually.
+location / {
+    resolver 127.0.0.11 valid=30s ipv6=off;
+    set $shownight_upstream shownight-app:3000;
+    proxy_pass http://$shownight_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # This edge Nginx overwrites untrusted client forwarding headers.
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $shownight_connection_upgrade;
+    client_max_body_size 101m;
+    proxy_connect_timeout 10s;
+    proxy_read_timeout 90s;
+    proxy_send_timeout 90s;
+    proxy_request_buffering off;
+    proxy_buffering off;
+}
+# Add once in the existing http {} context (outside server/location):
+# map $http_upgrade $shownight_connection_upgrade {
+#     default upgrade;
+#     '' close;
+# }
