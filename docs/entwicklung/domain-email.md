@@ -52,3 +52,25 @@ Lokaler Server und Online-Server dürfen nicht unabhängig denselben Auftrag ver
 
 ## Proxyumgebung D016
 Nginx ist ein Docker-Container auf derselben VM, Portainer vorhanden. Proxy-Adresse laut Betreiber: proxy.familie-schapfeld.de. Tatsächlichen Docker-Upstream verwenden; die Systemadresse bleibt eventmanagement.jungschuetzen-flueren.de. Details in [Deployment](deployment.md).
+
+## Tatsächlicher S1-Mailstand
+
+Nodemailer-Adapter und persistente PostgreSQL-Warteschlange implementiert; Testmodus sendet keine Bytes an SMTP und markiert Aufträge als simulated. Echter Adapter unterscheidet accepted_by_smtp/failed/unknown. Keine Zustellgarantie, kein delivered ohne Beleg. Demo und Echtversand dürfen nicht gleichzeitig aktiviert sein. Die Browser-Testauftragsanlage wird bei aktiviertem Versand gesperrt; reale Fachmailanlage folgt mit den jeweiligen Modulen.
+
+Lokale, vom Betreiber ausgefüllte Konfiguration liegt außerhalb von OneDrive/Git unter `%LOCALAPPDATA%/ShowNight/secrets/smtp.env`, mit eingeschränkter Windows-ACL. SMTP-Verbindung, TLS und Anmeldung am 9. Oktober 2026 mit `scripts/smtp-check.ts` erfolgreich geprüft. **Keine Nachricht gesendet; Absenderfreigabe, Zustellung und DNS-Maileinträge ungeprüft.** Konkrete Kontowerte/Secrets werden nicht öffentlich dokumentiert. MAIL_DELIVERY_ENABLED bleibt false. Das sind keine auf der VM eingerichteten Mailzugänge.
+
+Erforderlich: tatsächlicher SMTP_HOST, SMTP_PORT, SMTP_TLS_MODE (`implicit` oder `starttls`), SMTP_USER, SMTP_PASSWORD und erlaubte MAIL_FROM_ADDRESS. Optional MAIL_REPLY_TO und kontrollierter MAIL_TEST_RECIPIENT. Ein eigenes Systempostfach genügt S1; keine Zugangsdaten zu Reply-To/Testempfänger, persönlichem Postfach oder Netcup-Verwaltungslogin erforderlich. Postfachanlage nur am tatsächlich verwendeten Anbieter durch Berechtigte, keine Anlage durch diesen Implementierungsschritt behauptet.
+
+Nur Verbindung/Auth prüfen, aus dem Repository in PowerShell:
+
+```powershell
+node --env-file="$env:LOCALAPPDATA/ShowNight/secrets/smtp.env" --import tsx scripts/smtp-check.ts
+```
+
+Worker für lokale **weiterhin deaktivierte** Versandkonfiguration starten:
+
+```powershell
+node --env-file=.env --env-file="$env:LOCALAPPDATA/ShowNight/secrets/smtp.env" --import tsx apps/api/src/worker-main.ts
+```
+
+Eine reale Testnachricht benötigt ausdrücklich festgelegten erlaubten Absender/Testempfänger und passende Versandautorisierung. Anmeldetest erfüllt diese Zustellprüfung nicht. Für spätere VM-Nutzung Werte separat im privaten Portainer-/Stack-Environment hinterlegen; keine Übertragung oder Veröffentlichung ist bisher erfolgt.

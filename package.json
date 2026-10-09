@@ -1,0 +1,58 @@
+{
+  "name": "shownight-system",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "tsx --env-file=.env apps/api/src/main.ts",
+    "dev:web": "vite --config apps/web/vite.config.ts",
+    "worker": "tsx --env-file=.env apps/api/src/worker-main.ts",
+    "db:migrate": "tsx --env-file=.env apps/api/src/cli.ts migrate",
+    "admin:bootstrap": "tsx --env-file=.env apps/api/src/cli.ts bootstrap",
+    "admin:recover": "tsx --env-file=.env apps/api/src/cli.ts recover",
+    "demo:seed": "tsx --env-file=.env apps/api/src/cli.ts demo",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "test": "tsx --test tests/*.test.ts",
+    "test:integration": "tsx --test tests/integration.ts",
+    "test:browser": "playwright test",
+    "local:setup": "tsx scripts/local.ts setup",
+    "local:db": "tsx scripts/local.ts db",
+    "licenses:inventory": "node scripts/licenses.mjs"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/multipart": "^9.2.1",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/static": "^10.1.2",
+    "@fastify/websocket": "^11.2.0",
+    "fastify": "^5.6.0",
+    "file-type": "^21.0.0",
+    "nodemailer": "^10.0.16",
+    "pg": "^8.16.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@types/node": "^24.7.0",
+    "@types/nodemailer": "^7.0.1",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "embedded-postgres": "17.9.0-beta.17",
+    "esbuild": "^0.25.10",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "prettier": "3.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9"
+  }
+}

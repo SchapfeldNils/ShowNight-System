@@ -2,7 +2,21 @@
 
 Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Veranstaltungsformen.
 
-**Projektstatus:** Planung. Die Dokumentation beschreibt den Zielumfang; sie bestätigt keine bereits implementierte oder abgenommene Software.
+**Projektstatus:** S1-Implementierung auf Arbeitsbranch. Bedienbare Onlinevorbereitung ist vorhanden; vollständige Veranstaltungsfreigabe und reales Netcup-Deployment sind ausstehend. [Aktuelle Prüfergebnisse und Grenzen](docs/entwicklung/status.md).
+
+## Software starten
+
+React/TypeScript, Fastify/TypeScript, PostgreSQL und separater Worker liegen gemeinsam im Repository. [Lokaler Start und Bedienablauf](docs/entwicklung/s1-start.md), [Container/Portainer/Nginx-Installation](docs/entwicklung/deployment.md), [implementierte API](docs/entwicklung/s1-api.md), [Lizenzen](docs/entwicklung/lizenzen.md), [Entwicklungsprotokoll](docs/entwicklung/protokoll.md).
+
+```sh
+pnpm install --frozen-lockfile
+pnpm local:setup
+pnpm local:db
+# In weiterem Terminal: db:migrate, persönlicher admin:bootstrap, demo:seed,
+# build und dev; separater Worker mit pnpm worker. Details im Startdokument.
+```
+
+MFA ist für Admin/Leitung verpflichtend. Keine Standardkennwörter. Demo und Gerätediagnose sind als Simulation gekennzeichnet. Mailwarteschlange arbeitet standardmäßig im Testmodus. Originale ShowNight-Designquellen fehlen; Oberfläche ist vorläufig.
 
 ## Dokumentation
 
@@ -25,7 +39,7 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 - [Startprompt für Codex](docs/entwicklung/codex-startprompt.md)
 - [Bestätigte Entwicklungsentscheidungen](docs/planung/entwicklungsuebergabe.md)
 
-Entwicklungsarbeit erfolgt künftig über Arbeitsbranches und Pull Requests. Die initiale Dokumentationsablage und diese Planungsaktualisierung liegen auf main. Es wurde noch keine Software implementiert.
+Entwicklungsarbeit erfolgt über Arbeitsbranches und Pull Requests. S1: `feat/s1-online-server`, [GitHub-Arbeitspaket #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1). Kein automatischer Merge. Die weiterführenden Fachkapitel beschreiben weiterhin den Zielumfang.
 
 ## Geplante Onlineadresse
 

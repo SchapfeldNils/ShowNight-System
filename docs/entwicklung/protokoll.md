@@ -1,0 +1,19 @@
+# Entwicklungs- und Prüfprotokoll
+
+## 9. Oktober 2026 – S1
+
+Arbeitsgrundlagen AGENTS.md, Auftrag, Arbeitspakete, Datenmodell, Schnittstellen, Abnahmeplan, Domain/E-Mail, Deployment, Architektur, Anforderungen, Gesamtkonzept und D004–D016 geprüft. Repository enthielt ausschließlich Planung und Word-Schnappschuss. Repository in den gemeinsamen Workspace geklont; Arbeitsbranch `feat/s1-online-server`. GitHub-Anbindung bestätigt Repository und Schreibrechte; [Issue #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1) angelegt. Keine Arbeit direkt auf main, kein automatischer Merge.
+
+Reversible technische Details für S1 dokumentiert: ein gemeinsames pnpm-Projekt mit getrennten API-/Web-/Contract-Verzeichnissen; PostgreSQL-Tabellen für Identität/Rechte/Events/Shows/Medien/Revisionen/Pakete/Mail. Geordnete kleine Cue-Definition in validiertem Show-JSON, keine gesamte Anwendung als JSON; Ausbau von Sections/Scene-/Actionentitäten in S3/S4. Direkter begrenzter Multipartupload ersetzt zunächst den zweiphasigen technischen Uploadentwurf. S1 liefert Paketmanifest, kein vollständiges Offlinepaket. REST-Rollen und Event-/Show-/Dateigrenzen in Backend geprüft. Fachentscheidungen D004–D012 bleiben erhalten; nicht implementierte Regeln werden ausdrücklich als später/offen markiert.
+
+Lokale Entwicklerwerkzeuge aus bestehenden Codex-Node-/pnpm-Laufzeiten verwendet. Zusätzliche native PostgreSQL-17.9-Testdatenbank, FFmpeg/FFprobe und Playwright-Chromium als Entwicklungsabhängigkeiten installiert; kein Docker vorhanden. PostgreSQL-17.11-Clients aus [EDB-Archiv](https://www.enterprisedb.com/download-postgresql-binaries) ohne Systemdienst außerhalb des synchronisierten Workspace bereitgestellt; Archiv-SHA in Installskript festgelegt.
+
+Private SMTP-Vorlage außerhalb OneDrive und Git unter `%LOCALAPPDATA%/ShowNight/secrets/smtp.env` angelegt. Benutzer hat Postfachdaten eingetragen. Providerbeschreibung „SMTP + SSL/TLS“ für Port 465 in `implicit` übersetzt. TLS/Verbindung/Auth erfolgreich geprüft; keine Nachricht versendet. System-/Postfach-/Kennwortwerte nicht öffentlich protokolliert; MAIL_DELIVERY_ENABLED=false. Die Zugangsdaten gelangen nicht in Image, Browser, CI oder Git.
+
+Erste Prüfläufe fanden echte Fehler: mehrdeutige UUID/Textparameter bei Blobkeys; Behandlung abgerissener DB-Poolverbindungen; abgeschnittene Bilddatei wurde durch reine Metadatenprüfung akzeptiert. Korrigiert mit eigenen SQL-Parametern, sicherem Poolfehlerhandling und zusätzlicher begrenzter FFmpeg-Dekodierung. Browserprüfung fand unklare Textarea-Labelzuordnung und horizontales Mobilüberlaufen; explizite Label-/Feldzuordnung und flexibler Umbruch korrigiert. Konfliktdialog erhält auch bei erneutem zwischenzeitlichem Konflikt beide Fassungen; kein bedingungsloses Schließen.
+
+Abhängigkeiten auf installierte, gepatchte Produktionsstände aktualisiert; erneute Produktionsprüfung ohne bekannte Schwachstellen. Reale lokale Tests: Kennwort/TOTP/Schema, PostgreSQL-Migrationen, synthetische Demo, Rechte/MFA/Teamshow/Kopie, parallele Revisionsschreibzugriffe, Bild-/Video-Uploads/Negativfälle, Hashmanifest, pg_dump/pg_restore/Dateivergleich, Mailwarteschlange und DB-Ausfall. Browserablauf mit Desktop/Mobil/zweiter Sitzung und sichtbarem Konflikt bestanden. Laufende letzte Ergänzungen und CI-Ergebnisse stehen in [status.md](status.md).
+
+Deployment konkretisiert: drei Dienste, externes bestehendes Proxy-Netz, interner Dockeralias, kein öffentliches DB-Portmapping, keine zweite TLS-Verwaltung. Install-/Build-/Imageübertragung-/Portainer-/Migration-/Bootstrap-/Update-/Backup-/isolierte Restoreanleitung hinzugefügt. Kein tatsächlicher Zugriff auf Netcup, kein neuer Proxy oder Portainer installiert. Zielnachweis S1-12 blocked.
+
+Git-Commits/PR/Actions bilden den unveränderlichen Änderungsverlauf; Prüfprotokoll enthält keine Geheimnisse. Spätere Korrekturen als weitere Commits, kein stilles Umschreiben bestätigter Fachentscheidungen.
