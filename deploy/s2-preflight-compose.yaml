@@ -1,0 +1,51 @@
+# Isolated S1 -> S2 upgrade / S1 restore rehearsal. No proxy, host ports or mail worker.
+name: ${PREFLIGHT_STACK_NAME:?Set a unique shownight-s2-preflight project name}
+services:
+  postgres:
+    image: postgres:17.9-bookworm
+    environment:
+      POSTGRES_USER: shownight
+      POSTGRES_DB: shownight
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set an independent test DB password}
+    volumes: [database:/var/lib/postgresql/data]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U shownight -d shownight"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  app:
+    image: ${SHOWNIGHT_IMAGE:?Set the verified S1 or S2 image}
+    init: true
+    environment:
+      DATABASE_URL: postgres://shownight:${POSTGRES_PASSWORD}@postgres:5432/shownight
+      PUBLIC_BASE_URL: http://127.0.0.1:3000
+      HOST: 0.0.0.0
+      PORT: 3000
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?Use the original key from private configuration}
+      MEDIA_ROOT: /data/media
+      MAX_UPLOAD_BYTES: 104857600
+      FFPROBE_PATH: /usr/bin/ffprobe
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      MAIL_MODE: test
+      MAIL_DELIVERY_ENABLED: "false"
+      DEMO_ENABLED: "false"
+    volumes: [media:/data/media]
+    networks: [backend]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+volumes:
+  database:
+    name: ${PREFLIGHT_DB_VOLUME:?Set a new, empty test volume}
+  media:
+    name: ${PREFLIGHT_MEDIA_VOLUME:?Set a new, empty test volume}
+networks:
+  backend: { internal: true }

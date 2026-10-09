@@ -1,6 +1,6 @@
 # S2 Windows-Agent: Verbindung und Diagnose
 
-Stand: 9. Oktober 2026. Prototyp 0.2.0, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4). Abhängig vom S1-Branch/PR #2. Keine Veranstaltungsfreigabe, kein vollständiger Windows-Installer. Der Online-Agent führt ausschließlich Diagnose und ausdrücklich markierte Tests ohne Gerätewirkung aus. S3 stellt später die lokale Livezuständigkeit bereit; diese wird hier nicht vorgetäuscht.
+Stand: 10. Oktober 2026. Prototyp 0.2.0, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4). Abhängig vom S1-Branch/PR #2. Keine Veranstaltungsfreigabe, kein vollständiger Windows-Installer. Der Online-Agent führt ausschließlich Diagnose und ausdrücklich markierte Tests ohne Gerätewirkung aus. S3 stellt später die lokale Livezuständigkeit bereit; diese wird hier nicht vorgetäuscht.
 
 ## Start auf Windows
 
@@ -61,3 +61,11 @@ pnpm agent:package
 Migration 2 ergänzt ausschließlich Agenttabellen und erhält Migration 1 unverändert. Upgrade explizit mit vorhandenem Migrations-CLI und vorheriger Sicherung; keine automatische Produktionsmigration. Datenbank mit Schema 1 ist für den S2-Build nicht ready. Produktiver Netcup-Stack bleibt bis separat vorbereitetem Update auf dem geprüften S1-Stand.
 
 Rollback nach Migration 2 benötigt den passenden gesicherten Schema-1-Datenbestand in isolierten Volumes gemäß Restoreanleitung; der bisherige S1-Build akzeptiert Schema 2 nicht. Nicht allein das Image zurückwechseln oder den Migrationseintrag löschen. Ein produktiver Upgrade-/Rollbacknachweis ist noch offen.
+
+## Reale DJ-Leseabfrage am 10. Oktober 2026
+
+Betreiber bestätigt diesen Windows-Rechner als DJ-Rechner und vorhandene Pro-Lizenz; FLX4 ausdrücklich nicht angeschlossen. VirtualDJ tatsächlich gestartet, Network Control durch Betreiber installiert und mit lokalem Port/Authentifizierungsstring eingerichtet. Adapter gegen echte lokale Plugininstanz geprüft: POST `/query`, ausschließlich `get_clock`, nicht leere Antwort; falscher Authentifizierungsstring ergibt 401. Die Ablehnung musste wegen der vom Node-Fetch-Parser nicht akzeptierten Plugin-Fehlerantwort zusätzlich als begrenzte rohe HTTP-Antwort ausgewertet werden. Gültige Abfrage anschließend erneut erfolgreich. Port gehört laut Betriebssystem dem VirtualDJ-Prozess. Keine `/execute`-Abfrage, keine Wiedergabe-/Tonaktion.
+
+Private Daten ausschließlich in `%LOCALAPPDATA%/ShowNight/secrets/virtualdj.env`; Zugangsdaten nicht in Screenshots/Logs/Git. Der Adapter ruft nur Loopback auf. Das Plugin selbst lauscht laut Betriebssystem auf IPv4 `0.0.0.0`; es wurde keine eingehende Firewallfreigabe angelegt. Begrenzung eingehender Erreichbarkeit für den Dauerbetrieb bleibt zu prüfen. Ein erfolgreicher Uhrenquery belegt weder Deck-/Musikposition noch Drift, Wiedergabe oder FLX4-/PA-Trennung. Dieser Nachweis ersetzt nicht die weiterhin offenen S2-06/S2-07-Gesamtfälle.
+
+[Vorbereiteter Netcup-Updateablauf mit tatsächlich bestandenem isoliertem Upgrade/Restore](s2-netcup-update.md). Produktiv läuft bis zur Ausführung weiterhin S1.

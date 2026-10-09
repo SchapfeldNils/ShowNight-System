@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 10. Oktober 2026 – S2-Zielvorbereitung und erste reale VirtualDJ-Abfrage
+
+Betreiber bestätigt diesen Rechner als DJ und vorhandene Pro-Lizenz, FLX4 aktuell nicht angeschlossen. VirtualDJ gestartet; Network Control nach Anleitung durch Betreiber installiert und mit lokalem Authentifizierungsstring eingerichtet. Vorhandener Loopback-Leseadapter gegen echtes Plugin erfolgreich (`get_clock`), falscher String ergibt 401. Pluginfehlerantwort wird von Node Fetch nicht regulär gelesen; begrenzte rohe HTTP-Prüfung bestätigt Status, gültige Abfrage danach erneut erfolgreich. Auf erneuten Betreiberwunsch gültige Leseabfrage und falsche Authentifizierung noch einmal erfolgreich geprüft. Keine Ton-/Wiedergabeaktion oder physische Abnahme. Betriebssystem ordnet Listener dem VirtualDJ-Prozess zu; Plugin bindet 0.0.0.0, keine zusätzliche Firewallfreigabe vorgenommen. Dauerbetriebsbegrenzung offen. Privates Prüfergebnis außerhalb Git/OneDrive.
+
+Geprüftes S2-ARM64-Image aus Actions für `26edc1d` heruntergeladen, Archivhash lokal und am Ziel sowie sämtliche RootFS-Layer/Architektur nach Import verglichen. Auf vorhandener VM eigenständige isolierte Upgrade-/Rollbackstacks mit interner Netzwerkverbindung, keinen Hostports/Proxyanschluss und keinem Worker eingerichtet. Live-Snapshot dient nur dem Probelauf, ersetzt kein Wartungsbackup. S1-Restore, Migration 2 mit Erhalt ursprünglicher Tabellen, Readiness Schema 2, weiterer frischer S1-Restore mit vollständigem Tabellen-/Medienvergleich bestanden. Beide Teststacks gestoppt, private Nachweisvolumes vorläufig erhalten. Produktiver Stack anschließend weiterhin ready/Schema 1; keine Produktivmigration, kein Proxy-/Portainer-Update, kein PR-Merge. [Updateplan und tatsächliche Grenzen](s2-netcup-update.md).
+
 ## 9. Oktober 2026 – S2-Agentgrundlage
 
 Nach bestätigtem Zugang zur Systemseite S2 gemäß D013 fortgesetzt, eigener Branch auf ungemergtem S1-Stand und [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4). Vorhandene Programme per Registry erhoben, keine Installation/Umkonfiguration der Gerätesoftware oder Hardwareausgabe. Offizielle VirtualDJ-/Daslight-/Stream-Deck-Dokumentation geprüft; unbestätigte OSC-/MIDI-Befehle nicht erfunden. Geräte-/Notebookzuordnung und Vorhörweg weiterhin offene reale Prüfungen.
