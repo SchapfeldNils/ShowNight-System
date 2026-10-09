@@ -41,6 +41,13 @@
 - Regeln: [vollständige Antworten](szeneneditor.md), verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
 - Ergebnis: eingebetteter Editor, direkte Werkzeuge, kontextbezogene Eigenschaften, automatische Entwurfsspeicherung, eigene Wiedergabeprüfung und sichtbare Medienfehler.
 
+## D007 – Bedienung der Live-Regie
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](live-regie.md), verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
+- Ergebnis: Vorschauauswahl getrennt von GO, eigener Direktbefehl, einmalige Übergangswahl, Übernahmesperre während des Übergangs, direkte zusätzliche Ansichten und sichtbare Eingriffe/Fehler.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

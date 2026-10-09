@@ -625,3 +625,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Fehlende Medien erscheinen als deutliche Platzhalter im Editor und als sichtbare Fehler in der Prüfübersicht. Für die echte Ausgabe gelten die bestehenden Validierungs- und Ersatzregeln.
 
 Die bestehenden Regeln zu Szenensperren bei gleichzeitiger Bearbeitung, Medienversionen und bewusster Liveaktivierung bleiben verbindlich. Konkrete Speicherintervalle und technische Wiederherstellung bei Verbindungsverlust sind Implementierungsdetails, die vor Umsetzung dokumentiert und geprüft werden müssen.
+
+
+## Verbindliche Bedienung: Live-Regie (D007)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Das Standardlayout zeigt Publikumsausgabe, Vorschau, Ablauf und Aktionsbuttons gleichzeitig. Frei verteilbare Ansichten und persönliche Layouts bleiben möglich.
+2. Anklicken eines Einsatzes wählt diesen zur Vorschau aus; die Auslösung erfolgt separat. Bloßes Anklicken verändert weder Publikumsausgabe noch den GO-Zielpunkt.
+3. GO wirkt auf den deutlich markierten nächsten Einsatz. Ein anderer Einsatz muss separat und bewusst als Ausführungsziel vorbereitet werden. Das bestehende serverseitige Ordnen und Absichern konkurrierender Befehle gilt.
+4. Direkte Ausgabe ohne vorherige Vorschau erfolgt über einen eigenen klar erkennbaren Direkt-Button oder entsprechend belegten Controller-Befehl.
+5. Für spontane Übernahme ist eine sichtbare Übergangsauswahl mit Dauer verfügbar. Einsatzvorgaben können für die einzelne Übernahme überschrieben werden.
+6. Während eines Übergangs wird der Fortschritt angezeigt. Weitere Übernahmen sind bis zum Ende gesperrt; Unterbrechungsaktionen bleiben erreichbar. Eine gesperrte Betätigung wird nicht automatisch zur späteren Ausführung vorgemerkt.
+7. Zusätzliche Regieansichten lassen sich direkt über „Ansicht öffnen“ öffnen und auf den gewünschten Monitor verschieben.
+8. Ausgabefehler bleiben am betroffenen Ausgang und in der zentralen Statusanzeige sichtbar, solange sie bestehen.
+9. Eingriffe der anderen Regie erscheinen kurz mit Benutzer, Aktion und Zeitpunkt; Details bleiben im Verlauf.
+10. Controller-GO ist nach einer Betätigung erst nach Loslassen erneut auslösbar. Doppelte Übertragungen derselben Betätigung werden ignoriert. Dies ergänzt die serverseitige Absicherung und ersetzt sie nicht.
+
+Die Sperre betrifft weitere Bildübernahmen während des Übergangs, nicht pauschal unabhängige Musik-, Licht-, Timer- oder Unterbrechungsaktionen. Zwei berechtigte Regien bleiben jederzeit gleichberechtigt. Technische Rückmeldungen und tatsächliche Ausgabe müssen geprüft werden; Simulation gilt nicht als reale Bestätigung.
