@@ -4,6 +4,10 @@ import ffmpeg from "ffmpeg-static";
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+const probePath =
+  process.env.FFPROBE_PATH ||
+  (existsSync(ffprobe.path) ? ffprobe.path : "ffprobe");
 const mode = process.argv[2];
 await mkdir(".local", { recursive: true });
 if (mode === "setup") {
@@ -14,7 +18,7 @@ if (mode === "setup") {
     const secret = randomBytes(24).toString("hex");
     await writeFile(
       ".env",
-      `PUBLIC_BASE_URL=http://localhost:3000\nHOST=127.0.0.1\nPORT=3000\nDATABASE_URL=postgres://shownight:${secret}@127.0.0.1:55432/shownight\nMFA_ENCRYPTION_KEY=${randomBytes(32).toString("hex")}\nMEDIA_ROOT=.local/media\nMAX_UPLOAD_BYTES=104857600\nFFPROBE_PATH="${ffprobe.path.replaceAll("\\", "/")}"\nFFMPEG_PATH="${ffmpeg.replaceAll("\\", "/")}"\nMAIL_MODE=test\nMAIL_DELIVERY_ENABLED=false\nDEMO_ENABLED=true\nTRUSTED_PROXY_CIDRS=\n`,
+      `PUBLIC_BASE_URL=http://localhost:3000\nHOST=127.0.0.1\nPORT=3000\nDATABASE_URL=postgres://shownight:${secret}@127.0.0.1:55432/shownight\nMFA_ENCRYPTION_KEY=${randomBytes(32).toString("hex")}\nMEDIA_ROOT=.local/media\nMAX_UPLOAD_BYTES=104857600\nFFPROBE_PATH="${probePath.replaceAll("\\", "/")}"\nFFMPEG_PATH="${ffmpeg.replaceAll("\\", "/")}"\nMAIL_MODE=test\nMAIL_DELIVERY_ENABLED=false\nDEMO_ENABLED=true\nTRUSTED_PROXY_CIDRS=\n`,
       { mode: 0o600, flag: "wx" },
     );
     console.log("Lokale .env mit zufälligen Geheimnissen erstellt.");

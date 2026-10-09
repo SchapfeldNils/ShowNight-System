@@ -35,8 +35,8 @@ export async function fixture(port = 55433) {
     DATABASE_URL: `postgres://shownight:${dbPassword}@127.0.0.1:${port}/shownight_test`,
     MFA_ENCRYPTION_KEY: randomBytes(32).toString("hex"),
     MEDIA_ROOT: join(dir, "media"),
-    FFPROBE_PATH: ffprobe.path,
-    FFMPEG_PATH: ffmpeg,
+    FFPROBE_PATH: process.env.FFPROBE_PATH || ffprobe.path,
+    FFMPEG_PATH: process.env.FFMPEG_PATH || ffmpeg,
     PUBLIC_BASE_URL: "http://localhost:3000",
     DEMO_ENABLED: "true",
     MAX_UPLOAD_BYTES: "4096",
@@ -49,7 +49,7 @@ export async function fixture(port = 55433) {
   await app.ready();
   const video = join(dir, "synthetic.mp4");
   await promisify(execFile)(
-    ffmpeg,
+    cfg.FFMPEG_PATH,
     [
       "-v",
       "error",
