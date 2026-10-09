@@ -48,3 +48,7 @@ Lokaler Server und Online-Server dürfen nicht unabhängig denselben Auftrag ver
 - Fehler/Timeout/erneuter Versand und Versandaufträge nach Neustart testen.
 - SPF/DKIM/DMARC nach tatsächlichem Anbieter und bestehender Domainkonfiguration prüfen; keine vorhandenen DNS-Regeln ungeprüft ersetzen.
 - Mengenlimits des tatsächlich verwendeten Postfachs erfassen. Keine Annahme unbegrenzten oder gebührenfreien Versands.
+
+
+## Proxyumgebung D016
+Nginx ist ein Docker-Container auf derselben VM, Portainer vorhanden. Proxy-Adresse laut Betreiber: proxy.familie-schapfeld.de. Tatsächlichen Docker-Upstream verwenden; die Systemadresse bleibt eventmanagement.jungschuetzen-flueren.de. Details in [Deployment](deployment.md).

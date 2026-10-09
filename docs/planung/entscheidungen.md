@@ -105,8 +105,17 @@
 - Status: vorhandener Nginx durch Benutzer bestätigt
 - Datum: 9. Oktober 2026
 - Folge: Bestehenden Reverse Proxy integrieren; keinen zusätzlichen Proxy als Voraussetzung aufbauen.
-- Offen: Standort/Betriebsart, Upstream, vorhandene Zertifikatsverwaltung und Konfiguration der Systemdomain.
+- Standort/Betriebsart durch D016 geklärt: Docker auf derselben VM. Offen bleiben Upstream-/Netzwerkparameter, Zertifikatsverwaltung und Route für die Systemdomain.
 - Containeraufteilung Anwendung/PostgreSQL/Worker bleibt technischer Startvorschlag; kein Fachmodul-Microservice-Zwang.
+
+## D016 – Nginx-Container auf derselben VM und Portainer
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Umgebung: Nginx als Docker-Container auf derselben Netcup-VM, Portainer vorhanden.
+- Genannte Proxy-Adresse: proxy.familie-schapfeld.de.
+- Folge: vorhandenes Proxy-Netz verwenden; Anwendung über internen Docker-Upstream anbinden. Keine neue Proxyinstallation.
+- Offen: tatsächliches Proxy-Produkt/Image, Container-/Netzwerkname, Portainer-Deploymentmodus und neue Domainroute.
+- Anleitung: [Deployment](../entwicklung/deployment.md).
 
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.

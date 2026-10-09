@@ -12,6 +12,7 @@ Entwickle das ShowNight-System agil in prüfbaren Arbeitspaketen. Beginne jetzt 
 - docs/entwicklung/schnittstellen.md
 - docs/entwicklung/abnahmeplan.md
 - docs/entwicklung/domain-email.md
+- docs/entwicklung/deployment.md
 - docs/architektur.md
 - docs/anforderungen.md
 - docs/planung/entscheidungen.md und docs/planung/offene-punkte.md
@@ -55,4 +56,8 @@ Beginne mit S1 und führe dessen autorisierte Arbeit bis zu einem überprüfbare
 
 
 ## Vorhandener Nginx (D015)
-Nginx-Reverse-Proxy ist bereits vorhanden. Keinen zusätzlichen Proxycontainer oder neue konkurrierende TLS-Verwaltung installieren. Erstelle passende Nginx-Konfigurationsvorlage und Anleitung für die Systemdomain. Nginx-Standort/Betriebsart zunächst als Deploymentparameter behandeln; Host-, Container- oder externen Proxy nicht ungeprüft gleichsetzen. Bestehende Dienste/Zertifikate erhalten. WebSockets, Uploads, Timeouts und vertrauenswürdige Proxyheader prüfen; Datenbank nicht öffentlich exponieren. Vorgeschlagene Compose-Dienste: Anwendung, PostgreSQL und Worker mit dauerhaften Speicherbereichen.
+Nginx-Reverse-Proxy ist bereits vorhanden. Keinen zusätzlichen Proxycontainer oder neue konkurrierende TLS-Verwaltung installieren. Erstelle passende Nginx-Konfigurationsvorlage und Anleitung für die Systemdomain. D016 bestätigt Nginx als Docker-Container auf derselben VM und vorhandenes Portainer. Tatsächliche Container-/Netzwerknamen sowie Proxy-Produkt noch erheben. Bestehende Dienste/Zertifikate erhalten. WebSockets, Uploads, Timeouts und vertrauenswürdige Proxyheader prüfen; Datenbank nicht öffentlich exponieren. Vorgeschlagene Compose-Dienste: Anwendung, PostgreSQL und Worker mit dauerhaften Speicherbereichen.
+
+
+## Konkrete Zielumgebung D016
+Portainer und Nginx-Container sind auf derselben Netcup-VM vorhanden. Proxy-Adresse laut Betreiber: proxy.familie-schapfeld.de. Plane den neuen Systemstack für diese Umgebung, ohne vorhandenen Proxy zu ersetzen. app erhält ein gemeinsames externes Proxy-Netz mit Nginx und ein separates Backend-Netz mit PostgreSQL/Worker. Externen Netzwerknamen konfigurierbar halten. Nginx auf Docker-Alias und internen app-Port routen, nicht auf localhost innerhalb des Proxy-Containers. Keine Nginx-Proxy-Manager-Oberfläche voraussetzen. Erstelle die Deploy-/Image-Build-/Portainer-Anleitung gemäß deployment.md.
