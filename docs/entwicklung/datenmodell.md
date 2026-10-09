@@ -1,5 +1,7 @@
 # Fachliches Datenmodell – erster Showablauf
 
+S2-Implementierung ergänzt den technischen Startentwurf durch Migration `002_agents.sql`: `agent_pairings` speichert gehashte einmalige Codes, Profil/Name, Ersteller, Ablauf und Verbrauch; `agent_devices` widerrufbare Geräteidentität, letzten serverseitigen Kontakt, Verbindungs-Epoch und gemeldete Fähigkeiten; `agent_dispatches` Diagnose-Dispatch-ID, Gerät/Epoch, Aktion, Ersteller und getrennten Empfang/Ergebnisnachweis. Keine Bühne-/GO-/Livezustandsentitäten dadurch vorgetäuscht. Agent lokal: SQLite-Empfangsjournal mit Inhaltsfingerprint, dauerhaftem Ergebnis und `unknown` bei unterbrochener Annahme. Fachliche Live-/Ticket-/Spielmodelle bleiben wie unten beschrieben geplant; [tatsächlicher S2-Vertrag](s2-agent.md).
+
 Stand: 9. Oktober 2026. Fachliche Grundlage: Gesamtkonzept und D004–D012. Ergänzt um einen implementierbaren technischen Startentwurf. Fachregeln sind verbindlich; technische Bezeichner und Speicherentscheidungen sind begründbar anpassbar. Migrationen und Code-Schemas werden bei Umsetzung ergänzt. Dieses Dokument deckt den ersten Showablauf ab, noch nicht das gesamte Ticket-/Organisations-/Spielmodell.
 
 ## Objekte und Beziehungen

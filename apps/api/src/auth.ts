@@ -102,6 +102,8 @@ export async function bootstrap(
 export function authRoutes(app: FastifyInstance, db: DB, cfg: Config) {
   app.decorateRequest("actor");
   app.addHook("onRequest", async (req, reply) => {
+    // Native pairing has its own one-use credential and rate limit. Browser Origins are rejected there.
+    if (req.url === "/api/agent/v1/pair" && req.method === "POST") return;
     if (
       !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
       req.headers.origin !== cfg.origin

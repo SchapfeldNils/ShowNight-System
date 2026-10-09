@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pair } from "../../apps/agent/src/identity.js";
+import { startAgent } from "../../apps/agent/src/client.js";
 import { totp } from "../../apps/api/src/security.js";
 test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Manifest", async ({
   page,
@@ -49,13 +54,11 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   await page
     .getByLabel("Beschreibung", { exact: true })
     .fill("Originalfassung für die Veranstaltung");
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "synthetisch.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(credentials.png, "base64"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "synthetisch.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(credentials.png, "base64"),
+  });
   await expect(
     page.getByText("Original gespeichert. Analyse läuft im Worker."),
   ).toBeVisible();
@@ -145,5 +148,54 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     ),
   ).toBe(true);
   await second.close();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole("button", { name: "Diagnose", exact: true }).click();
+  await page
+    .getByLabel("Gerätename", { exact: true })
+    .fill("Browser-Testagent");
+  await page.getByLabel("Geräteprofil", { exact: true }).selectOption("main");
+  await page
+    .getByRole("button", { name: "Paarungscode erstellen", exact: true })
+    .click();
+  const code = await page.locator(".callout code").innerText();
+  const identity = await pair("http://127.0.0.1:3000", code);
+  const agent = startAgent(
+    identity,
+    await mkdtemp(join(tmpdir(), "shownight-browser-agent-")),
+  );
+  try {
+    await page.getByRole("button", { name: "Code ausblenden" }).click();
+    const device = page
+      .locator("article.callout")
+      .filter({ hasText: "Browser-Testagent" });
+    await expect(device.getByText("Verbunden", { exact: true })).toBeVisible({
+      timeout: 12000,
+    });
+    await device
+      .getByRole("button", { name: "Verbindung prüfen", exact: true })
+      .click();
+    await expect(device.getByText(/Diagnose abgeschlossen/)).toBeVisible({
+      timeout: 12000,
+    });
+    await page.screenshot({
+      path: "test-results/s2-agent-connected.png",
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await device
+      .getByRole("button", { name: "Geräteidentität widerrufen" })
+      .click();
+    await expect(device.getByText("Widerrufen", { exact: true })).toBeVisible();
+    await expect(
+      device.getByRole("button", { name: "Verbindung prüfen", exact: true }),
+    ).toBeDisabled();
+  } finally {
+    agent.stop();
+  }
   expect(errors).toEqual([]);
 });

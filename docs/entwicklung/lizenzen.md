@@ -1,4 +1,6 @@
-# Kostenlose Komponenten und Lizenzen – S1
+# Kostenlose Komponenten und Lizenzen – S1/S2
+
+S2-Agent: direkte Laufzeitabhängigkeit `ws` (MIT) und bereits verwendetes Zod (MIT), installierte Versionen im Lockfile/Inventar. Portable Windows-x64-ZIP enthält den offiziellen Node-24.19.0-Build, dessen vollständigen Lizenztext einschließlich Drittlizenzen sowie ws-/Zod-Lizenzdateien. Hersteller-ZIP gegen festgelegten SHA256 geprüft; keine kostenpflichtige zusätzliche Komponente. Vorhandene VirtualDJ-Pro-/Daslight-/Hardwarevoraussetzungen sind getrennt und noch kein Praxisnachweis. Einzelheiten: [Agentanleitung](s2-agent.md).
 
 Stand: 9. Oktober 2026. Aufgelöste npm-Versionen stehen in `pnpm-lock.yaml`. `pnpm licenses:inventory` erfasst installierte Paketmetadaten in [dependency-licenses.json](dependency-licenses.json); das Actions-Artefakt enthält den tatsächlichen Linux-Stand. Betriebssystemabhängige native Pakete unterscheiden sich. Die Bestandsliste ersetzt nicht Lizenztexte/Notice-Dateien im ausgelieferten Image.
 
