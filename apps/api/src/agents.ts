@@ -6,6 +6,7 @@ import {
   agentMessage,
   pairingInput,
   diagnosticInput,
+  type Capability,
 } from "../../../packages/contracts/src/agent.js";
 import { hash, token } from "./security.js";
 import { transaction, type DB } from "./db.js";
@@ -17,6 +18,10 @@ declare module "fastify" {
   }
 }
 export function agentRoutes(app: FastifyInstance, db: DB) {
+  const reportedCapabilities = (capabilities: Capability[]) =>
+    capabilities.map((c) =>
+      c.observedAt ? { ...c, reportedAt: new Date().toISOString() } : c,
+    );
   const connections = new Map<string, { socket: WebSocket; epoch: string }>();
   app.decorateRequest("agentDevice");
   app.addHook("preClose", async () => {
@@ -82,14 +87,20 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
     ).rows;
     return rows.map(({ connectionId, ...device }) => {
       const conn = connections.get(device.id);
+      const connected = Boolean(
+        device.connected &&
+          conn &&
+          conn.epoch === connectionId &&
+          conn.socket.readyState === 1,
+      );
       return {
         ...device,
-        connected: Boolean(
-          device.connected &&
-            conn &&
-            conn.epoch === connectionId &&
-            conn.socket.readyState === 1,
-        ),
+        connected,
+        capabilities: device.capabilities.map((c: { reportedAt?: string }) => {
+          if (!c.reportedAt) return c;
+          const age = Date.now() - Date.parse(c.reportedAt);
+          return { ...c, current: connected && age >= 0 && age < 15000 };
+        }),
       };
     });
   });
@@ -300,7 +311,7 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                     device.id,
                     epoch,
                     msg.agentVersion,
-                    JSON.stringify(msg.capabilities),
+                    JSON.stringify(reportedCapabilities(msg.capabilities)),
                   ],
                 );
               });
@@ -330,6 +341,16 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                   [device.id, epoch],
                 );
                 if (!r.rowCount) throw new AgentProtocolError("REVOKED");
+                if (msg.type === "heartbeat" && msg.capabilities) {
+                  await c.query(
+                    "UPDATE agent_devices SET capabilities=$2 WHERE id=$1 AND connection_id=$3",
+                    [
+                      device.id,
+                      JSON.stringify(reportedCapabilities(msg.capabilities)),
+                      epoch,
+                    ],
+                  );
+                }
                 if (msg.type === "receipt") {
                   const dispatch = (
                     await c.query(

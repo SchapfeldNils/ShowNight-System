@@ -11,8 +11,10 @@ export const capability = z
       "available",
       "simulated",
       "unknown",
+      "unavailable",
       "unsupported_online",
     ]),
+    observedAt: z.iso.datetime().optional(),
   })
   .strict();
 export const agentHello = z
@@ -21,7 +23,7 @@ export const agentHello = z
     protocolVersion: z.literal(1),
     deviceId: z.uuid(),
     profile: agentProfile,
-    agentVersion: z.literal("0.2.0"),
+    agentVersion: z.enum(["0.2.0", "0.2.1"]),
     capabilities: z.array(capability).max(12),
   })
   .strict();
@@ -64,6 +66,7 @@ export const agentMessage = z.discriminatedUnion("type", [
       type: z.literal("heartbeat"),
       protocolVersion: z.literal(1),
       authorityEpoch: z.uuid(),
+      capabilities: z.array(capability).max(12).optional(),
     })
     .strict(),
   z
@@ -90,4 +93,5 @@ export type AgentIdentity = {
   profile: z.infer<typeof agentProfile>;
   credential: string;
 };
+export type Capability = z.infer<typeof capability>;
 export type AgentDispatch = z.infer<typeof agentDispatch>;

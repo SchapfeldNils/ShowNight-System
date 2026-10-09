@@ -2,7 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { join } from "node:path";
-import { mkdir, readFile, mkdtemp, copyFile } from "node:fs/promises";
+import {
+  mkdir,
+  readFile,
+  mkdtemp,
+  copyFile,
+  writeFile,
+} from "node:fs/promises";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -10,6 +17,7 @@ import WebSocket from "ws";
 import { fixture } from "./fixture.js";
 import { totp, hash } from "../apps/api/src/security.js";
 import { startAgent } from "../apps/agent/src/client.js";
+import { localCapabilities } from "../apps/agent/src/diagnostics.js";
 import {
   pair,
   saveIdentity,
@@ -110,9 +118,108 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
     };
     await until(async () => (await devices())[0]?.connected);
     await t.test(
+      "S2-03/06: Pluginzustand über Heartbeat aktuell, Ausfall/Erholung ohne neue Epoch; kein Geheimnis im Server",
+      async () => {
+        const secret = randomBytes(20).toString("hex");
+        let healthy = true;
+        const plugin = createServer(async (req, res) => {
+          assert.equal(req.url, "/query");
+          assert.equal(req.headers.authorization, "Bearer " + secret);
+          let body = "";
+          for await (const b of req) body += b;
+          assert.equal(body, "get_clock");
+          res.writeHead(healthy ? 200 : 503);
+          res.end(healthy ? "09:23:11" : "private error text");
+        });
+        await new Promise<void>((r) => plugin.listen(0, "127.0.0.1", r));
+        const testIdentity = identity;
+        const config = join(f.dir, "virtualdj.env");
+        await writeFile(
+          config,
+          `VDJ_PORT=${(plugin.address() as { port: number }).port}\nVDJ_AUTH='${secret}'\n`,
+        );
+        agent?.stop();
+        const diagnosticAgent = startAgent(
+          testIdentity,
+          dir,
+          undefined,
+          localCapabilities("dj", config),
+        );
+        const observed = async () =>
+          (await devices()).find((d: any) => d.id === testIdentity.deviceId);
+        const state = (d: any) =>
+          d?.capabilities.find((c: any) => c.name === "VirtualDJ-Leseabfrage");
+        try {
+          await until(
+            async () => state(await observed())?.availability === "available",
+          );
+          assert.equal(state(await observed()).current, true);
+          const stale = (await observed()).capabilities.map((c: any) =>
+            c.reportedAt
+              ? { ...c, reportedAt: new Date(Date.now() - 30000).toISOString() }
+              : c,
+          );
+          await db.query(
+            "UPDATE agent_devices SET capabilities=$2 WHERE id=$1",
+            [testIdentity.deviceId, JSON.stringify(stale)],
+          );
+          assert.equal(
+            state(await observed()).current,
+            false,
+            "Heartbeat-Verbindung allein bestätigt keine alte Pluginbeobachtung",
+          );
+          const epoch = (
+            await db.query(
+              "SELECT connection_id FROM agent_devices WHERE id=$1",
+              [testIdentity.deviceId],
+            )
+          ).rows[0].connection_id;
+          healthy = false;
+          await until(
+            async () => state(await observed())?.availability === "unavailable",
+            10000,
+          );
+          assert.equal(state(await observed()).current, true);
+          assert.equal((await observed()).connected, true);
+          healthy = true;
+          await until(
+            async () => state(await observed())?.availability === "available",
+            10000,
+          );
+          assert.equal(
+            (
+              await db.query(
+                "SELECT connection_id FROM agent_devices WHERE id=$1",
+                [testIdentity.deviceId],
+              )
+            ).rows[0].connection_id,
+            epoch,
+          );
+          const report = JSON.stringify(await observed());
+          for (const value of [
+            secret,
+            "09:23:11",
+            "private error text",
+            "VDJ_AUTH",
+            "VDJ_PORT",
+          ])
+            assert(!report.includes(value));
+        } finally {
+          diagnosticAgent.stop();
+          await new Promise<void>((r) => plugin.close(() => r()));
+          agent = startAgent(identity, dir, (state) => states.push(state));
+          await until(
+            async () =>
+              (await observed())?.connected &&
+              state(await observed())?.availability === "unknown",
+          );
+        }
+      },
+    );
+    await t.test(
       "S2-03/04: echte Verbindung, Simulation getrennt, parallele Deduplizierung/Konflikt",
       async () => {
-        assert.equal((await devices())[0].agentVersion, "0.2.0");
+        assert.equal((await devices())[0].agentVersion, "0.2.1");
         assert.equal(
           (await devices())[0].capabilities.find(
             (c: any) => c.source === "simulator",

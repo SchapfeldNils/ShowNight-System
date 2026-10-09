@@ -1,6 +1,6 @@
 # S2 Windows-Agent: Verbindung und Diagnose
 
-Stand: 10. Oktober 2026. Prototyp 0.2.0, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4). Abhängig vom S1-Branch/PR #2. Keine Veranstaltungsfreigabe, kein vollständiger Windows-Installer. Der Online-Agent führt ausschließlich Diagnose und ausdrücklich markierte Tests ohne Gerätewirkung aus. S3 stellt später die lokale Livezuständigkeit bereit; diese wird hier nicht vorgetäuscht.
+Stand: 10. Oktober 2026. Prototyp 0.2.1, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4). Abhängig vom S1-Branch/PR #2. Keine Veranstaltungsfreigabe, kein vollständiger Windows-Installer. Der Online-Agent führt ausschließlich Diagnose und ausdrücklich markierte Tests ohne Gerätewirkung aus. S3 stellt später die lokale Livezuständigkeit bereit; diese wird hier nicht vorgetäuscht.
 
 ## Start auf Windows
 
@@ -75,3 +75,7 @@ Private Daten ausschließlich in `%LOCALAPPDATA%/ShowNight/secrets/virtualdj.env
 Betreiber hat nach eigener Admin-/MFA-Anmeldung den DJ-Einmalcode lokal bereitgestellt. Geprüfte portable Windows-ZIP `26edc1d` außerhalb OneDrive entpackt; Paarung über deren gebündelten CLI, Profil `dj`, vollständige System-HTTPS-Adresse. DPAPI-Roundtrip und Ordner-ACL Benutzer/SYSTEM bestätigt. Agent 0.2.0 tatsächlich per WSS verbunden; Diagnose `completed`/`agent-roundtrip` sowohl über Server-API als auch im lokalen SQLite-Journal bestätigt. Eigenes synthetisches Diagnosekonto und dessen Server-Diagnosezeile danach entfernt; echte DJ-Identität erhalten. Der lokale Journalnachweis bleibt erhalten. Kein Betreiber-MFA-Reset oder Übernehmen seines Faktors.
 
 Windows-Resolver lieferte bei der Prüfung weiterhin das alte Webhostingziel. Deshalb vorläufig ausschließlich für diese Agentenprozesse die bestätigte VM-IP als DNS-Lookup vorgegeben; HTTPS-Hostname, gespeicherte Serveradresse und volle TLS-Prüfung unverändert. Keine Änderung an Windows-/Router-DNS, Hostsdatei oder Serverumschaltung. Private lokale Start-/Stopphilfe und Hinweise unter `%LOCALAPPDATA%/ShowNight/runtime`; `Start.cmd` benötigt normale korrekte DNS-Auflösung. Dauerbetrieb ohne diese Diagnosehilfe noch zu bestätigen. Kein Autostart/Windowsdienst eingerichtet. Die echte Plugin-Leseabfrage bleibt ein separater Nachweis und erweitert nicht automatisch die gemeldeten Agentfähigkeiten um Gerätesteuerung.
+
+## Laufende VirtualDJ-Lesediagnose ab Agent 0.2.1
+
+Die eingerichtete DJ-Instanz prüft bei HELLO und Heartbeats ausschließlich `get_clock` mit begrenzter Zeit/Antwortgröße. In der Geräteansicht werden Leseprüfung und Steuerungsfähigkeiten getrennt, Fehler/Erholung und veraltete Berichte sichtbar. Lokale Datei `%LOCALAPPDATA%/ShowNight/secrets/virtualdj.env` wird nur im DJ-Profil gelesen; keine Zugangsdaten oder Rohantwort an Server übertragen. Neuer Serververtrag vor Agentupdate notwendig; bestehende 0.2.0-Agenten bleiben kompatibel. [Einrichtung, Protokoll, Nachweise und Grenzen](s2-virtualdj-diagnose.md).

@@ -43,6 +43,14 @@ Regelmäßiges unabhängiges Backup-/Schlüsselziel, Upload nahe Größenlimit, 
 
 ## Offen und nächstes Paket
 
+### S2: laufende VirtualDJ-Lesediagnose (Agent 0.2.1)
+
+Implementiert: optionaler lokaler DJ-Konfigurationszugriff, begrenzte `get_clock`-Prüfung bei HELLO/Heartbeat, getrennte Lese-/Steuerungsfähigkeiten, Fehler/Erholung und serverseitige Aktualitätsprüfung. Keine Zugangsdaten/Rohantwort im Gerätebericht; keine SQL-Migration, keine zusätzliche Cloud-Aktion. Alte Agenten 0.2.0 bleiben am neuen Server kompatibel. [Ablauf und Vertrag](s2-virtualdj-diagnose.md).
+
+Tatsächlich lokal geprüft: typecheck/Build/Windows-Paket, 8/8 Unitprüfungen inklusive offenem HTTP-Antwortbody mit Drei-Sekunden-Grenze und Profil-/Konfigurations-/Secrettrennung, S2 8/8 mit PostgreSQL/WSS/Windows-CLI sowie Fehler/Erholung bei gleicher Epoch und veraltetem Pluginbericht trotz Verbindung. Browser 1/1 einschließlich live aktualisierter Vertragstestfähigkeit, Widerruf und Mobilansicht; Screenshot ausdrücklich synthetisch. Erster erweiterter Windows-Pakettest fehlgeschlagen; Diagnoseprüfung nutzt jetzt vorhandene Testidentität statt zusätzlicher Paarung, Schutzlimits unverändert, kompletter Lauf danach bestanden. CI für neue Revision folgt am PR.
+
+Echter Pluginzugriff anfangs nicht bestätigt; nach Betreiberaktivierung und ausdrücklichem Wiederholungsauftrag bestätigt. Neue lokale Fähigkeitsfunktion meldet `available` gegen echtes Plugin. Dieser Rechner weiterhin ausschließlich DJ, FLX4 nicht angeschlossen. Produktiver Agent-/Serverstand bis dokumentiertem Update weiterhin 0.2.0/Runtime `26edc1d`; neue laufende Webanzeige noch nicht als produktiv nachgewiesen. Windows-DNS weiterhin vorheriges Webhostingziel. Keine Steuerungs-/Ton-/Licht-/Synchronitätsfreigabe.
+
 ### S2-Agentgrundlage auf eigenem Branch
 
 Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), abhängig vom ungemergten S1-PR. Migration 2 (Paarungen/Geräte/Diagnoseaufträge) ergänzt Schema 1 ohne dessen Änderung. Startbarer Windows-x64-Prototyp mit gebündelter kostenloser Node-Laufzeit, DPAPI/CurrentUser und Benutzer-/SYSTEM-ACL, explizitem Server/Profil, authentifizierter ausgehender Verbindung, Heartbeats, Widerruf, Epoch-Prüfung und SQLite-Empfangsjournal. Browser zeigt verbundene Geräte getrennt von S1-Demobeispielen, Auftragsergebnis getrennt vom Empfang. Ausschließlich Diagnose und gekennzeichneter No-op-Simulator; keine Livebefehle oder Shell.

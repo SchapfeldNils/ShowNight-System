@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pair } from "../../apps/agent/src/identity.js";
 import { startAgent } from "../../apps/agent/src/client.js";
+import { baseCapabilities } from "../../apps/agent/src/diagnostics.js";
 import { totp } from "../../apps/api/src/security.js";
 test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Manifest", async ({
   page,
@@ -159,9 +160,24 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     .click();
   const code = await page.locator(".callout code").innerText();
   const identity = await pair("http://127.0.0.1:3000", code);
+  // UI contract test; the actual HTTP probe is covered separately.
+  let pluginAvailable = true;
   const agent = startAgent(
     identity,
     await mkdtemp(join(tmpdir(), "shownight-browser-agent-")),
+    undefined,
+    async () =>
+      baseCapabilities.map((c) =>
+        c.name === "VirtualDJ-Leseabfrage"
+          ? {
+              ...c,
+              name: "VirtualDJ-Leseabfrage (Vertragstest)",
+              source: "agent",
+              availability: pluginAvailable ? "available" : "unavailable",
+              observedAt: new Date().toISOString(),
+            }
+          : c,
+      ),
   );
   try {
     await page.getByRole("button", { name: "Code ausblenden" }).click();
@@ -177,6 +193,19 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     await expect(device.getByText(/Diagnose abgeschlossen/)).toBeVisible({
       timeout: 12000,
     });
+    await expect(
+      device.getByText(/VirtualDJ-Leseabfrage \(Vertragstest\): Verfügbar/),
+    ).toBeVisible();
+    pluginAvailable = false;
+    await expect(
+      device.getByText(
+        /VirtualDJ-Leseabfrage \(Vertragstest\): Leseprüfung nicht bestätigt/,
+      ),
+    ).toBeVisible({ timeout: 15000 });
+    pluginAvailable = true;
+    await expect(
+      device.getByText(/VirtualDJ-Leseabfrage \(Vertragstest\): Verfügbar/),
+    ).toBeVisible({ timeout: 15000 });
     await page.screenshot({
       path: "test-results/s2-agent-connected.png",
       fullPage: true,
@@ -191,6 +220,11 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
       .getByRole("button", { name: "Geräteidentität widerrufen" })
       .click();
     await expect(device.getByText("Widerrufen", { exact: true })).toBeVisible();
+    await expect(
+      device.getByText(
+        /VirtualDJ-Leseabfrage \(Vertragstest\): Letzte Meldung – aktuell ungeprüft/,
+      ),
+    ).toBeVisible();
     await expect(
       device.getByRole("button", { name: "Verbindung prüfen", exact: true }),
     ).toBeDisabled();

@@ -7,7 +7,13 @@ type Device = {
   lastSeen: string | null;
   connected: boolean;
   agentVersion: string | null;
-  capabilities: { name: string; source: string; availability: string }[];
+  capabilities: {
+    name: string;
+    source: string;
+    availability: string;
+    observedAt?: string;
+    current?: boolean;
+  }[];
   receipts: {
     id: string;
     action: string;
@@ -24,6 +30,7 @@ const availability: Record<string, string> = {
   available: "Verfügbar",
   simulated: "SIMULIERT – keine Gerätewirkung",
   unknown: "Unbekannt / nicht geprüft",
+  unavailable: "Leseprüfung nicht bestätigt",
   unsupported_online: "Online nicht unterstützt",
 };
 const status: Record<string, string> = {
@@ -157,13 +164,24 @@ export function Devices({
             </p>
             {d.capabilities.map((c) => (
               <p key={c.name}>
-                {c.name}: {availability[c.availability]} (
+                {c.name}:{" "}
+                {(!d.connected || error || c.current === false) &&
+                c.source === "agent"
+                  ? "Letzte Meldung – aktuell ungeprüft"
+                  : availability[c.availability]}{" "}
+                (
                 {c.source === "agent"
                   ? "Agent"
                   : c.source === "simulator"
                     ? "Simulator"
                     : "Nicht eingerichtet"}
                 )
+                {c.observedAt && (
+                  <>
+                    {" "}
+                    · geprüft: {new Date(c.observedAt).toLocaleString("de-DE")}
+                  </>
+                )}
               </p>
             ))}
             <button

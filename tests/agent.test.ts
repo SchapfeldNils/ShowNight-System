@@ -10,7 +10,11 @@ import { promisify } from "node:util";
 import { WebSocketServer } from "ws";
 import { DatabaseSync } from "node:sqlite";
 import { startAgent } from "../apps/agent/src/client.js";
-import { agentDispatch } from "../packages/contracts/src/agent.js";
+import {
+  agentDispatch,
+  agentMessage,
+} from "../packages/contracts/src/agent.js";
+import { localCapabilities } from "../apps/agent/src/diagnostics.js";
 import { Ledger } from "../apps/agent/src/ledger.js";
 import {
   serverAddress,
@@ -181,7 +185,11 @@ test("VirtualDJ-Leseadapter: dokumentiertes POST/query, Bearer nur im Header, ke
     else if (calls === 2) {
       res.writeHead(302, { Location: "http://127.0.0.1:1/execute" });
       res.end();
-    } else res.end("x".repeat(1025));
+    } else if (calls === 3) res.end("x".repeat(1025));
+    else {
+      res.writeHead(200);
+      res.write("09:");
+    }
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const port = (server.address() as { port: number }).port;
@@ -193,8 +201,95 @@ test("VirtualDJ-Leseadapter: dokumentiertes POST/query, Bearer nur im Header, ke
     await assert.rejects(() => virtualDjClock(port, secret));
     await assert.rejects(() => virtualDjClock(port, secret));
     assert.equal(calls, 3);
+    const started = Date.now();
+    await assert.rejects(() => virtualDjClock(port, secret));
+    assert(
+      Date.now() - started < 5000,
+      "Auch ein offener Antwortbody hat eine feste Zeitgrenze",
+    );
+    assert.equal(calls, 4);
     await assert.rejects(() => virtualDjClock(port, "x\r\ny"));
   } finally {
     await new Promise<void>((r) => server.close(() => r()));
   }
+});
+
+test("Lokale VirtualDJ-Diagnose: Profil/fehlende Einrichtung, Erfolg/Fehler, keine Secrets oder Pluginantwort im Bericht", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "shownight-vdj-status-"));
+  const file = join(dir, "virtualdj.env");
+  const secret = randomBytes(20).toString("hex");
+  let calls = 0;
+  let healthy = true;
+  const server = createServer(async (req, res) => {
+    calls++;
+    assert.equal(req.url, "/query");
+    assert.equal(req.headers.authorization, "Bearer " + secret);
+    let body = "";
+    for await (const b of req) body += b;
+    assert.equal(body, "get_clock");
+    res.writeHead(healthy ? 200 : 401);
+    res.end(healthy ? "09:23:11" : "sensitive plugin error");
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const probe = localCapabilities("dj", file);
+  const vdj = (caps: Awaited<ReturnType<typeof probe>>) =>
+    caps.find((c) => c.name === "VirtualDJ-Leseabfrage")!;
+  try {
+    assert.equal(vdj(await probe()).source, "unconfigured");
+    await writeFile(
+      file,
+      `VDJ_PORT=${(server.address() as { port: number }).port}\nVDJ_AUTH='${secret}'\n`,
+    );
+    assert.equal(
+      vdj(await localCapabilities("light", file)()).availability,
+      "unknown",
+    );
+    assert.equal(calls, 0);
+    const [first, shared] = await Promise.all([probe(), probe()]);
+    assert.equal(calls, 1, "Keine überlappenden Pluginabfragen");
+    assert.deepEqual(first, shared);
+    assert.equal(vdj(first).availability, "available");
+    assert.match(vdj(first).observedAt!, /^\d{4}-/);
+    for (const value of [
+      secret,
+      "09:23:11",
+      "sensitive plugin error",
+      "VDJ_PORT",
+      "VDJ_AUTH",
+    ])
+      assert(!JSON.stringify(first).includes(value));
+    healthy = false;
+    assert.equal(vdj(await probe()).availability, "unavailable");
+    healthy = true;
+    assert.equal(vdj(await probe()).availability, "available");
+    await writeFile(file, "x".repeat(4097));
+    assert.equal(vdj(await probe()).availability, "unavailable");
+    assert.equal(calls, 3);
+    await writeFile(file, "VDJ_PORT=80\n");
+    assert.equal(vdj(await probe()).availability, "unavailable");
+  } finally {
+    await new Promise<void>((r) => server.close(() => r()));
+  }
+  assert(
+    agentMessage.safeParse({
+      type: "heartbeat",
+      protocolVersion: 1,
+      authorityEpoch: randomUUID(),
+    }).success,
+  );
+  assert(
+    !agentMessage.safeParse({
+      type: "heartbeat",
+      protocolVersion: 1,
+      authorityEpoch: randomUUID(),
+      capabilities: [
+        {
+          name: "VDJ",
+          source: "agent",
+          availability: "available",
+          credential: secret,
+        },
+      ],
+    }).success,
+  );
 });

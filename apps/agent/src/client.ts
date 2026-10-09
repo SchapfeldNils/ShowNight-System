@@ -4,30 +4,16 @@ import {
   agentDispatch,
   agentWelcome,
   type AgentIdentity,
+  type Capability,
 } from "../../../packages/contracts/src/agent.js";
 import { Ledger } from "./ledger.js";
-export const capabilities = [
-  { name: "Verbindungsdiagnose", source: "agent", availability: "available" },
-  {
-    name: "Test ohne Gerätewirkung",
-    source: "simulator",
-    availability: "simulated",
-  },
-  {
-    name: "VirtualDJ / Daslight / Controller",
-    source: "unconfigured",
-    availability: "unknown",
-  },
-  {
-    name: "HDMI und Publikumston",
-    source: "unconfigured",
-    availability: "unsupported_online",
-  },
-] as const;
+import { baseCapabilities } from "./diagnostics.js";
+export const capabilities = baseCapabilities;
 export function startAgent(
   identity: AgentIdentity,
   dir: string,
   onState: (state: string) => void = () => {},
+  probe: () => Promise<Capability[]> = async () => baseCapabilities,
 ) {
   const ledger = new Ledger(join(dir, "receipts.sqlite"));
   let stopped = false,
@@ -35,6 +21,13 @@ export function startAgent(
     ws: WebSocket | undefined,
     retry: ReturnType<typeof setTimeout> | undefined,
     attempt = 0;
+  const currentCapabilities = async () => {
+    try {
+      return await probe();
+    } catch {
+      return baseCapabilities;
+    }
+  };
   const connect = () => {
     if (stopped) return;
     const url = new URL("/api/agent/v1/ws", identity.server);
@@ -52,18 +45,21 @@ export function startAgent(
       () => socket.close(1008, "Serverantwort fehlt"),
       12000,
     );
-    socket.on("open", () =>
+    socket.on("open", async () => {
+      if (stopped || ws !== socket || socket.readyState !== 1) return;
+      const current = await currentCapabilities();
+      if (stopped || ws !== socket || socket.readyState !== 1) return;
       socket.send(
         JSON.stringify({
           type: "hello",
           protocolVersion: 1,
           deviceId: identity.deviceId,
           profile: identity.profile,
-          agentVersion: "0.2.0",
-          capabilities,
+          agentVersion: "0.2.1",
+          capabilities: current,
         }),
-      ),
-    );
+      );
+    });
     socket.on("unexpected-response", (_request, response) => {
       response.resume();
       if ([401, 403, 404].includes(response.statusCode ?? 0)) {
@@ -89,15 +85,24 @@ export function startAgent(
           attempt = 0;
           clearTimeout(welcomeTimeout);
           onState("Verbunden · ausschließlich Diagnose");
-          heartbeat = setInterval(() => {
-            if (socket.readyState === 1)
+          let probing = false;
+          heartbeat = setInterval(async () => {
+            if (probing || stopped || socket.readyState !== 1) return;
+            probing = true;
+            try {
+              const current = await currentCapabilities();
+              if (stopped || ws !== socket || socket.readyState !== 1) return;
               socket.send(
                 JSON.stringify({
                   type: "heartbeat",
                   protocolVersion: 1,
                   authorityEpoch: epoch,
+                  capabilities: current,
                 }),
               );
+            } finally {
+              probing = false;
+            }
           }, 5000);
           return;
         }

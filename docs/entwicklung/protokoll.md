@@ -1,5 +1,13 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 10. Oktober 2026 – laufende DJ-Lesediagnose
+
+Betreiber bestätigt weiterhin nur DJ-Rechner ohne FLX4. VirtualDJ läuft; erste aktuelle Leseabfrage nicht bestätigt. Nach Betreiberaktivierung von Network Control und erneutem Testauftrag `get_clock` bestätigt. Neue lokale Fähigkeitsfunktion gegen echtes Plugin erfolgreich. Kein Play/Pause, keine Musik-/Licht-/PA-Ausgabe oder Deckpositionsmessung.
+
+Agent 0.2.1 ergänzt festen Loopback-Lesequery bei HELLO/Heartbeat, lokale optionale Konfiguration nur im DJ-Profil, keine Geheimnisse/Rohantwort im Server. Rückmeldung trennt bestätigte Leseabfrage von ungeprüfter Steuerung. Server stempelt Prüfberichte mit eigener Empfangszeit, alte Berichte bleiben trotz weiterer Heartbeats ungeprüft. Bestehende 0.2.0-Agenten am neuen Server kompatibel; zuerst Server, dann Agent aktualisieren. Keine SQL-Migration und keine Erweiterung der Online-Aktionsallowlist.
+
+Typen/Build/portable Windows-ZIP, 8 Unit-, 8 S2-Integrationsprüfungen und Browser 1/1 bestanden. HTTP-Zeit-/Größen-/Weiterleitungsgrenzen, Profil-/Secrettrennung, Fehler/Erholung ohne neue Epoch, veralteter Bericht bei verbundener Identität sowie bestehende DB-Ausfall-/Widerrufs-/Deduplizierungswege geprüft. Erster erweiterter Windows-Paketlauf fehlgeschlagen; zusätzliche Diagnoseprüfung verwendet nun bereits gepaarte Testidentität, Anmelde-/Schutzlimits erhalten. Vollständiger Lauf danach bestanden. Synthetischen Browsernachweis visuell geprüft und ausdrücklich als Vertragstest abgelegt. CI und produktive Umsetzung folgen nach tatsächlichem Nachweis; produktiven Agenten während Entwicklung erhalten. [Ablauf/Vertrag/Grenzen](s2-virtualdj-diagnose.md).
+
 ## 10. Oktober 2026 – freigegebenes Produktivupdate und DJ-Paarung
 
 Betreiber hat Update und DJ-Paarung ausdrücklich freigegeben. Konsistentes Wartungsbackup bei gestoppter eigener App/Worker, externe Kopie mit SHA256 und frischer S1-Restore in leeren isolierten Volumes bestanden. Originalkonfiguration zusätzlich DPAPI/CurrentUser-geschützt außerhalb Git/OneDrive gesichert; Entschlüsselungs-Roundtrip identisch, unabhängiges portables Schlüsselziel weiterhin offen. Erster Hilfsprüfversuch scheiterte vor Migration an gemischtem Docker-/JSON-Output und startete S1 automatisch wieder. Auswertung korrigiert, danach vollständiger Sicherungs-/Restore-/Updateablauf bestanden.

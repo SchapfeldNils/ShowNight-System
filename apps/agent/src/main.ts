@@ -10,6 +10,7 @@ import {
 } from "./identity.js";
 import { startAgent } from "./client.js";
 import { virtualDjClock } from "./virtualdj.js";
+import { localCapabilities } from "./diagnostics.js";
 async function main() {
   if (process.platform !== "win32" || !process.env.LOCALAPPDATA)
     throw new Error("Dieser Prototyp benötigt Windows und Node 24.");
@@ -70,8 +71,14 @@ async function main() {
     });
     await file.writeFile(String(process.pid));
     await file.close();
-    const agent = startAgent(identity, dir, (state) =>
-      console.log(new Date().toISOString() + " · " + state),
+    const agent = startAgent(
+      identity,
+      dir,
+      (state) => console.log(new Date().toISOString() + " · " + state),
+      localCapabilities(
+        identity.profile,
+        join(process.env.LOCALAPPDATA, "ShowNight", "secrets", "virtualdj.env"),
+      ),
     );
     let stopping = false;
     const stop = async () => {
@@ -84,7 +91,7 @@ async function main() {
     process.once("SIGTERM", () => void stop());
     process.once("beforeExit", () => void stop());
     console.log(
-      "ShowNight Windows-Agent 0.2.0 · " +
+      "ShowNight Windows-Agent 0.2.1 · " +
         identity.profile +
         " · " +
         identity.server +
