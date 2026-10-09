@@ -5,6 +5,8 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer } from "node:http";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { WebSocketServer } from "ws";
 import { DatabaseSync } from "node:sqlite";
 import { startAgent } from "../apps/agent/src/client.js";
@@ -131,10 +133,21 @@ test(
   async () => {
     const dir = await mkdtemp(join(tmpdir(), "shownight-dpapi-"));
     const acl = await secureDirectory(dir);
-    assert.match(acl, /^D:P/);
-    assert.equal((acl.match(/\(A;OICI;FA;;;/g) ?? []).length, 2);
-    assert(acl.includes(";;;SY)"));
-    assert.match(acl, /\(A;OICI;FA;;;S-1-[^)]+\)/);
+    const current = await promisify(execFile)(
+      "whoami.exe",
+      ["/user", "/fo", "csv", "/nh"],
+      { windowsHide: true },
+    );
+    const sid = current.stdout.match(/S-1-[0-9-]+/)![0];
+    const [owner, ...rules] = acl.split(/\r?\n/);
+    assert.equal(owner, sid);
+    assert.deepEqual(
+      rules.sort(),
+      [
+        sid + ":False:FullControl:Allow",
+        "S-1-5-18:False:FullControl:Allow",
+      ].sort(),
+    );
     const identity = {
       server: "https://example.invalid",
       deviceId: randomUUID(),

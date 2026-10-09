@@ -85,7 +85,10 @@ export async function secureDirectory(dir: string) {
     foreach($sid in @($me,(New-Object Security.Principal.SecurityIdentifier('S-1-5-18')))) {
       $rule=New-Object Security.AccessControl.FileSystemAccessRule($sid,'FullControl','ContainerInherit,ObjectInherit','None','Allow');$acl.AddAccessRule($rule)
     };$directory=New-Object IO.DirectoryInfo($path);$directory.SetAccessControl($acl);
-    [Console]::Write($directory.GetAccessControl().GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Access))`;
+    $actual=$directory.GetAccessControl();[Console]::WriteLine($actual.GetOwner([Security.Principal.SecurityIdentifier]).Value);
+    foreach($entry in $actual.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
+      [Console]::WriteLine($entry.IdentityReference.Value+':'+$entry.IsInherited.ToString()+':'+$entry.FileSystemRights.ToString()+':'+$entry.AccessControlType.ToString())
+    }`;
   return powershell(script, dir);
 }
 export async function saveIdentity(dir: string, identity: AgentIdentity) {
