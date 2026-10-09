@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 9. Oktober 2026 – Rückmeldung zur Erreichbarkeit
+
+Betreiber meldet vom Mobiltelefon eine Netcup-Platzhalterseite; der Screenshot zeigt die vollständige aufgerufene Adresse nicht eindeutig. Systemadresse bleibt `https://eventmanagement.jungschuetzen-flueren.de`. Öffentliche DNS-Abfragen bei Google und Cloudflare zeigen für die Systemsubdomain die bestätigte VM, während Hauptdomain/`www` weiterhin das bisherige Webhosting adressieren. Der lokale Windows-Resolver liefert für die Systemsubdomain noch die alte Webhosting-IP mit verbleibender TTL 77341 Sekunden. Daher ist auch bei korrekter Adresse ein veralteter Resolvercache als Ursache belegt; der Mobiltelefon-Resolver wurde nicht direkt ausgelesen.
+
+HTTPS am bestätigten Ziel mit expliziter IP, korrektem Hostnamen und unveränderter vollständiger Zertifikatsprüfung erneut geprüft: Readiness `ready`, Schema 1; HTML-Titel `ShowNight · Vorbereitung`. Normaler Windows-curl-Aufruf über das alte DNS-Ziel scheitert an dessen Zertifikatskette; TLS-Prüfung nicht abgeschaltet. Vollständigen Systemlink an Betreiber gegeben, Hauptdomain/`www` nicht umgeleitet und keine vorhandene DNS-/Proxykonfiguration geändert. Mobile Erreichbarkeit bleibt bis Rückmeldung unbestätigt.
+
 ## 9. Oktober 2026 – autorisierte Netcup-Freischaltung
 
 Betreiber hat den konkreten privaten Freischaltungsplan ausdrücklich zur Ausführung freigegeben. Neues Verzeichnis und eigener Stack angelegt, geprüftes ARM64-Image aus Actions übertragen. Archivhash, CI-Konfigurationsdigest und sämtliche RootFS-Layer identisch; Docker-29-containerd zeigt zusätzlich den OCI-Manifestdigest als Image-ID. Migration und einmaligen Admin-Bootstrap ausgeführt, drei Dienste in Portainer gestartet. Eigene Volumes/Backendnetz, keine veröffentlichten App-/DB-/Workerports. Bestehende VM und Dienste erhalten.

@@ -4,6 +4,7 @@ Stand: 9. Oktober 2026. Entscheidung D014.
 
 ## Bestätigt
 - Geplante öffentliche Systemadresse: https://eventmanagement.jungschuetzen-flueren.de
+- Zugang nach der Freischaltung: die vollständige Systemadresse einschließlich `eventmanagement.` verwenden. Hauptdomain und `www` gehören weiterhin zum bisherigen Webhosting; eine dort sichtbare Netcup-Platzhalterseite ist kein ShowNight-Anmeldebildschirm.
 - Netcup kann die benötigten Mailpostfächer bereitstellen.
 - Dies bestätigt weder einen bereits gesetzten DNS-Eintrag noch ein bereits angelegtes Postfach oder einen erfolgreich getesteten Versand.
 
