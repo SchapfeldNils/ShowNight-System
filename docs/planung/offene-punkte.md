@@ -30,3 +30,7 @@ D013: zuerst Netcup-Server, dann Windows-Agenten. Code-Schemas/Migrationen und N
 ## Offen für echtes Zieldeployment
 VM-Betriebssystem, Ressourcen/Architektur, Domain/DNS, autorisierter Zugang, vorhandene Dienste/Ports, Mail und externes Sicherungsziel. Keine dieser Angaben ist als bereits vorhanden oder geprüft bestätigt.
 Technische Hardware-/Synchronitätsnachweise O01–O14 bleiben bestehen. Weitere Produktfragen gezielt anhand der Implementierung klären.
+
+
+## Konkretisierung D014
+Systemdomain festgelegt: eventmanagement.jungschuetzen-flueren.de. Mailpostfächer können bei Netcup angelegt werden. Offen bleiben DNS-/TLS-Einrichtung, VM-IP/Zugang, Absender-/Reply-To-Adressen, SMTP-Verbindungsdaten, Secrets und Versandnachweise. Siehe [Domain/E-Mail](../entwicklung/domain-email.md).

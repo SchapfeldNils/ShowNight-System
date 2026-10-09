@@ -93,6 +93,14 @@
 - Dokumente: [Datenmodell](../entwicklung/datenmodell.md), [Schnittstellen](../entwicklung/schnittstellen.md), [Abnahmeplan](../entwicklung/abnahmeplan.md), [Startprompt](../entwicklung/codex-startprompt.md).
 - Technische Schemas/Bezeichner sind abgeleitete Implementierungsvorschläge, keine zusätzlich bestätigten Produktregeln.
 
+## D014 – Systemdomain und Mailanbieter
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Systemdomain: eventmanagement.jungschuetzen-flueren.de.
+- Mail: benötigte Postfächer können bei Netcup angelegt werden; konkrete Adressen und SMTP-Zugang noch offen.
+- Umsetzung: [Domain-/Mailkonfiguration](../entwicklung/domain-email.md) und ergänzter Codex-Startprompt.
+- Nicht bestätigt: bereits erfolgte DNS-/Postfachanlage, Testdomain, öffentliche Shopadresse oder erfolgreiche Zustellung.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

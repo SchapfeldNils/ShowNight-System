@@ -27,6 +27,10 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 
 Entwicklungsarbeit erfolgt künftig über Arbeitsbranches und Pull Requests. Die initiale Dokumentationsablage und diese Planungsaktualisierung liegen auf main. Es wurde noch keine Software implementiert.
 
+## Geplante Onlineadresse
+
+**https://eventmanagement.jungschuetzen-flueren.de** (D014). Die Adresse ist festgelegt; eine bereits erfolgte Bereitstellung ist damit nicht bestätigt. [Domain und E-Mail-Konfiguration](docs/entwicklung/domain-email.md).
+
 ## Aktuelle Startreihenfolge
 
 **Netcup-fähiger Server → Windows-Agenten → lokaler Server/Medienausgabe → durchgängiger Showablauf.** D013 präzisiert die frühere Reihenfolge. Die Entwicklungsübergabe liegt vor; tatsächlich implementierte und getestete Funktionen werden erst während Entwicklung dokumentiert. Fehlende Zielzugänge sind offene Deploymentnachweise.

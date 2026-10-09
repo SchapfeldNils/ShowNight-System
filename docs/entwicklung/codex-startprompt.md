@@ -11,11 +11,15 @@ Entwickle das ShowNight-System agil in prüfbaren Arbeitspaketen. Beginne jetzt 
 - docs/entwicklung/datenmodell.md
 - docs/entwicklung/schnittstellen.md
 - docs/entwicklung/abnahmeplan.md
+- docs/entwicklung/domain-email.md
 - docs/architektur.md
 - docs/anforderungen.md
 - docs/planung/entscheidungen.md und docs/planung/offene-punkte.md
 
 D013 legt die aktuelle Startreihenfolge fest. D004–D012 enthalten bestätigte Bedienregeln. Technische Startentwürfe sind begründbar anpassbar; Fachentscheidungen nicht still verändern.
+
+## Bestätigte Bereitstellungsangaben D014
+Öffentliche Systemadresse: https://eventmanagement.jungschuetzen-flueren.de. Mailpostfächer können bei Netcup bereitgestellt werden. Plane einen konfigurierbaren SMTP-Adapter mit Testmodus und dauerhafter Versandwarteschlange. Konkrete Postfächer, SMTP-Werte und Secrets sind noch offen. Keine reale DNS-/Postfachanlage oder Zustellung behaupten; reale Nachrichten erst mit passender Autorisierung und konfiguriertem Zielversand.
 
 ## Paket S1: Netcup-fähiger Server
 1. Prüfe Repository und vorhandenen Code. Erstelle einen Arbeitsbranch.
