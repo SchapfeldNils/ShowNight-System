@@ -78,6 +78,8 @@ Neuen Proxy Host nur für die Systemdomain vorbereiten: Scheme `http`, Forward H
 
 Verhalten anhand [NPM-Konfigurationslogik 2.13.6](https://github.com/NginxProxyManager/nginx-proxy-manager/blob/v2.13.6/backend/internal/nginx.js) und [offizieller Anleitung](https://nginxproxymanager.com/advanced-config/) überprüft; neue Route bisher nicht angewendet.
 
+Beide gelieferten Vorlagen am vorhandenen NPM-Nginx mit separaten temporären Konfigurationen erfolgreich durch `nginx -t` geprüft. Dies prüft Syntax und Direktiven im tatsächlichen Proxyprodukt; HTTPS, WebSocketroute und Uploadpfad zur neuen App sind erst nach freigegebener Bereitstellung am Ziel nachweisbar.
+
 `Dockerfile`, `deploy/compose.yaml`, `deploy/.env.production.example`, `deploy/nginx-location.conf.template`, `deploy/backup.sh` und `deploy/restore.sh` sind jetzt vorhanden. Die Vorlage startet **app, postgres, worker**, keinen Proxy. Tatsächliche Prüfergebnisse stehen in [status.md](status.md); ein erfolgreicher CI-Containerstart ist kein Netcup-Nachweis. Lokaler Entwicklungsstart: [s1-start.md](s1-start.md).
 
 ### 1. Vorhandene Umgebung erfassen
