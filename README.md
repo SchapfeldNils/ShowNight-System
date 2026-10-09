@@ -14,6 +14,15 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 - [Entscheidungsprotokoll](docs/planung/entscheidungen.md)
 - [Word-Export des Gesamtkonzepts 2.0](docs/exports/Gesamtkonzept-2.0.docx)
 
+## Entwicklung vorbereiten
+
+- [Entwicklungsauftrag für Codex](docs/entwicklung/auftrag.md)
+- [Arbeitsregeln](AGENTS.md)
+- [Arbeitspakete](docs/entwicklung/arbeitspakete.md)
+- [Bestätigte Entwicklungsentscheidungen](docs/planung/entwicklungsuebergabe.md)
+
+Entwicklungsarbeit erfolgt künftig über Arbeitsbranches und Pull Requests. Die initiale Dokumentationsablage und diese Planungsaktualisierung liegen auf main. Es wurde noch keine Software implementiert.
+
 ## Verbindliche Grundlagen
 
 - Eigene Bildausgabe ohne OBS; Virtual DJ und Daslight bleiben auf den Techniknotebooks.

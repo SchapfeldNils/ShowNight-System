@@ -12,6 +12,14 @@
 - Auftrag: aktuelle Dokumentation im Repository ShowNight-System ablegen und anschließend die Planung dort dokumentieren.
 - Umsetzung: Markdown als bearbeitbarer Dokumentationsstand; Word als datierter Export. Offene Fragen werden getrennt von bestätigten Entscheidungen geführt.
 
+## D003 – Entwicklungsübergabe
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antwort: alle zehn Optionen A bestätigt.
+- Entscheidungen: [vollständige Antworten](entwicklungsuebergabe.md).
+- Umsetzung: [Entwicklungsauftrag](../entwicklung/auftrag.md), [Arbeitspakete](../entwicklung/arbeitspakete.md) und AGENTS.md.
+- Offene Bedienfragen zur Veranstaltung bleiben davon unberührt.
+
 ## Weitere Entscheidungen
 Die Fragen der [aktuellen Planungsrunde](veranstaltung-anlegen.md) sind noch unbeantwortet. Empfehlungen sind keine bestätigten Entscheidungen.
 
