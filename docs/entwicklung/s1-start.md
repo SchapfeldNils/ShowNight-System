@@ -64,9 +64,11 @@ pnpm audit --prod
 pnpm licenses:inventory
 ```
 
-Integrationstests brauchen unbenutzte Ports 55433/55434 und PostgreSQL-17-Clientprogramme. Linux: `PG_BIN_DIR=/usr/lib/postgresql/17/bin` oder abweichenden tatsächlichen Pfad setzen. Windows: `powershell -File scripts/install-pg-clients.ps1` lädt das festgelegte EDB-Archiv, prüft SHA-256 und extrahiert ausschließlich Werkzeuge nach `%LOCALAPPDATA%/ShowNight/tools`. Es installiert keinen Systemdienst. `PG_BIN_DIR` kann einen vorhandenen Clientpfad ersetzen. Tests erzeugen isolierte Datenbanken mit zufälligen Kennwörtern; Testverzeichnisse verbleiben ignoriert unter `.local/tests` zur Diagnose. Browser-Screenshots liegen unter `test-results`.
+Integrationstests brauchen unbenutzte Ports 55433/55434 und PostgreSQL-17-Clientprogramme. Linux: standardmäßig kommen die Clients aus `postgres:17.9-bookworm` über Docker mit Hostnetz; alternativ `PG_BIN_DIR` auf einen vorhandenen PostgreSQL-17-Clientpfad setzen. Windows: `powershell -File scripts/install-pg-clients.ps1` lädt das festgelegte EDB-Archiv, prüft SHA-256 und extrahiert ausschließlich Werkzeuge nach `%LOCALAPPDATA%/ShowNight/tools`. Es installiert keinen Systemdienst. `PG_BIN_DIR` kann einen vorhandenen Clientpfad ersetzen. Tests erzeugen isolierte Datenbanken mit zufälligen Kennwörtern; Testverzeichnisse verbleiben ignoriert unter `.local/tests` zur Diagnose. Browser-Screenshots liegen unter `test-results`.
 
 ## Konto wiederherstellen
+
+Screenshots aus dem synthetischen, bestandenen Browserablauf: [Übersicht](screenshots/s1-uebersicht.png), [Revisionskonflikt](screenshots/s1-konflikt.png), [Mobilansicht](screenshots/s1-mobile.png). Sie dokumentieren den S1-Zwischenstand.
 
 Ein Wiederherstellungscode kann anstelle des TOTP-Codes verwendet werden und wird atomar verbraucht. Bei Verlust aller Codes und des Authenticators braucht ein autorisierter Hostadministrator einen dokumentierten Eingriff:
 

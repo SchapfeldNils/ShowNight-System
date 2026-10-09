@@ -511,31 +511,54 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
                 "pgsql",
                 "bin",
               )
-            : "/usr/lib/postgresql/17/bin");
-        await promisify(execFile)(
-          join(
-            clientDir,
-            process.platform === "win32" ? "pg_dump.exe" : "pg_dump",
-          ),
-          [...args, "-d", "shownight_test", "-Fc", "-f", dump],
-          { env: pgEnv, windowsHide: true },
-        );
+            : undefined);
+        const pgClient = async (tool: string, options: string[]) => {
+          if (clientDir) {
+            await promisify(execFile)(
+              join(
+                clientDir,
+                process.platform === "win32" ? `${tool}.exe` : tool,
+              ),
+              [...args, ...options],
+              { env: pgEnv, windowsHide: true },
+            );
+          } else {
+            await promisify(execFile)(
+              "docker",
+              [
+                "run",
+                "--rm",
+                "--network",
+                "host",
+                "-e",
+                "PGPASSWORD",
+                "-v",
+                `${f.dir}:/backup`,
+                "postgres:17.9-bookworm",
+                tool,
+                ...args,
+                ...options,
+              ],
+              { env: pgEnv, timeout: 120_000 },
+            );
+          }
+        };
+        const clientDump = clientDir ? dump : "/backup/database.dump";
+        await pgClient("pg_dump", [
+          "-d",
+          "shownight_test",
+          "-Fc",
+          "-f",
+          clientDump,
+        ]);
         await f.pg.createDatabase("shownight_restore");
-        await promisify(execFile)(
-          join(
-            clientDir,
-            process.platform === "win32" ? "pg_restore.exe" : "pg_restore",
-          ),
-          [
-            ...args,
-            "-d",
-            "shownight_restore",
-            "--single-transaction",
-            "--exit-on-error",
-            dump,
-          ],
-          { env: pgEnv, windowsHide: true },
-        );
+        await pgClient("pg_restore", [
+          "-d",
+          "shownight_restore",
+          "--single-transaction",
+          "--exit-on-error",
+          clientDump,
+        ]);
         const restore = database(
           cfg.DATABASE_URL.replace("/shownight_test", "/shownight_restore"),
         );
@@ -626,7 +649,9 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
           { headers: { origin: cfg.origin, cookie: leadCookie } },
           {
             onInit(ws) {
-            ws.once("message", (data: {toString():string}) => resolveMessage(data.toString()));
+              ws.once("message", (data: { toString(): string }) =>
+                resolveMessage(data.toString()),
+              );
             },
           },
         );
@@ -635,7 +660,7 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
         assert(snapshot.events.some((e: any) => e.id === eventId));
         assert(!snapshot.events.some((e: any) => e.id === otherId));
         const closed = new Promise<number>((r) =>
-        socket.once("close", (code: number) => r(code)),
+          socket.once("close", (code: number) => r(code)),
         );
         await request("/auth/logout", "POST", undefined, {
           cookie: leadCookie,
@@ -651,7 +676,7 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
           { headers: { origin: "https://foreign.invalid", cookie } },
           {
             onInit(ws) {
-            ws.once("close", (code: number) => resolveClose(code));
+              ws.once("close", (code: number) => resolveClose(code));
             },
           },
         );
