@@ -649,3 +649,20 @@ Bestätigt am 9. Oktober 2026: 1A, 2A, 3A, 4A, 5A, 6A, 7C, 8A, 9A, 10A.
 10. Veranstaltungswechsel dauerhaft erreichbar halten; offene Bearbeitungen berücksichtigen und die Liveveranstaltung eindeutig kennzeichnen. Ein Navigationswechsel allein löst keine Ausgabe oder Aktivierung aus.
 
 Details zu Vorlageninhalten, persönlicher Anpassung und Modulabhängigkeiten bleiben konkrete Implementierungs-/Planungsaufgaben. Diese Bedienregeln sind bestätigt, keine bereits implementierten Funktionen.
+
+
+## Verbindlicher Bedienablauf: Show anlegen und vorbereiten (D005)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Beim Anlegen einer Show ist nur der Name Pflicht.
+2. Danach öffnet die Show-Arbeitsfläche mit Ablauf und direkt erreichbaren Inhalten.
+3. Die Arbeitsfläche zeigt den Ablauf links, den ausgewählten Inhalt mittig und Eigenschaften rechts.
+4. Einsätze können direkt zwischen bestehenden Einsätzen oder am Ende hinzugefügt werden.
+5. Beim Hinzufügen stehen ein leerer Einsatz oder Vorlagen zur Auswahl, etwa Video, Szene, Präsentation oder Aktionskombination.
+6. Abschnitte erscheinen als aufklappbare Gruppen im gemeinsamen Ablauf.
+7. Jeder Einsatz erhält ein eigenes Feld „Einsatz bei …“ zur Beschreibung des Auslösemoments, beispielsweise eines gesprochenen Satzes. Das Feld ist ein Regiehinweis und keine automatische Spracherkennung.
+8. Fehlende Inhalte können als Platzhalter mit Beschreibung und zuständiger Person geführt werden.
+9. Die Reihenfolge kann durch Ziehen oder zusätzliche Verschieben-Schaltflächen verändert werden.
+10. Eine Prüfübersicht zeigt Medien, Einsatzhinweise und offene Aufgaben. Das Team meldet selbst „vorbereitet“; keine zusätzliche Inhaltsfreigabe durch die Leitung. Bestehende getrennte Bereitschaftsmeldungen von Team, Bühnenbau und Technik bleiben erhalten.
+
+Shows bleiben unabhängig von Veranstaltungen vorbereitbar. Zugeordnete Teams dürfen die ganze Show bearbeiten. Änderungen an live verwendeten Abläufen bleiben an die bestehenden Versions-/Aktivierungsregeln gebunden; diese Bedienentscheidungen aktivieren keine Änderungen automatisch.

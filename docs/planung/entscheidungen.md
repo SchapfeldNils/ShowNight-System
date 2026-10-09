@@ -27,6 +27,13 @@
 - Regeln: [bestätigte Runde](veranstaltung-anlegen.md); verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
 - Ergebnis: Name als einzige erste Pflichtangabe, Vorlagen und anpassbare Module, persönliche Übersicht, feste Seitenleiste und dauerhaft erreichbarer Veranstaltungswechsel.
 
+## D005 – Show anlegen und vorbereiten
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](show-vorbereiten.md), verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
+- Ergebnis: direkte Arbeitsfläche, aufklappbare Abschnitte, frei einfügbare Einsätze, Vorlagen, Einsatzhinweise, zugewiesene Platzhalter und Team-Prüfübersicht.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
