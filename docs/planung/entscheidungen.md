@@ -77,6 +77,13 @@
 - Regeln: [vollständige Antworten](vorschau-gemeinsam.md); Fachregeln in Gesamtkonzept, Anforderungen und Datenmodell.
 - Ergebnis: persönliche Vorschau, gemeinsames GO-Ziel, explizite Vorbereitung, erste gültige konkurrierende Änderung, gemeinsamer Vorhörkanal je Notebook.
 
+## D012 – Durchläufe starten, wechseln und beenden
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A (Groß-/Kleinschreibung ohne Bedeutung).
+- Regeln: [vollständige Antworten](durchlaeufe.md), Fachregeln in Gesamtkonzept, Anforderungen und Datenmodell.
+- Ergebnis: bewusster Start ohne ersten GO, isolierte Simulationsprobe, expliziter Showwechsel, vorbereitete Wechsel-/Abschlussaktionen und erhaltene Durchlaufhistorie.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

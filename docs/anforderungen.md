@@ -710,3 +710,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Die Oberfläche verwendet klare Beschriftungen „Meine Vorschau“ und „Nächster Einsatz – gemeinsam“. Die Unterscheidung erfolgt nicht ausschließlich durch Farben.
 
 Diese Regeln ändern nicht die Gleichberechtigung der Regien. Konflikterkennung ist eine zustandsbezogene Absicherung, keine Bedienhoheit. Serverzustand und lokaler Vorschau-/Vorhörzustand sind technisch zu trennen. Keine nachträgliche Ausführung abgewiesener Befehle.
+
+
+## Verbindliche Durchlaufregeln: Start, Wechsel und Abschluss (D012)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Eine Probe oder Aufführung beginnt durch Auswahl beziehungsweise Neuanlage eines Durchlaufs, Technikprüfung und bewussten Start.
+2. Der Durchlaufstart löst den ersten Einsatz nicht aus. Er wird vorbereitet und separat mit GO ausgelöst.
+3. Während einer laufenden Aufführung ist eine getrennte simulierte Probe derselben Show möglich, ohne Zugriff auf die verwendeten Liveausgänge.
+4. Der nächste Showdurchlauf kann vorbereitet werden; der Wechsel erfolgt anschließend ausdrücklich. Auswahl allein wechselt keinen aktiven Durchlauf.
+5. Beim Wechsel zeigt eine Übersicht noch laufende Aktionen der bisherigen Show. Vorbereitete Wechselregeln legen fest, was gestoppt oder weitergeführt wird.
+6. „Durchlauf beenden“ schließt Ergebnisse und Verlauf ab. Bild-/Ton-/Licht-/Timer-Ausgabe wird durch eine ausdrücklich festgelegte Abschlussaktion gesteuert, nicht durch einen undokumentierten pauschalen Stopp.
+7. Abgeschlossene Durchläufe erlauben ergänzende Notizen und begründete Korrekturen. Frühere Ausführungen bleiben unverändert protokolliert; Ergänzungen und Korrekturen werden nachvollziehbar angehängt.
+8. Eine Probenwiederholung erstellt einen neuen Durchlauf mit denselben vorbereiteten Inhalten und zurückgesetzten Probenzuständen. Der bisherige Verlauf bleibt erhalten.
+9. Als Startposition sind ganze Show, Abschnitt oder einzelner Einsatz wählbar. Der dafür erforderliche Ausgangszustand wird vorher geprüft; vergangene Einmalaktionen werden nicht automatisch nachgeholt.
+10. Nach dem letzten Einsatz erscheint deutlich „Ablaufende“. Der Durchlauf endet erst ausdrücklich oder durch eine konfigurierte Abschlussaktion.
+
+Die reguläre Pause beginnt weiterhin mit ihrem eigenen GO. Ein Simulationsdurchlauf kann keine Liveausgänge oder externen Programme ansteuern. „Durchlauf abgeschlossen“ und „Ausgabe gestoppt“ sind unterschiedliche Zustände; weiterlaufende Inhalte müssen weiterhin sichtbar und bedienbar bleiben. Rechte für Ergänzungen und Korrekturen gelten auch nach Abschluss.

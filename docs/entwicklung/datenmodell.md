@@ -48,3 +48,14 @@ Codex darf technische Entwürfe nachvollziehbar ausarbeiten. Neue grundlegende P
 - Gerätebezogener Vorhörzustand: ein Kanal pro Notebook, neuer Vorhöraufruf ersetzt bisherigen; keine automatische Ausgabe auf Publikumskanal bei Fehler.
 - Gemeinsames Vorbereiten ist ein ausdrücklicher Befehl mit Konflikterkennung. Erste gültige konkurrierende Änderung gilt, veraltete Gegenänderung wird abgewiesen und nicht automatisch wiederholt.
 - Technische Zuordnung persönlicher Zustände zu Fenstern/Sitzungen und Geräteidentität muss im Schnittstellenentwurf konkretisiert werden.
+
+
+## Durchlauf-Lebenszyklus nach D012
+Fachliche Zustände: vorbereitet, gestartet, Ablaufende erreicht und abgeschlossen. Technische Zwischenzustände sind noch zu spezifizieren.
+- Start: Ausgangszustand prüfen, Zielposition vorbereiten; keine implizite Ausführung des ersten Einsatzes.
+- Ablaufende: Kennzeichnung nach letztem Einsatz, noch kein automatischer Abschluss ohne konfigurierte Abschlussaktion.
+- Abschluss: Ergebnisse/Verlauf abschließen; Ausgabezustände separat nach Abschlussaktion behandeln.
+- Wechsel: nächsten Durchlauf vorbereiten, laufende Aktionen anzeigen und explizit gemäß Wechselregeln wechseln.
+- Wiederholung: neue Durchlaufidentität; bestehende Ergebnisse und Historie nicht überschreiben.
+- Simulationsprobe: isolierter Zustand; kein Zugriff auf reale Ausgabe-/Geräteadapter der Aufführung.
+- Korrekturen nach Abschluss: nachvollziehbare Ergänzung, keine Veränderung früherer Ausführungsprotokolle.
