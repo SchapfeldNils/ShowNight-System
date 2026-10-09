@@ -70,6 +70,13 @@
 - Ableitung: [fachliches Datenmodell für den ersten Ablauf](../entwicklung/datenmodell.md).
 - Ergebnis: wiederverwendbare Szenen, Einstellungen je Einsatz, reine Aktionseinsätze, versionierte Bausteine und getrennte Durchläufe.
 
+## D011 – Persönliche Vorschau und gemeinsamer Showablauf
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](vorschau-gemeinsam.md); Fachregeln in Gesamtkonzept, Anforderungen und Datenmodell.
+- Ergebnis: persönliche Vorschau, gemeinsames GO-Ziel, explizite Vorbereitung, erste gültige konkurrierende Änderung, gemeinsamer Vorhörkanal je Notebook.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

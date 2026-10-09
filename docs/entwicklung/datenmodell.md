@@ -33,10 +33,18 @@ Stand: 9. Oktober 2026. Fachliche Ableitung aus Gesamtkonzept und D004–D010. K
 - Unbekannter technischer Zustand bleibt unbekannt; gesendet bedeutet nicht ausgeführt.
 
 ## Noch zu konkretisieren
-- Reichweite der Vorschau pro Regiefenster sowie gemeinsamer Vorbereitungszustand.
+- Verhalten der persönlichen Vorschau bei mehreren Fenstern desselben Benutzers noch konkretisieren. Persönliche Vorschau je Regie und gemeinsames GO-Ziel sind durch D011 bestätigt.
 - Technische Speicherstruktur, Objektkennungen, Versionsfelder, Befehls- und Ereignisschemas.
 - Modulübergreifende Beziehungen für Ticketing, Finanzen, Organisation und Spiele anhand der bestehenden Anforderungen.
 - Genaue Regeln zu lokalen Entwürfen, Papierkorbfristen und Wiederherstellungskonflikten.
 - Zustandsübergänge und Nachweise für laufende Szene während Aktivierung.
 
 Codex darf technische Entwürfe nachvollziehbar ausarbeiten. Neue grundlegende Produktregeln bleiben abstimmungspflichtig.
+
+
+## Zustandsaufteilung nach D011
+- Gemeinsamer serverseitiger Zustand: aktive Fassung, Ablaufposition, markierter nächster GO-Einsatz, Publikumsausgabe und ausgeführte Aktionen.
+- Persönlicher Regiezustand: ausgewählter Vorschauinhalt und dessen Prüfwiedergabe; fremdes GO überschreibt diesen nicht.
+- Gerätebezogener Vorhörzustand: ein Kanal pro Notebook, neuer Vorhöraufruf ersetzt bisherigen; keine automatische Ausgabe auf Publikumskanal bei Fehler.
+- Gemeinsames Vorbereiten ist ein ausdrücklicher Befehl mit Konflikterkennung. Erste gültige konkurrierende Änderung gilt, veraltete Gegenänderung wird abgewiesen und nicht automatisch wiederholt.
+- Technische Zuordnung persönlicher Zustände zu Fenstern/Sitzungen und Geräteidentität muss im Schnittstellenentwurf konkretisiert werden.

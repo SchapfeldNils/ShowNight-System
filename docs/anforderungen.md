@@ -693,3 +693,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Musik- und Lichtwünsche können vor Festlegung der Technik als benannte Anforderungen hinterlegt und später konkreten Technikaktionen zugeordnet werden.
 
 Die Showaufnahme als Veranstaltungskopie (D008) und die Mehrfachaufführung dieser Kopie als getrennte Durchläufe sind unterschiedliche Beziehungen. Szeneneinstellungen je Einsatz ersetzen keine gemeinsame Änderung der Szene. Vorlagen-/Bausteinänderungen und Szenenänderungen bleiben an bewusste Versionsübernahme und Liveaktivierung gebunden.
+
+
+## Verbindliche Regeln: persönliche Vorschau und gemeinsamer Ablauf (D011)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Jede Regie kann unabhängig Inhalte in einer eigenen Vorschau prüfen, ohne die Vorschau der anderen Regie zu ändern.
+2. Der markierte nächste GO-Einsatz ist gemeinsam. Beide Regien sehen und bedienen dasselbe Ausführungsziel.
+3. Eine persönliche Vorschau wird durch die ausdrückliche Aktion „Als nächsten Einsatz vorbereiten“ zum gemeinsamen GO-Ziel. Bloße Vorschauauswahl ändert dieses Ziel nicht.
+4. Bei konkurrierender Vorbereitung unterschiedlicher GO-Ziele gilt die erste gültige Änderung. Die andere erhält einen Konflikthinweis und kann bewusst neu vorbereiten; keine stille Überschreibung.
+5. Eine Änderung des gemeinsamen GO-Ziels erscheint sofort bei der anderen Regie, ergänzt um einen kurzen Benutzerhinweis.
+6. Ein Direktaufruf eines geplanten Einsatzes aktualisiert die Ablaufposition. Eine spontane Einblendung lässt sie bestehen. Diese Aufrufarten müssen eindeutig unterscheidbar sein.
+7. Nach GO der anderen Regie bleibt die persönliche Vorschau bestehen. Publikumsausgabe und gemeinsame Ablaufposition aktualisieren sich.
+8. Mehrere Regiefenster auf demselben Notebook teilen einen Vorhörkanal. Ein neuer Vorhöraufruf ersetzt den bisherigen. Das verfügbare tatsächliche Vorhörgerät bleibt konfigurierbar und ist technisch zu prüfen.
+9. Vorbereiten des GO-Ziels startet keinen Publikumston. Ton beginnt erst durch die vorgesehene Auslösung.
+10. Die Oberfläche verwendet klare Beschriftungen „Meine Vorschau“ und „Nächster Einsatz – gemeinsam“. Die Unterscheidung erfolgt nicht ausschließlich durch Farben.
+
+Diese Regeln ändern nicht die Gleichberechtigung der Regien. Konflikterkennung ist eine zustandsbezogene Absicherung, keine Bedienhoheit. Serverzustand und lokaler Vorschau-/Vorhörzustand sind technisch zu trennen. Keine nachträgliche Ausführung abgewiesener Befehle.
