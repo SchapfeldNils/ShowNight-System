@@ -22,7 +22,7 @@ Der Funktionsumfang ist weitgehend beschrieben. Die folgenden Punkte sind noch n
 
 ## Nächste Planung
 
-1. [Veranstaltung anlegen](veranstaltung-anlegen.md): Fragen gestellt, noch nicht beantwortet.
+1. [Veranstaltung anlegen](veranstaltung-anlegen.md): Bediengrundlagen bestätigt (D004); verbleibende Detailfragen bei Umsetzung konkretisieren.
 2. Show anlegen und im Team vorbereiten.
 3. Szene gestalten und Medien einsetzen.
 4. Vorschau, GO und Eingriffe im Livebetrieb.

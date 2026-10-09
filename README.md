@@ -10,7 +10,7 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 - [Funktions- und Betriebsspezifikation](docs/anforderungen.md) – 50 Anforderungsbereiche und 30 Abnahmefälle
 - [Technische Architektur](docs/architektur.md)
 - [Offene Entscheidungen und technische Prüfungen](docs/planung/offene-punkte.md)
-- [Aktuelle Planungsrunde: Veranstaltung anlegen](docs/planung/veranstaltung-anlegen.md)
+- [Bestätigter Bedienablauf: Veranstaltung anlegen](docs/planung/veranstaltung-anlegen.md)
 - [Entscheidungsprotokoll](docs/planung/entscheidungen.md)
 - [Word-Export des Gesamtkonzepts 2.0](docs/exports/Gesamtkonzept-2.0.docx)
 

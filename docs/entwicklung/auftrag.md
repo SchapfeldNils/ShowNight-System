@@ -30,4 +30,7 @@ Lege die gemeinsamen Grundlagen für Benutzer, eventbezogene Rechte, Speicherung
 
 ## Noch kein vollständiger technischer Vertrag
 Das Gesamt-Datenmodell, endgültige APIs, genaue Synchronitätsgrenzen und Teile der Bedienabläufe sind noch auszuarbeiten. Sie blockieren das Projektgerüst und isolierte technische Prototypen nicht. Sie müssen vor betroffener produktiver Implementierung konkretisiert werden.
-[Offene Punkte](../planung/offene-punkte.md) und [unbeantwortete Bedienfragen](../planung/veranstaltung-anlegen.md) gelten weiter.
+[Offene Punkte](../planung/offene-punkte.md) und [bestätigte Bedienregeln](../planung/veranstaltung-anlegen.md) gelten weiter.
+
+
+Die Bedienregeln D004 sind in der ersten Veranstaltungserstellung umzusetzen; siehe verbindlichen Bedienablauf in Anforderungen. Noch ungeklärte Vorlagen-/Abhängigkeitsdetails bleiben als solche zu dokumentieren.

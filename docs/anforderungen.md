@@ -574,3 +574,20 @@ Weitere Detailentscheidungen entstehen aus den konkreten Bedienabläufen und rea
 ## Ausdrücklich entfernte frühere Wünsche
 
 Komplexe Kosten-/Beschaffungsabläufe, Angebotsvergleich, Einkaufsfreigaben, Lieferverfolgung und private Auslagenerstattungen sind entfernt. Materialbedarf bleibt normale Aufgabe. Finanzen sind eine einfache Liste. Ticketzahlungen und tatsächliche Ticket-Erstattungen bleiben im Ticketmodul. Physische Buzzer, Raspberry Pi, 3D-Bühnenansicht und Online-Übernahme laufender Spiele sind keine zugesagten Funktionen der ersten Zielplattform.
+
+
+## Verbindlicher Bedienablauf: Veranstaltung anlegen (D004)
+Bestätigt am 9. Oktober 2026: 1A, 2A, 3A, 4A, 5A, 6A, 7C, 8A, 9A, 10A.
+
+1. Zum Anlegen ist nur der Name Pflicht. Datum und Ort können später ergänzt werden; fehlende funktionsabhängige Angaben werden vor deren Verwendung geprüft.
+2. Module über Vorlagen ShowNight, Spieleabend oder Eigene Veranstaltung auswählen und danach frei anpassen.
+3. Nach dem Anlegen die Veranstaltungsübersicht mit Aufgaben und Einrichtungsstatus öffnen.
+4. Die Übersicht ist persönlich einstellbar; Aufgaben, Termine und Probleme sind der Startinhalt. Rechte gelten auch für angepasste Ansichten.
+5. Ein deaktiviertes Modul behält seine Inhalte und wird ausgeblendet. Vorher Abhängigkeiten anzeigen; konkrete Behandlung laufender abhängiger Funktionen ist vor deren Implementierung zu klären. Ausblenden ist keine Rechteänderung.
+6. Beim Kopieren Inhalte auswählen; Verkäufe, Zahlungen und Livezustände zurücksetzen. Betriebsdaten der Quelle bleiben unverändert.
+7. Bestehende Teams auswählen oder direkt neue Teams anlegen; Rechte dabei sichtbar. Dies ersetzt nicht die bestehenden Berechtigungen zum Anlegen von Benutzerkonten.
+8. Fehlende Angaben im betroffenen Bereich und zusätzlich in einer zentralen Prüfliste zeigen.
+9. Module über eine feste Seitenleiste direkt erreichen.
+10. Veranstaltungswechsel dauerhaft erreichbar halten; offene Bearbeitungen berücksichtigen und die Liveveranstaltung eindeutig kennzeichnen. Ein Navigationswechsel allein löst keine Ausgabe oder Aktivierung aus.
+
+Details zu Vorlageninhalten, persönlicher Anpassung und Modulabhängigkeiten bleiben konkrete Implementierungs-/Planungsaufgaben. Diese Bedienregeln sind bestätigt, keine bereits implementierten Funktionen.

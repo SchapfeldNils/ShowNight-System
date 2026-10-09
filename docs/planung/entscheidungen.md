@@ -20,7 +20,14 @@
 - Umsetzung: [Entwicklungsauftrag](../entwicklung/auftrag.md), [Arbeitspakete](../entwicklung/arbeitspakete.md) und AGENTS.md.
 - Offene Bedienfragen zur Veranstaltung bleiben davon unberührt.
 
+## D004 – Veranstaltung anlegen
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A, 2A, 3A, 4A, 5A, 6A, 7C, 8A, 9A, 10A.
+- Regeln: [bestätigte Runde](veranstaltung-anlegen.md); verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
+- Ergebnis: Name als einzige erste Pflichtangabe, Vorlagen und anpassbare Module, persönliche Übersicht, feste Seitenleiste und dauerhaft erreichbarer Veranstaltungswechsel.
+
 ## Weitere Entscheidungen
-Die Fragen der [aktuellen Planungsrunde](veranstaltung-anlegen.md) sind noch unbeantwortet. Empfehlungen sind keine bestätigten Entscheidungen.
+Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.

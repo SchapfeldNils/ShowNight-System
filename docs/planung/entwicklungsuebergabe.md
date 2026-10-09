@@ -13,4 +13,4 @@ Datum: 9. Oktober 2026. Antwort: 1A, 2A, 3A, 4A, 5A, 6A, 7A, 8A, 9A, 10A.
 9. **Bestätigt:** Vorhandene ShowNight-Originalgrafiken und Farben als Designgrundlage verwenden; fehlende Vorgaben ergänzen.
 10. **Bestätigt:** Browser-Demo für Verwaltung und Bedienung sowie Windows-Testversion für Medien und Geräte bereitstellen.
 
-Diese Antworten betreffen die Entwicklungsübergabe. Die vorherige Runde [Veranstaltung anlegen](veranstaltung-anlegen.md) bleibt unbeantwortet.
+Diese Antworten betreffen die Entwicklungsübergabe. Die vorherige Runde [Veranstaltung anlegen](veranstaltung-anlegen.md) wurde anschließend separat bestätigt (D004).
