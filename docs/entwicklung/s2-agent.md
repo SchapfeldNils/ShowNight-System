@@ -13,6 +13,8 @@ Für Betreiber: `shownight-agent-windows-x64.zip` vollständig in einen lokalen 
 
 Paarung und Befehlsanlage/Widerruf benötigen bestehende MFA-gesicherte Systemadministration; normale Veranstaltungsrollen können keine globalen Geräte anlegen. Widerruf sperrt Credential sofort und beendet die bekannte Verbindung. Netzabbrüche verbinden mit begrenztem Backoff erneut; Protokoll-/Identitätsablehnung benötigt bewusste Fehlerbehebung. Keine automatische Serverumschaltung und kein Replay alter Aufträge.
 
+Vorübergehender Dienst-/Datenbankausfall beendet den Socket mit 1011 und erlaubt begrenzte Wiederverbindung. Protokollverletzung/Widerruf verwendet 1008 beziehungsweise HTTP 401/403 und sperrt automatische Wiederaufnahme. Der Unterschied ist gegen einen tatsächlich gestoppten und wieder gestarteten PostgreSQL-Testserver geprüft; unklare Aufträge bleiben nicht wiederholbar.
+
 ## Lokale Ablage und Fehlerhilfe
 
 `%LOCALAPPDATA%/ShowNight/agent`: `identity.dpapi` (Windows DPAPI/CurrentUser, Server/Profil/ID/Secret verschlüsselt), `receipts.sqlite` (dauerhafte Empfangskennungen/Ergebnisse) und während Laufzeit `running.lock`. Ordner-ACL nur aktueller Windows-Benutzer und SYSTEM. Private Identität weder in Git/OneDrive kopieren noch in Diagnosepakete aufnehmen. DPAPI ist an den Windows-Benutzer gebunden, kein portables Schlüsselbackup.

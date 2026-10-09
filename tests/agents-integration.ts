@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID } from "node:crypto";
 import { join } from "node:path";
-import { mkdir, readFile, mkdtemp } from "node:fs/promises";
+import { mkdir, readFile, mkdtemp, copyFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -101,7 +101,8 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
       await saveIdentity(dir, identity);
       assert.deepEqual(await loadIdentity(dir), identity);
     }
-    agent = startAgent(identity, dir);
+    const states: string[] = [];
+    agent = startAgent(identity, dir, (state) => states.push(state));
     const devices = async () => {
       const r = await request("/devices");
       assert.equal(r.statusCode, 200, r.body);
@@ -156,6 +157,41 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
             (await devices())[0].receipts.find(
               (r: any) => r.id === simulation.dispatchId,
             )?.evidence === "simulator-no-effect",
+        );
+      },
+    );
+    await t.test(
+      "Vorübergehender Datenbankausfall verbindet Agent automatisch wieder, gespeicherte Ergebnisse bleiben",
+      async () => {
+        const epoch = (
+          await db.query(
+            "SELECT connection_id FROM agent_devices WHERE id=$1",
+            [identity.deviceId],
+          )
+        ).rows[0].connection_id;
+        await f.pg.stop();
+        try {
+          await until(
+            async () => states.some((s) => s.startsWith("Nicht verbunden")),
+            13000,
+          );
+        } finally {
+          await f.pg.start();
+        }
+        await until(async () => (await devices())[0].connected, 15000);
+        assert.notEqual(
+          (
+            await db.query(
+              "SELECT connection_id FROM agent_devices WHERE id=$1",
+              [identity.deviceId],
+            )
+          ).rows[0].connection_id,
+          epoch,
+        );
+        assert(
+          (await devices())[0].receipts.every(
+            (r: any) => r.status === "completed",
+          ),
         );
       },
     );
@@ -330,13 +366,18 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
       async () => {
         const local = await mkdtemp(join(tmpdir(), "shownight-cli-")),
           code = (await create("light")).code;
-        const runtime = existsSync("dist/agent-windows/node.exe")
+        const runtimeSource = existsSync("dist/agent-windows/node.exe")
           ? join(process.cwd(), "dist/agent-windows/node.exe")
           : process.execPath;
-        const main = existsSync("dist/agent-windows/main.js")
+        const mainSource = existsSync("dist/agent-windows/main.js")
           ? join(process.cwd(), "dist/agent-windows/main.js")
           : join(process.cwd(), "dist/agent/main.js");
+        const runtime = join(local, "node.exe"),
+          main = join(local, "main.mjs");
+        await copyFile(runtimeSource, runtime);
+        await copyFile(mainSource, main);
         const setup = spawn(runtime, [main, "pair"], {
+          cwd: local,
           env: { ...process.env, LOCALAPPDATA: local },
           windowsHide: true,
           stdio: ["pipe", "pipe", "pipe"],
@@ -363,6 +404,7 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
         const saved = await loadIdentity(join(local, "ShowNight/agent"));
         assert.equal(saved.profile, "light");
         const child = spawn(runtime, [main, "run"], {
+          cwd: local,
           env: { ...process.env, LOCALAPPDATA: local },
           windowsHide: true,
           stdio: "ignore",

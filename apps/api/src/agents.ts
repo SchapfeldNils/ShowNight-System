@@ -10,6 +10,7 @@ import {
 import { hash, token } from "./security.js";
 import { transaction, type DB } from "./db.js";
 import { HttpError, forbidden } from "./errors.js";
+class AgentProtocolError extends Error {}
 declare module "fastify" {
   interface FastifyRequest {
     agentDevice: { id: string; profile: string };
@@ -72,12 +73,25 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
   );
   app.get("/api/v1/devices", async (req) => {
     if (!req.actor.admin) forbidden();
-    return (
+    const rows = (
       await db.query(`SELECT id,name,profile,revoked_at AS "revokedAt",last_seen AS "lastSeen",agent_version AS "agentVersion",capabilities,
+      connection_id AS "connectionId",
       (online AND last_seen>now()-interval '15 seconds' AND revoked_at IS NULL) AS connected,
       (SELECT coalesce(jsonb_agg(r),'[]') FROM (SELECT id,action,status,evidence,observed_at AS "observedAt" FROM agent_dispatches WHERE device_id=d.id ORDER BY created_at DESC LIMIT 10) r) AS receipts
       FROM agent_devices d ORDER BY created_at`)
     ).rows;
+    return rows.map(({ connectionId, ...device }) => {
+      const conn = connections.get(device.id);
+      return {
+        ...device,
+        connected: Boolean(
+          device.connected &&
+            conn &&
+            conn.epoch === connectionId &&
+            conn.socket.readyState === 1,
+        ),
+      };
+    });
   });
   app.post("/api/v1/devices/:id/revoke", async (req) => {
     if (!req.actor.admin) forbidden();
@@ -266,7 +280,7 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                 msg.deviceId !== device.id ||
                 msg.profile !== device.profile
               )
-                throw new Error("HELLO");
+                throw new AgentProtocolError("HELLO");
               await transaction(db, async (c) => {
                 const d = (
                   await c.query(
@@ -274,7 +288,8 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                     [device.id],
                   )
                 ).rows[0];
-                if (!d || d.revoked_at || closed) throw new Error("REVOKED");
+                if (!d || d.revoked_at || closed)
+                  throw new AgentProtocolError("REVOKED");
                 await c.query(
                   "UPDATE agent_dispatches SET status='unknown',evidence='interrupted' WHERE device_id=$1 AND status IN ('sent','accepted')",
                   [device.id],
@@ -308,13 +323,13 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
               );
             } else {
               if (msg.type === "hello" || msg.authorityEpoch !== epoch)
-                throw new Error("EPOCH");
+                throw new AgentProtocolError("EPOCH");
               await transaction(db, async (c) => {
                 const r = await c.query(
                   "UPDATE agent_devices SET last_seen=now() WHERE id=$1 AND connection_id=$2 AND revoked_at IS NULL AND online RETURNING id",
                   [device.id, epoch],
                 );
-                if (!r.rowCount) throw new Error("REVOKED");
+                if (!r.rowCount) throw new AgentProtocolError("REVOKED");
                 if (msg.type === "receipt") {
                   const dispatch = (
                     await c.query(
@@ -322,7 +337,7 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                       [msg.dispatchId, device.id, epoch],
                     )
                   ).rows[0];
-                  if (!dispatch) throw new Error("DISPATCH");
+                  if (!dispatch) throw new AgentProtocolError("DISPATCH");
                   const expected =
                     msg.status === "accepted"
                       ? "persisted"
@@ -333,7 +348,8 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
                         : msg.status === "unknown"
                           ? "interrupted"
                           : "capacity";
-                  if (msg.evidence !== expected) throw new Error("EVIDENCE");
+                  if (msg.evidence !== expected)
+                    throw new AgentProtocolError("EVIDENCE");
                   if (["sent", "accepted"].includes(dispatch.status))
                     await c.query(
                       "UPDATE agent_dispatches SET status=$2,evidence=$3,observed_at=$4 WHERE id=$1",
@@ -349,8 +365,15 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
             }
             lastMessage = Date.now();
           })
-          .catch(() => {
-            socket.close(1008, "Protokoll oder Verbindung ungültig");
+          .catch((error: unknown) => {
+            const violation =
+              error instanceof AgentProtocolError ||
+              error instanceof z.ZodError ||
+              error instanceof SyntaxError;
+            socket.close(
+              violation ? 1008 : 1011,
+              violation ? "Protokoll ungültig" : "Dienst nicht verfügbar",
+            );
           })
           .finally(() => {
             pending--;
