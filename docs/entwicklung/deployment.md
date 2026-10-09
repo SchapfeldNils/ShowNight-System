@@ -54,6 +54,30 @@ Vorhandene Webseiten nach Anschluss weiter erreichbar; Systemadresse per HTTPS e
 
 ## Implementierte S1-Dateien und Installationsablauf
 
+### Tatsächliche Bestandsaufnahme vom 9. Oktober 2026
+
+Betreiber hat den Portainer-Zielendpoint bestätigt. Authentifiziert geprüft: Ubuntu 24.04.3 LTS, ARM64/aarch64, 6 CPUs, 8 GiB RAM, 512 GiB Datenträger; Docker 29.1.5, Compose 5.0.1, Portainer 2.45.2 und **Nginx Proxy Manager 2.13.6**. Das bestehende Proxy-Netz und die genaue Proxy-IP sind ermittelt; private Operator-Konfiguration enthält die tatsächlichen Werte. Bestehende Nginx-Konfiguration besteht `nginx -t`. SSH-Schlüssel im bestehenden Administrationskonto ergänzt, bestehende Schlüssel erhalten und gesichert; strikte Hostschlüsselprüfung und SSH-Anmeldung erfolgreich. Keine VM-/Proxy-Neuinstallation und kein ShowNight-Stack gestartet.
+
+A/AAAA der geplanten Systemdomain existieren bereits, zeigen jedoch auf ein anderes Ziel als die bestätigte VM. Im bestehenden Proxy Manager gibt es noch keinen Host für die Systemdomain. DNS-Zielkorrektur, eigener Proxy-Host/HTTPS und externe Sicherung sind Freischaltungsschritte; vorhandene MX-/andere Domains erhalten. Konkrete Zugangsdaten, private Schlüssel und vollständiges Infrastrukturinventar bleiben außerhalb Git.
+
+### Geprüfte Images aus GitHub Actions
+
+[Lauf 37963484169](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/37963484169) zu Codecommit `94ca03ed9ed7207b9cb71ac039e081da9ee12996` hat native AMD64- und ARM64-Prüfungen vollständig bestanden. Artefakte `shownight-image-arm64` und `shownight-image-amd64` enthalten gzip-komprimiertes Dockerarchiv und `image-info.txt` mit Image-ID/Architektur/FFmpegstand. Sie bleiben sieben Tage verfügbar. Für die tatsächlich geprüfte VM **ARM64** verwenden; keine AMD64-Datei auf ARM als geprüft ausgeben.
+
+Artefakt entpacken, `image-info.txt` mit gewünschtem Commit/Architektur vergleichen, Archiv über eigenen autorisierten Weg übertragen und laden:
+
+```sh
+docker load -i shownight-arm64.tar.gz
+```
+
+Der importierte Tag lautet `shownight:94ca03ed9ed7207b9cb71ac039e081da9ee12996-arm64`. Bei späterem Workflow statt dieses Tags den tatsächlichen geprüften Artefakttag verwenden. App, Worker und Datenbank sowie Migration/Backup/Restore wurden im CI-Stack getestet; dies ersetzt den Zielnachweis S1-12 nicht.
+
+### Besonderheit des bestätigten Nginx Proxy Managers
+
+Neuen Proxy Host nur für die Systemdomain vorbereiten: Scheme `http`, Forward Hostname `shownight-app`, Port `3000`, WebSockets aktiv. `deploy/nginx-proxy-manager-advanced.conf.template` in **Advanced** dieses Hosts verwenden, Alias gegebenenfalls angleichen. Die Vorlage definiert einen eigenen Root-Locationblock; NPM 2.13.6 erkennt ihn und lässt seinen Standardblock weg. Die generische `nginx-location.conf.template` samt http-map nicht ungeprüft in dieses Feld kopieren. Zertifikat und Force SSL ausschließlich über den vorhandenen Manager. Keine globale Proxydatei ändern und keine fremden Proxy-Hosts ersetzen. Nach Speichern Nginxprüfung und reale HTTP/HTTPS/WSS-/Uploadprüfung durchführen.
+
+Verhalten anhand [NPM-Konfigurationslogik 2.13.6](https://github.com/NginxProxyManager/nginx-proxy-manager/blob/v2.13.6/backend/internal/nginx.js) und [offizieller Anleitung](https://nginxproxymanager.com/advanced-config/) überprüft; neue Route bisher nicht angewendet.
+
 `Dockerfile`, `deploy/compose.yaml`, `deploy/.env.production.example`, `deploy/nginx-location.conf.template`, `deploy/backup.sh` und `deploy/restore.sh` sind jetzt vorhanden. Die Vorlage startet **app, postgres, worker**, keinen Proxy. Tatsächliche Prüfergebnisse stehen in [status.md](status.md); ein erfolgreicher CI-Containerstart ist kein Netcup-Nachweis. Lokaler Entwicklungsstart: [s1-start.md](s1-start.md).
 
 ### 1. Vorhandene Umgebung erfassen

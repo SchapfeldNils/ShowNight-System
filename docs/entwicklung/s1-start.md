@@ -53,6 +53,8 @@ Der Worker prüft Originaldateien; ohne Worker bleibt der Zustand `processing`. 
 
 ## Prüfungen
 
+Linux ARM64 benötigt ein natives FFprobe, etwa aus dem Distributionspaket `ffmpeg`: `sudo apt-get install ffmpeg`. `local:setup` nimmt einen verfügbaren gebündelten FFprobe-Pfad, andernfalls `ffprobe` aus PATH; `FFPROBE_PATH` kann den Pfad ausdrücklich setzen. In ARM64-Actions wird `/usr/bin/ffprobe` verwendet. Produktionscontainer enthalten FFprobe/FFmpeg für ihre eigene Architektur.
+
 ```sh
 pnpm typecheck
 pnpm test
