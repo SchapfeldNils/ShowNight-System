@@ -666,3 +666,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Eine Prüfübersicht zeigt Medien, Einsatzhinweise und offene Aufgaben. Das Team meldet selbst „vorbereitet“; keine zusätzliche Inhaltsfreigabe durch die Leitung. Bestehende getrennte Bereitschaftsmeldungen von Team, Bühnenbau und Technik bleiben erhalten.
 
 Shows bleiben unabhängig von Veranstaltungen vorbereitbar. Zugeordnete Teams dürfen die ganze Show bearbeiten. Änderungen an live verwendeten Abläufen bleiben an die bestehenden Versions-/Aktivierungsregeln gebunden; diese Bedienentscheidungen aktivieren keine Änderungen automatisch.
+
+
+## Verbindliche Bedienung: Szeneneditor (D006)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Der Szeneneditor öffnet direkt aus der Show-Arbeitsfläche. Bereiche können für mehr Bearbeitungsfläche ausgeblendet werden.
+2. Neue Szenen beginnen wahlweise leer oder aus einer Vorlage.
+3. Inhalte lassen sich über eine sichtbare Werkzeugleiste und durch Ziehen aus der Medienbibliothek hinzufügen.
+4. Die Eigenschaftenleiste zeigt die zum ausgewählten Element passenden Einstellungen.
+5. Häufige Einstellungen sind direkt sichtbar, weitere aufklappbar. Der umfangreiche Funktionsumfang bleibt verfügbar.
+6. Änderungen werden automatisch als Entwurf gespeichert; der Speicherstatus ist sichtbar. Entwurfsspeicherung aktiviert keine Änderung im Livebetrieb.
+7. Animationen und Videos lassen sich im Editor mit Abspielen, Pause und Zeitleiste prüfen, ohne Publikumsausgabe. Die bestehende Trennung von Vorhör- und Publikumston gilt.
+8. Medien mit abweichendem Seitenverhältnis werden zunächst vollständig sichtbar eingepasst. Bildfüllendes Zuschneiden ist anschließend wählbar.
+9. Ebenen erhalten automatische, frei umbenennbare Namen sowie passende Symbole beziehungsweise Miniaturen.
+10. Fehlende Medien erscheinen als deutliche Platzhalter im Editor und als sichtbare Fehler in der Prüfübersicht. Für die echte Ausgabe gelten die bestehenden Validierungs- und Ersatzregeln.
+
+Die bestehenden Regeln zu Szenensperren bei gleichzeitiger Bearbeitung, Medienversionen und bewusster Liveaktivierung bleiben verbindlich. Konkrete Speicherintervalle und technische Wiederherstellung bei Verbindungsverlust sind Implementierungsdetails, die vor Umsetzung dokumentiert und geprüft werden müssen.

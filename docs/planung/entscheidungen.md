@@ -34,6 +34,13 @@
 - Regeln: [vollständige Antworten](show-vorbereiten.md), verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
 - Ergebnis: direkte Arbeitsfläche, aufklappbare Abschnitte, frei einfügbare Einsätze, Vorlagen, Einsatzhinweise, zugewiesene Platzhalter und Team-Prüfübersicht.
 
+## D006 – Bedienung des Szeneneditors
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](szeneneditor.md), verbindlicher Bedienablauf in Gesamtkonzept und Anforderungen.
+- Ergebnis: eingebetteter Editor, direkte Werkzeuge, kontextbezogene Eigenschaften, automatische Entwurfsspeicherung, eigene Wiedergabeprüfung und sichtbare Medienfehler.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
