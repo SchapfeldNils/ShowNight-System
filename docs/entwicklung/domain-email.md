@@ -8,7 +8,7 @@ Stand: 9. Oktober 2026. Entscheidung D014.
 - Dies bestätigt weder einen bereits gesetzten DNS-Eintrag noch ein bereits angelegtes Postfach oder einen erfolgreich getesteten Versand.
 
 ## Umsetzungsvorschlag für S1
-Die Systemadresse ist die konfigurierte öffentliche Basis-URL für Browseroberfläche, API und Systemlinks. Reverse Proxy/TLS vor die App stellen; API zunächst unter /api/v1 auf demselben Origin.
+Die Systemadresse ist die konfigurierte öffentliche Basis-URL für Browseroberfläche, API und Systemlinks. Den bereits vorhandenen Nginx-Reverse-Proxy (D015) für die Systemdomain integrieren; API zunächst unter /api/v1 auf demselben Origin. Keine zweite Proxy-/TLS-Verwaltung installieren. Nginx-Standort, Betriebsart und Zertifikatszustand sind noch zu erheben.
 DNS auf die tatsächliche Netcup-VM zeigen lassen; keine IP-Adresse erraten. Einen AAAA-Eintrag nur für einen tatsächlich funktionierenden IPv6-Zugang setzen. HTTPS und Linkerzeugung am Zielserver prüfen. Vorhandene andere Webseiten/MX-Einträge nicht durch diese Systembereitstellung ersetzen.
 Die öffentliche ShowNight-/Shop-Adresse und eine gesonderte Testadresse sind noch nicht bestätigt.
 

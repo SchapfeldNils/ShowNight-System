@@ -101,6 +101,13 @@
 - Umsetzung: [Domain-/Mailkonfiguration](../entwicklung/domain-email.md) und ergänzter Codex-Startprompt.
 - Nicht bestätigt: bereits erfolgte DNS-/Postfachanlage, Testdomain, öffentliche Shopadresse oder erfolgreiche Zustellung.
 
+## D015 – Vorhandenen Nginx verwenden
+- Status: vorhandener Nginx durch Benutzer bestätigt
+- Datum: 9. Oktober 2026
+- Folge: Bestehenden Reverse Proxy integrieren; keinen zusätzlichen Proxy als Voraussetzung aufbauen.
+- Offen: Standort/Betriebsart, Upstream, vorhandene Zertifikatsverwaltung und Konfiguration der Systemdomain.
+- Containeraufteilung Anwendung/PostgreSQL/Worker bleibt technischer Startvorschlag; kein Fachmodul-Microservice-Zwang.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

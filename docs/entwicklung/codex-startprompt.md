@@ -24,7 +24,7 @@ D013 legt die aktuelle Startreihenfolge fest. D004–D012 enthalten bestätigte 
 ## Paket S1: Netcup-fähiger Server
 1. Prüfe Repository und vorhandenen Code. Erstelle einen Arbeitsbranch.
 2. Richte das gemeinsame Projekt für React/TypeScript, Node.js/TypeScript/Fastify, PostgreSQL und gemeinsame validierte Schemas ein. Halte Module getrennt; verwende kostenlose Komponenten mit dokumentierten Lizenzen.
-3. Baue einen reproduzierbaren Entwicklungsstart und eine Netcup-fähige Containerbereitstellung: App/API, PostgreSQL, Reverse Proxy/HTTPS, persistenter Medienspeicher, konfigurierte Umgebungsvariablen, Health/Readiness, Migrationen sowie Sicherung/Wiederherstellung.
+3. Baue einen reproduzierbaren Entwicklungsstart und eine Netcup-fähige Containerbereitstellung: App/API, PostgreSQL, Hintergrundworker, Integration in den vorhandenen Nginx für HTTPS, persistenter Medienspeicher, konfigurierte Umgebungsvariablen, Health/Readiness, Migrationen sowie Sicherung/Wiederherstellung.
 4. Implementiere Benutzer/Sitzungen, einmaligen Admin-Bootstrap, erforderliche MFA für Admin/Leitung und eventbezogene Rechte. Kein gemeinsames Standardkennwort, keine Secrets im Repository.
 5. Liefere eine tatsächlich bedienbare Browsergrundlage: Veranstaltung nur mit Namen anlegen, Teams zuordnen, unabhängige Show vorbereiten und als Eventkopie aufnehmen, Medien sicher hochladen, Speicher-/Analysezustand anzeigen, Versionskonflikte behandeln und ein Paketmanifest erzeugen.
 6. Erstelle synthetische Demo-Daten. Gerätekanal ausschließlich klar markiert simulieren, ohne echte Bühnenaktionen oder E-Mails.
@@ -52,3 +52,7 @@ Der Netcup-Server dient Vorbereitung und Verwaltung, nicht Live-HDMI-/Kameraausg
 - Ergebnis je Paket: nutzbarer Ablauf, passende Tests, dokumentierter Start/Installation, bekannte Grenzen und PR-Link.
 
 Beginne mit S1 und führe dessen autorisierte Arbeit bis zu einem überprüfbaren Ergebnis aus.
+
+
+## Vorhandener Nginx (D015)
+Nginx-Reverse-Proxy ist bereits vorhanden. Keinen zusätzlichen Proxycontainer oder neue konkurrierende TLS-Verwaltung installieren. Erstelle passende Nginx-Konfigurationsvorlage und Anleitung für die Systemdomain. Nginx-Standort/Betriebsart zunächst als Deploymentparameter behandeln; Host-, Container- oder externen Proxy nicht ungeprüft gleichsetzen. Bestehende Dienste/Zertifikate erhalten. WebSockets, Uploads, Timeouts und vertrauenswürdige Proxyheader prüfen; Datenbank nicht öffentlich exponieren. Vorgeschlagene Compose-Dienste: Anwendung, PostgreSQL und Worker mit dauerhaften Speicherbereichen.

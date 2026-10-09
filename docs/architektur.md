@@ -176,3 +176,10 @@ Die Quellen belegen Eigenschaften der Bausteine. Die konkrete Eignung für unser
 ## Aktuelle Entwicklungsreihenfolge – D013
 Am 9. Oktober 2026 wurde ausdrücklich festgelegt: zuerst Netcup-fähiger Online-Server, danach Windows-Agenten, dann lokaler Windows-Server/Medienausgabe und erster vollständiger Showablauf. Technische Prototypen der Geräte-/Renderingwege bleiben früh erforderlich. Die bestehende Online-/Offlineverteilung und Architektur ändern sich dadurch nicht.
 Die konkretisierten technischen Startentwürfe stehen in [Datenmodell](entwicklung/datenmodell.md), [Schnittstellen](entwicklung/schnittstellen.md) und [Abnahmeplan](entwicklung/abnahmeplan.md). Code-Schemas/Migrationen und tatsächlich verifizierte Komponentenstände entstehen während Implementierung.
+
+
+## Vorhandener Reverse Proxy – D015
+Am 9. Oktober 2026 wurde bestätigt: Ein Nginx-Reverse-Proxy ist bereits vorhanden. Diesen für eventmanagement.jungschuetzen-flueren.de verwenden; keinen zusätzlichen Reverse-Proxy-Container oder zweite TLS-Verwaltung als Voraussetzung installieren.
+Für die vorgeschlagene Compose-Bereitstellung verbleiben Anwendung, PostgreSQL und Hintergrundworker. Fachmodule bleiben im modularen Anwendungskern, statt je einen eigenen Container zu erhalten. Diese Containeraufteilung ist ein technischer Startvorschlag.
+Offen: Läuft Nginx direkt auf der Ziel-VM, in einem Container oder auf einem separaten Rechner? Anschluss an die App passend dazu konfigurieren. Loopback-Publishing funktioniert nur bei Nginx auf demselben Host; bei Container-Nginx gemeinsame Netzwerkverbindung oder ein passend abgesichertes erreichbares Ziel wählen. Datenbank nicht öffentlich bereitstellen.
+Codex soll eine einbindbare VHost-/Location-Vorlage und Integrationsanleitung liefern. Vorhandene Konfigurationen, Domains und Zertifikate erhalten; WebSockets, Uploadgrößen, Timeouts und vertrauenswürdige Proxyheader anhand des tatsächlichen Aufbaus prüfen. Die bloße Existenz von Nginx bestätigt keine fertige TLS-/Domain-Konfiguration für das neue System.
