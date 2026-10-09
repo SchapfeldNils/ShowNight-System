@@ -55,6 +55,13 @@
 - Regeln: [vollständige Antworten](daten-versionen.md), verbindliche Fachregeln in Gesamtkonzept und Anforderungen.
 - Ergebnis: Veranstaltungskopien, bewusste Vorlagenupdates, Löschschutz, Papierkorb, explizite Textkonflikte, Wiederherstellungsentwürfe und nachvollziehbare Versionierung.
 
+## D009 – Liveaktivierung vorbereiteter Datenstände
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](liveaktivierung.md), verbindliche Fachregeln in Gesamtkonzept und Anforderungen.
+- Ergebnis: geprüfte vollständige Aktivierung, laufende Ausgabe bleibt, veraltete Vorbereitung wird markiert, bewusste GO-Zielbestätigung bei Löschung/Verschiebung, atomare Rückkehr.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 

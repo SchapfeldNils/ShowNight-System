@@ -717,3 +717,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Inhaltsänderungen während einer laufenden Veranstaltung werden als Entwurf gespeichert. Übernahme in den Livebestand erfolgt ausschließlich durch ausdrückliche berechtigte Aktion.
 
 Die Regeln präzisieren vorhandene Versionierung, bewusste Aktivierung und Konfliktbehandlung. Technische Datenschemata und Protokolle sind daraus abzuleiten. Konkrete Speicherintervalle, Papierkorbfristen und der sichere Ablauf einer Aktivierung während laufender Ausgabe sind noch zu spezifizieren; vorhandene Liveinhalte werden nicht durch bloßes Speichern ausgetauscht.
+
+
+## Verbindliche Regeln: Aktivierung vorbereiteter Datenstände (D009)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Vor einer Liveaktivierung zeigt eine Übersicht Änderungen und betroffene Shows, Medien und Einsätze.
+2. Eine Aktivierung ist wahlweise für eine einzelne Show oder für den gesamten Veranstaltungsstand möglich. Erforderliche Abhängigkeiten müssen in beiden Fällen geprüft sein.
+3. Änderungen an der gerade ausgegebenen Szene ersetzen die laufende Ausgabe nicht. Die neue Fassung wird erst bei bewusster erneuter Übernahme verwendet.
+4. Wenn sich der Inhalt eines bereits vorbereiteten Einsatzes ändert, wird dessen Vorschau als veraltet markiert. Erneutes Vorbereiten ist erforderlich, bevor dieser geänderte Einsatz ausgelöst wird.
+5. Ein neuer Stand darf erst aktiviert werden, wenn alle für den gewählten Aktivierungsumfang benötigten Dateien vollständig lokal vorhanden und geprüft sind.
+6. Neu hinzugefügte Einsätze hinter der aktuellen Ablaufposition werden in den kommenden Ablauf aufgenommen, ohne sofort auszulösen.
+7. Wird der markierte nächste Einsatz gelöscht oder verschoben, bleibt GO bis zur bewussten Bestätigung des neuen nächsten Einsatzes gesperrt.
+8. Beide gleichberechtigten Regien erhalten denselben aktiven Stand und einen sichtbaren Änderungshinweis.
+9. Scheitert die Aktivierung, bleibt der bisherige aktive Stand erhalten. Fehler werden angezeigt; keine teilweise aktivierte Mischung erfolgreicher und fehlgeschlagener Änderungen.
+10. Eine bewusste Rückkehraktion ermöglicht den vorherigen aktiven Stand. Die betroffene Ablaufposition wird geprüft; Musik wird nicht automatisch neu gestartet.
+
+Datenaktivierung und GO sind getrennte Handlungen. Aktivierung ändert die verbindliche vorbereitete Fassung, GO löst einen Einsatz aus. Eine Aktivierung oder Rückkehr darf vergangene Einmalaktionen nicht automatisch nachholen. Unabhängige Unterbrechungsaktionen bleiben erreichbar. Die atomare Aktivierung mit weiterlaufender alter Szene ist technisch im Zustandsmodell und anhand konkurrierender Regieaktionen nachzuweisen.
