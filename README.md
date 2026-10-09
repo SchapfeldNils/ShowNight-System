@@ -19,6 +19,7 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 - [Entwicklungsauftrag für Codex](docs/entwicklung/auftrag.md)
 - [Arbeitsregeln](AGENTS.md)
 - [Arbeitspakete](docs/entwicklung/arbeitspakete.md)
+- [Fachliches Datenmodell für den ersten Ablauf](docs/entwicklung/datenmodell.md)
 - [Bestätigte Entwicklungsentscheidungen](docs/planung/entwicklungsuebergabe.md)
 
 Entwicklungsarbeit erfolgt künftig über Arbeitsbranches und Pull Requests. Die initiale Dokumentationsablage und diese Planungsaktualisierung liegen auf main. Es wurde noch keine Software implementiert.

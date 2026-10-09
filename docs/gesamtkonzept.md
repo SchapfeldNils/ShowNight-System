@@ -734,3 +734,20 @@ Bestätigt am 9. Oktober 2026: 1A bis 10A.
 10. Eine bewusste Rückkehraktion ermöglicht den vorherigen aktiven Stand. Die betroffene Ablaufposition wird geprüft; Musik wird nicht automatisch neu gestartet.
 
 Datenaktivierung und GO sind getrennte Handlungen. Aktivierung ändert die verbindliche vorbereitete Fassung, GO löst einen Einsatz aus. Eine Aktivierung oder Rückkehr darf vergangene Einmalaktionen nicht automatisch nachholen. Unabhängige Unterbrechungsaktionen bleiben erreichbar. Die atomare Aktivierung mit weiterlaufender alter Szene ist technisch im Zustandsmodell und anhand konkurrierender Regieaktionen nachzuweisen.
+
+
+## Verbindliche Zuordnungen: Szenen, Einsätze und Durchläufe (D010)
+Bestätigt am 9. Oktober 2026: 1A bis 10A.
+
+1. Dieselbe Szene darf in mehreren Einsätzen verwendet werden; Einstellungen können je Einsatz verschieden sein.
+2. Übergang und Verhalten nach Videoende haben Vorgaben in der Szene und können je Einsatz überschrieben werden.
+3. Ein Einsatz darf ausschließlich Licht, Ton oder Timer steuern. Ohne Bildaktion bleibt die bestehende Bildausgabe erhalten.
+4. Mehrere Aktionen werden direkt am Einsatz als geordnete Liste mit Verzögerungen bearbeitet.
+5. Gespeicherte Aktionskombinationen werden als versionierte Bausteine verwendet. Spätere Änderungen werden bewusst übernommen.
+6. Dieselbe Veranstaltungsshow kann mehrfach aufgeführt werden. Durchläufe haben getrennte Livezustände.
+7. Proben und echte Aufführungen sind eigenständige gekennzeichnete Durchläufe mit getrennten Ergebnissen und Historie.
+8. Beim Ändern einer mehrfach verwendeten Szene werden alle Verwendungen angezeigt. Gemeinsame Änderung oder eigene Variante sind wählbar.
+9. Beim Duplizieren eines Einsatzes werden Einstellungen kopiert, zunächst dieselbe Szene verwendet; eine eigene Variante bleibt möglich.
+10. Musik- und Lichtwünsche können vor Festlegung der Technik als benannte Anforderungen hinterlegt und später konkreten Technikaktionen zugeordnet werden.
+
+Die Showaufnahme als Veranstaltungskopie (D008) und die Mehrfachaufführung dieser Kopie als getrennte Durchläufe sind unterschiedliche Beziehungen. Szeneneinstellungen je Einsatz ersetzen keine gemeinsame Änderung der Szene. Vorlagen-/Bausteinänderungen und Szenenänderungen bleiben an bewusste Versionsübernahme und Liveaktivierung gebunden.

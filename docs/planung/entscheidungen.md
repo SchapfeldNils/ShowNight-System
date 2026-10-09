@@ -62,6 +62,14 @@
 - Regeln: [vollständige Antworten](liveaktivierung.md), verbindliche Fachregeln in Gesamtkonzept und Anforderungen.
 - Ergebnis: geprüfte vollständige Aktivierung, laufende Ausgabe bleibt, veraltete Vorbereitung wird markiert, bewusste GO-Zielbestätigung bei Löschung/Verschiebung, atomare Rückkehr.
 
+## D010 – Szenen, Einsätze, Aktionen und Durchläufe
+- Status: bestätigt
+- Datum: 9. Oktober 2026
+- Antworten: 1A bis 10A.
+- Regeln: [vollständige Antworten](zuordnungen.md), Fachregeln in Gesamtkonzept und Anforderungen.
+- Ableitung: [fachliches Datenmodell für den ersten Ablauf](../entwicklung/datenmodell.md).
+- Ergebnis: wiederverwendbare Szenen, Einstellungen je Einsatz, reine Aktionseinsätze, versionierte Bausteine und getrennte Durchläufe.
+
 ## Weitere Entscheidungen
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
