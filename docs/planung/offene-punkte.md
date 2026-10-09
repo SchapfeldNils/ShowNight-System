@@ -1,5 +1,5 @@
 # Offene Punkte
-Stand: 9. Oktober 2026. Grundlage: Gesamtkonzept 2.0, Kapitel 18.
+Stand: 10. Oktober 2026. Grundlage: Gesamtkonzept 2.0, Kapitel 18.
 
 Der Funktionsumfang ist weitgehend beschrieben. Die folgenden Punkte sind noch nicht entschieden oder praktisch nachgewiesen. Eine Anforderung ist kein bestandener Test.
 
@@ -27,10 +27,10 @@ Die drei technischen Startdokumente und der Codex-Prompt sind vorbereitet:
 
 D013: zuerst Netcup-Server, dann Windows-Agenten. Code-Schemas/Migrationen und Nachweise werden agil umgesetzt. Keine pauschale weitere Fragenrunde ist Voraussetzung für S1.
 
-## Offen für echtes Zieldeployment
-VM-Betriebssystem, Ressourcen/Architektur, Domain/DNS, autorisierter Zugang, vorhandene Dienste/Ports, Mail und externes Sicherungsziel. Keine dieser Angaben ist als bereits vorhanden oder geprüft bestätigt.
+## Stand des Zieldeployments
+VM/Architektur, autorisierter Zugang, bestehende Dienste, öffentliche Systemdomain/TLS, S1-Vorbereitung und S2-Agentgrundlage tatsächlich geprüft und bereitgestellt. DJ-Rechner bestätigt, echte WSS-Diagnose und separate VirtualDJ-Leseabfrage bestanden. [S1-Zielnachweise](../entwicklung/netcup-abnahme.md), [S2-Update](../entwicklung/s2-netcup-update.md). Regelmäßiges unabhängiges Backup-/Schlüsselziel, dauerhafter normaler Windows-DNS-Zugriff, Mailzustellung und reale Geräte-/Ton-/Synchronitätsabnahme bleiben offen.
 Technische Hardware-/Synchronitätsnachweise O01–O14 bleiben bestehen. Weitere Produktfragen gezielt anhand der Implementierung klären.
 
 
 ## Konkretisierung D014
-Systemdomain festgelegt: eventmanagement.jungschuetzen-flueren.de. Mailpostfächer können bei Netcup angelegt werden. Offen bleiben DNS-/TLS-Einrichtung, VM-IP/Zugang, Absender-/Reply-To-Adressen, SMTP-Verbindungsdaten, Secrets und Versandnachweise. Siehe [Domain/E-Mail](../entwicklung/domain-email.md).
+Systemdomain festgelegt: eventmanagement.jungschuetzen-flueren.de. Öffentliche DNS-Ziele/TLS und VM-Zugang bestätigt. SMTP privat eingerichtet, TLS/Authentifizierung lokal und im VM-Worker erfolgreich; keine Nachricht versendet, Absenderfreigabe/Zustellung offen. Lokaler Windows-Resolver liefert noch vorheriges Webhostingziel. Siehe [Domain/E-Mail](../entwicklung/domain-email.md) und aktuelle Zielnachweise oben.

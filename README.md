@@ -1,10 +1,10 @@
 # ShowNight-System
 
-S2-Agentprototyp auf eigenem Arbeitsbranch: [Windows-Agent starten, paaren und diagnostizieren](docs/entwicklung/s2-agent.md). Enthält keine Bühnensteuerung; reale VirtualDJ-/Daslight-/Controller-/FLX4-Abnahmen bleiben offen. Online-Server verwendet weiterhin den geprüften S1-Stand, bis ein S2-Update vorbereitet und ausgeführt ist.
+S2-Agentprototyp auf eigenem Arbeitsbranch: [Windows-Agent starten, paaren und diagnostizieren](docs/entwicklung/s2-agent.md). Online-Server am 10. Oktober 2026 nach Betreiberfreigabe auf S2/Schema 2 aktualisiert; DJ-Rechner gepaart und echte WSS-Diagnose bestätigt. Echte VirtualDJ-Leseabfrage bestätigt; Steuerungs-/Daslight-/Controller-/FLX4-Abnahmen bleiben offen. Keine Bühnensteuerung oder Veranstaltungsfreigabe.
 
 Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Veranstaltungsformen.
 
-**Projektstatus:** S1-Implementierung auf Arbeitsbranch, Onlinevorbereitung auf Netcup bereitgestellt und geprüft. Vollständige Veranstaltungs-/Hardwarefreigabe bleibt ausstehend. [Aktuelle Prüfergebnisse und Grenzen](docs/entwicklung/status.md), [Netcup-Zielabnahme](docs/entwicklung/netcup-abnahme.md).
+**Projektstatus:** S1-Onlinevorbereitung und S2-Agentgrundlage auf Arbeitsbranches, Netcup bereitgestellt und geprüft. Vollständige Veranstaltungs-/Hardwarefreigabe bleibt ausstehend. [Aktuelle Prüfergebnisse und Grenzen](docs/entwicklung/status.md), [Netcup-Zielabnahme](docs/entwicklung/netcup-abnahme.md), [S2-Update und Sicherungsnachweise](docs/entwicklung/s2-netcup-update.md).
 
 ## Software starten
 
