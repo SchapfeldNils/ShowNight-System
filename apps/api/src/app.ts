@@ -26,6 +26,11 @@ import { authRoutes, actor } from "./auth.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
 import { packageRoutes } from "./packages.js";
+import { agentRoutes } from "./agents.js";
+import {
+  pairingInput,
+  diagnosticInput,
+} from "../../../packages/contracts/src/agent.js";
 import { HttpError, forbidden } from "./errors.js";
 export async function createApp(db: DB, cfg: Config, logging = false) {
   const app = Fastify({
@@ -72,6 +77,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   contentRoutes(app, db, cfg);
   mediaRoutes(app, db, cfg);
   packageRoutes(app, db, cfg);
+  agentRoutes(app, db);
   app.setErrorHandler((e, req, reply) => {
     let status = 500,
       code = "INTERNAL",
@@ -108,16 +114,14 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
           : "Ungültige oder zu häufige Anfrage.";
     }
     app.log.warn({ correlationId: req.id, code, status }, "Anfrage abgewiesen");
-    reply
-      .code(status)
-      .send({
-        error: {
-          code,
-          message,
-          correlationId: req.id,
-          ...(details ? { details } : {}),
-        },
-      });
+    reply.code(status).send({
+      error: {
+        code,
+        message,
+        correlationId: req.id,
+        ...(details ? { details } : {}),
+      },
+    });
   });
   app.get("/health/live", async () => ({
     status: "alive",
@@ -129,8 +133,8 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       const r = await db.query(
         "SELECT version FROM schema_migrations ORDER BY version",
       );
-      if (r.rows.map((r) => r.version).join(",") !== "1") throw new Error();
-      return { status: "ready", schemaVersion: 1 };
+      if (r.rows.map((r) => r.version).join(",") !== "1,2") throw new Error();
+      return { status: "ready", schemaVersion: 2 };
     } catch {
       return reply.code(503).send({ status: "not_ready" });
     }
@@ -269,6 +273,8 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       "/shows": ["post", showCreate],
       "/shows/{id}": ["patch", showPatch],
       "/events/{id}/show-copies": ["post", showCopy],
+      "/devices/pairings": ["post", pairingInput],
+      "/devices/{id}/diagnostics": ["post", diagnosticInput],
     };
     const paths = Object.fromEntries(
       Object.entries(specs).map(([path, [method, schema]]) => [

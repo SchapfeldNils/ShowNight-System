@@ -51,7 +51,13 @@ export async function migrate(db: DB) {
     const versions = await c.query(
       "SELECT version FROM schema_migrations ORDER BY version",
     );
-    if (versions.rows.map((r) => r.version).join(",") !== "1")
+    const installed = versions.rows.map((r) => r.version).join(",");
+    if (installed === "1") {
+      const path = existsSync(resolve("dist/api/002_agents.sql"))
+        ? "dist/api/002_agents.sql"
+        : "apps/api/migrations/002_agents.sql";
+      await c.query(await readFile(path, "utf8"));
+    } else if (installed !== "1,2")
       throw new Error("Nicht unterstützter Migrationsstand.");
   });
 }

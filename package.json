@@ -22,7 +22,9 @@
     "test:browser": "playwright test",
     "local:setup": "tsx scripts/local.ts setup",
     "local:db": "tsx scripts/local.ts db",
-    "licenses:inventory": "node scripts/licenses.mjs"
+    "licenses:inventory": "node scripts/licenses.mjs",
+    "test:agents": "tsx --test tests/agents-integration.ts",
+    "agent:package": "node scripts/agent-package.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
@@ -37,6 +39,7 @@
     "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "ws": "^8.22.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
@@ -46,6 +49,7 @@
     "@types/pg": "^8.15.5",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/ws": "^8.18.2",
     "embedded-postgres": "17.9.0-beta.17",
     "esbuild": "^0.25.10",
     "ffmpeg-static": "^5.3.0",

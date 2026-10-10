@@ -9,6 +9,7 @@ import type {
 } from "../../../packages/contracts/src/index.js";
 import "./style.css";
 import { moduleKeys } from "../../../packages/contracts/src/index.js";
+import { Devices } from "./devices.js";
 type Me = {
   id: string;
   displayName: string;
@@ -1146,11 +1147,12 @@ function App() {
         )}
         {page === "Diagnose" && diag && (
           <>
+            <Devices api={api} run={run} />
             <section className="card">
-              <h2>Geräte · ausschließlich simuliert</h2>
+              <h2>S1-Diagnosebeispiele · ausschließlich simuliert</h2>
               <p>
-                Keine gepaarten Geräte, keine Bühnenbefehle. Reale Verbindungen
-                folgen in S2.
+                Diese Beispiele sind keine verbundenen Geräte und führen keine
+                Bühnenbefehle aus.
               </p>
               <div className="grid">
                 {diag.devices.map((d: any) => (
