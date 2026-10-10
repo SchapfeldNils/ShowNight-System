@@ -1,5 +1,7 @@
 # ShowNight-System
 
+S3-03-Review: [Entwurfs-PR #11](https://github.com/SchapfeldNils/ShowNight-System/pull/11), Runtime `44d19c6`, [aktuelle Windows-/AMD64-/ARM64-Prüfungen und Artefakte](https://github.com/SchapfeldNils/ShowNight-System/pull/11/checks). Kein Merge und kein Produktivupdate.
+
 Aktueller weiterer Baustein S3-03: [gezielte LAN-Einrichtung des lokalen HTTPS-Vorbereitungsservers](docs/entwicklung/s3-lan.md), [Arbeitspaket #10](https://github.com/SchapfeldNils/ShowNight-System/issues/10), Branch `codex/s3-lan-setup`, abhängig von S3-02. Optionale Neueinrichtung auf einer privaten IPv4-Schnittstelle mit passendem Zertifikat und lokaler Diagnose. Loopback bleibt Standard; reale Mehrgeräte-/Internettrennungsabnahme, Renderer und Livebetrieb bleiben offen. Keine automatische Firewall-/Zertifikatsinstallation und kein Netcup-Update. Die folgenden S3-02-/S3-01-Absätze beschreiben die vorherigen Teilstände.
 
 S3-02-Review: [Entwurfs-PR #9](https://github.com/SchapfeldNils/ShowNight-System/pull/9), Runtime 7ab7b8b, [aktuelle Prüfungen und Windows-Artefakte](https://github.com/SchapfeldNils/ShowNight-System/pull/9/checks). Nicht gemergt und nicht auf Netcup installiert.
