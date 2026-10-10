@@ -78,4 +78,6 @@ Windows-Resolver lieferte bei der Prüfung weiterhin das alte Webhostingziel. De
 
 ## Laufende VirtualDJ-Lesediagnose ab Agent 0.2.1
 
+Am 10. Oktober produktiv auf Runtime `a8b062f`/Agent 0.2.1 aktualisiert: gleiche Paarung/Journal, frischer Schema-2-Restore geprüft, reale aktuelle Leseberichte und Authfehler/Erholung bei gleicher WSS-Epoch bestätigt. [Tatsächlicher Updateablauf](s2-virtualdj-update.md). Private Bedienhilfe unter `%LOCALAPPDATA%/ShowNight/runtime/DJ-Betriebshinweise.md`; kein Dienst/Autostart.
+
 Die eingerichtete DJ-Instanz prüft bei HELLO und Heartbeats ausschließlich `get_clock` mit begrenzter Zeit/Antwortgröße. In der Geräteansicht werden Leseprüfung und Steuerungsfähigkeiten getrennt, Fehler/Erholung und veraltete Berichte sichtbar. Lokale Datei `%LOCALAPPDATA%/ShowNight/secrets/virtualdj.env` wird nur im DJ-Profil gelesen; keine Zugangsdaten oder Rohantwort an Server übertragen. Neuer Serververtrag vor Agentupdate notwendig; bestehende 0.2.0-Agenten bleiben kompatibel. [Einrichtung, Protokoll, Nachweise und Grenzen](s2-virtualdj-diagnose.md).

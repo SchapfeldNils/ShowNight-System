@@ -1,6 +1,6 @@
 # S2: laufende VirtualDJ-Lesediagnose
 
-Stand: 10. Oktober 2026. Agent 0.2.1 auf dem S2-Arbeitsbranch/PR #5. Ergänzung von S2-03/S2-06, F14/F23/F28; kein vollständiger Steuerungs-, Hardware- oder Synchronitätsnachweis. Produktiv zunächst weiterhin Runtime `26edc1d`/Agent 0.2.0; neuer Stand erst nach CI und dokumentierter Aktualisierung.
+Stand: 10. Oktober 2026. Agent 0.2.1 auf dem S2-Arbeitsbranch/PR #5. Ergänzung von S2-03/S2-06, F14/F23/F28; kein vollständiger Steuerungs-, Hardware- oder Synchronitätsnachweis. Produktiv Runtime `a8b062f`/Agent 0.2.1 nach grüner CI, frischem Backup und geprüftem isoliertem Restore. [Tatsächliche Aktualisierung und Zielnachweise](s2-virtualdj-update.md).
 
 ## Benutzbarer Ablauf
 
@@ -25,6 +25,8 @@ Version-1-Vertrag akzeptiert HELLO-Versionen 0.2.0/0.2.1; Heartbeat hat optional
 
 Erste Abfrage in diesem Arbeitsabschnitt nicht bestätigt. Betreiber hat Plugin aktiviert und erneuten Test beauftragt; gültiger `get_clock` danach bestätigt. Neue lokale Fähigkeitsfunktion meldet gegen dieselbe echte Plugininstanz `available`, ohne Zugangsdaten/Rohantwort im Bericht. FLX4 weiterhin nicht angeschlossen; nur DJ-Rechner verfügbar. Plugin lauscht auf 0.0.0.0; eingehende Erreichbarkeit für Dauerbetrieb bleibt zu begrenzen.
 
-Automatisierte HTTP-Vertragstests sind synthetisch: fehlende/ungültige Einrichtung, Profiltrennung, authentifizierte feste Abfrage, gemeinsame Anfrage statt Überlappung, Erfolg/Fehler/Erholung, keine Secrets/Rohantwort im Bericht, Redirect-/Größen-/Antwortbody-Zeitgrenze. PostgreSQL-/Socketprüfung prüft Heartbeataktualisierung, Fehler/Erholung bei gleicher Epoch und veralteten Bericht trotz Verbindung. Browserprüfung zeigt Zustände mit ausdrücklich bezeichneter Vertragstestfähigkeit, Mobilansicht und ungeprüften Status nach Widerruf. Kein Ersatz für reale Pluginverlust-/Erholungsprüfung am Ziel.
+Automatisierte HTTP-Vertragstests sind synthetisch: fehlende/ungültige Einrichtung, Profiltrennung, authentifizierte feste Abfrage, gemeinsame Anfrage statt Überlappung, Erfolg/Fehler/Erholung, keine Secrets/Rohantwort im Bericht, Redirect-/Größen-/Antwortbody-Zeitgrenze. PostgreSQL-/Socketprüfung prüft Heartbeataktualisierung, Fehler/Erholung bei gleicher Epoch und veralteten Bericht trotz Verbindung. Browserprüfung zeigt Zustände mit ausdrücklich bezeichneter Vertragstestfähigkeit, Mobilansicht und ungeprüften Status nach Widerruf.
+
+Zusätzlich am realen DJ/Netcup-Ziel: Abweichung zwischen Pluginstring und lokaler Datei anhand erfolgreicher Pluginabfrage korrigiert, nur lokale Konfiguration geändert. Aktuelle Server-API meldet bestätigte Leseprüfung. Absichtlich falscher lokaler Authentifizierungswert ergibt `unavailable`, exakte Wiederherstellung wieder `available`, durchgehend gleiche WSS-Epoch und frische Serverstempel. Diagnose samt lokalem SQLite-Ergebnis bestätigt; eigenes synthetisches MFA-Konto entfernt. Kein tatsächlicher VirtualDJ-Absturz/Neustart daraus ableiten. Vollständiger Ablauf in [Updateprotokoll](s2-virtualdj-update.md).
 
 Build/Test/Paket: Befehle in [Agentanleitung](s2-agent.md). Weitere tatsächliche lokale/CI-/Zielergebnisse und Produktionsrevisionen in [Status](status.md)/[Protokoll](protokoll.md); nicht aus Implementierung als bestanden ableiten.

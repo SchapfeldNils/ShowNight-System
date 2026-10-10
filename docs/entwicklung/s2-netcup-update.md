@@ -2,9 +2,11 @@
 
 Stand: 10. Oktober 2026. [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-PR #2. **Produktives S2-Update nach ausdrücklicher Betreiberfreigabe durchgeführt; Schema 2 bereit und DJ-Rechner gepaart.** Keine Veranstaltungsfreigabe und kein PR-Merge.
 
-## Konkreter Stand und Nachweise
+Aktueller Folgestand: Runtime `a8b062f`/Agent 0.2.1 mit laufender VirtualDJ-Lesediagnose, ohne weitere Schemaänderung. [Aktualisierung mit frischem Schema-2-Backup und Zielprüfung](s2-virtualdj-update.md). Die folgenden Abschnitte protokollieren den ursprünglichen S1→S2-Wechsel mit `26edc1d`.
 
-Produktiv läuft das geprüfte ARM64-Image `shownight:26edc1d1e464ed3ad7694b46e4036b6ccc669049-arm64`, [Actions 37980294023](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/37980294023), mit Schema 2. Heruntergeladenes Archiv-SHA256: `d02b4d5e8b2cde8e5f744cd547a4f5cfa9630b2afbfa2af411449a55ed7c7ced`. Config-SHA256: `37f7b1a22b9d3799dcd961f58cdfdcb2ad2aff41d3ca465ef00e1961a7b660ac`. Archivhash vor Übertragung und auf der VM geprüft; nach Import Architektur und sämtliche RootFS-Layer mit dem CI-Archiv verglichen. Docker/containerd kann als Image-ID den zusätzlichen OCI-Manifestdigest melden.
+## Ursprünglicher Stand und Nachweise
+
+Zum ursprünglichen S2-Update lief das geprüfte ARM64-Image `shownight:26edc1d1e464ed3ad7694b46e4036b6ccc669049-arm64`, [Actions 37980294023](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/37980294023), mit Schema 2. Heruntergeladenes Archiv-SHA256: `d02b4d5e8b2cde8e5f744cd547a4f5cfa9630b2afbfa2af411449a55ed7c7ced`. Config-SHA256: `37f7b1a22b9d3799dcd961f58cdfdcb2ad2aff41d3ca465ef00e1961a7b660ac`. Archivhash vor Übertragung und auf der VM geprüft; nach Import Architektur und sämtliche RootFS-Layer mit dem CI-Archiv verglichen. Docker/containerd kann als Image-ID den zusätzlichen OCI-Manifestdigest melden.
 
 Vor dem Produktivupdate am 10. Oktober auf der vorhandenen VM tatsächlich ausgeführt:
 

@@ -28,7 +28,7 @@ Die drei technischen Startdokumente und der Codex-Prompt sind vorbereitet:
 D013: zuerst Netcup-Server, dann Windows-Agenten. Code-Schemas/Migrationen und Nachweise werden agil umgesetzt. Keine pauschale weitere Fragenrunde ist Voraussetzung für S1.
 
 ## Stand des Zieldeployments
-VM/Architektur, autorisierter Zugang, bestehende Dienste, öffentliche Systemdomain/TLS, S1-Vorbereitung und S2-Agentgrundlage tatsächlich geprüft und bereitgestellt. DJ-Rechner bestätigt, echte WSS-Diagnose und separate VirtualDJ-Leseabfrage bestanden. [S1-Zielnachweise](../entwicklung/netcup-abnahme.md), [S2-Update](../entwicklung/s2-netcup-update.md). Regelmäßiges unabhängiges Backup-/Schlüsselziel, dauerhafter normaler Windows-DNS-Zugriff, Mailzustellung und reale Geräte-/Ton-/Synchronitätsabnahme bleiben offen.
+VM/Architektur, autorisierter Zugang, bestehende Dienste, öffentliche Systemdomain/TLS, S1-Vorbereitung und S2-Agentgrundlage tatsächlich geprüft und bereitgestellt. DJ-Rechner bestätigt, echte WSS-Diagnose und laufende VirtualDJ-Leseberichte einschließlich Authfehler/Erholung bei Agent 0.2.1 bestanden. [S1-Zielnachweise](../entwicklung/netcup-abnahme.md), [S2-Update](../entwicklung/s2-netcup-update.md), [aktuelle Lesediagnose](../entwicklung/s2-virtualdj-update.md). Regelmäßiges unabhängiges Backup-/Schlüsselziel, dauerhafter normaler Windows-DNS-Zugriff, Mailzustellung und reale Geräte-/Ton-/Synchronitätsabnahme bleiben offen.
 Technische Hardware-/Synchronitätsnachweise O01–O14 bleiben bestehen. Weitere Produktfragen gezielt anhand der Implementierung klären.
 
 

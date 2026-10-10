@@ -1,6 +1,14 @@
 # Entwicklungs- und Prüfprotokoll
 
-## 10. Oktober 2026 – laufende DJ-Lesediagnose
+## 10. Oktober 2026 – Lesediagnose produktiv aktualisiert und geprüft
+
+[CI 38006960819](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38006960819) für Runtime `a8b062f` vollständig grün auf Windows und nativen AMD64-/ARM64-Runnern. Geprüfte CI-Archive heruntergeladen; Hashes, Architektur, Config und alle RootFS-Layer am Ziel verglichen. Frisches Wartungsbackup bei gestoppter eigener App/Worker, externe SHA256-Prüfung und isolierter Schema-2-Restore: alle 21 Tabellen und Medienstand identisch, keine Medien im Backup. Recovery danach gestoppt. Private Konfiguration zusätzlich DPAPI/CurrentUser mit identischem Roundtrip gesichert; unabhängiges Backup-/Schlüsselziel bleibt offen.
+
+Server zuerst auf geprüftes Image aktualisiert; Portainer-/Compose-Konfiguration ausschließlich Image geändert. Schema 2 ohne Migration bereit, Mailversand aus. Alter Agent 0.2.0 am neuen Server verbunden und Diagnose geprüft. Anschließend konkrete alte Laufzeit beendet und neue CI-Windows-ZIP gestartet: Agent 0.2.1 verbunden, DPAPI-Identität byteidentisch erhalten, Journal weiter genutzt. Private Start-/Stopphilfe aktualisiert. HTTPS IPv4/IPv6 mit voller TLS-Prüfung bereit. Kein PR-Merge, Proxy-/Fremdstackwechsel oder globaler DNS-Eingriff.
+
+Am Ziel zunächst aktueller Fehlerbericht; separate rohe Leseprobe bestätigte 401 trotz Betreiberaktivierung/-abgleich. Gespeicherter Pluginstring und lokale Datei tatsächlich verschieden. Mit Pluginwert gültigen `get_clock` bestätigt, ausschließlich lokale Datei angeglichen und früheren Stand privat gesichert. Danach realer Ablauf bestätigt: verfügbar → absichtlich falscher lokaler Authwert → Prüfung nicht bestätigt → exakte Wiederherstellung → verfügbar. Gleiche tatsächliche serverseitige WSS-Epoch, frische Empfangs-/Beobachtungszeiten, keine Zugangsdaten in Geräteantworten. Diagnose `completed`/`agent-roundtrip` und SQLite-Nachweis bestanden. Eigenes synthetisches MFA-Konto/Serveraufträge entfernt, echte DJ-Identität erhalten. Kein Pluginabsturz oder Anwendungsneustart daraus ableiten. [Vollständiger Update-/Zielnachweis](s2-virtualdj-update.md).
+
+## 10. Oktober 2026 – Entwicklung der laufenden DJ-Lesediagnose
 
 Betreiber bestätigt weiterhin nur DJ-Rechner ohne FLX4. VirtualDJ läuft; erste aktuelle Leseabfrage nicht bestätigt. Nach Betreiberaktivierung von Network Control und erneutem Testauftrag `get_clock` bestätigt. Neue lokale Fähigkeitsfunktion gegen echtes Plugin erfolgreich. Kein Play/Pause, keine Musik-/Licht-/PA-Ausgabe oder Deckpositionsmessung.
 
