@@ -117,7 +117,17 @@
 - Offen: tatsächliches Proxy-Produkt/Image, Container-/Netzwerkname, Portainer-Deploymentmodus und neue Domainroute.
 - Anleitung: [Deployment](../entwicklung/deployment.md).
 
-## Weitere Entscheidungen
+## D017 – Softwarearbeiten fortsetzen, Funktionstests später nachholen
+
+- Status: bestätigt durch ausdrücklichen Betreiberauftrag
+- Datum: 10. Oktober 2026
+- Auftrag: „weitermachen mit den Themen, die wir schon bearbeiten können“; Funktionstests können nachgeholt werden.
+- Folge: Vorbereitbare Softwarepakete weiterentwickeln, ohne auf derzeit fehlende Geräte oder weitere Testrechner zu warten. Technische Build-/Integrationsprüfungen begleiten die Implementierung; spätere Bedien-/Geräte-/Hardwarefunktionstests bleiben ausdrücklich offen.
+- D013-Reihenfolge und vollständiger F01–F50-/A01–A30-Umfang bleiben bestehen. Keine Veranstaltungsfreigabe und keine als fertig bezeichnete reale Ausgabe ohne Nachweis. Die frühere pauschale Entwicklungssperre vor Gerätenachweisen aus den Arbeitspaketen wird durch diesen Auftrag präzisiert.
+- Erster weiterer Baustein: S3-01 Inhaltspakete mit lokaler SQLite-Ablage. Kein neues Rechte-/Ausfallmodell, keine Liveaktivierung und keine Ablösung des geplanten Windows-Renderers durch Browserausgabe.
+- Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
+
+## Weitere Entscheidungen nach D017
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.

@@ -85,6 +85,15 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   await page.getByRole("button", { name: "Übersicht", exact: true }).click();
   await page.getByRole("button", { name: "Paketmanifest erzeugen" }).click();
   await expect(page.getByText("Manifest vollständig geprüft")).toBeVisible();
+  const packageDownload = page.waitForEvent("download");
+  await page
+    .getByRole("link", { name: "Paket mit Medien herunterladen" })
+    .click();
+  const downloaded = await packageDownload;
+  expect(downloaded.suggestedFilename()).toMatch(
+    /^shownight-[0-9a-f-]+\.snpkg$/,
+  );
+  await downloaded.saveAs("test-results/s3-browser-package.snpkg");
   await page.screenshot({
     path: "test-results/s1-desktop.png",
     fullPage: true,

@@ -8,8 +8,9 @@ const version = "24.19.0",
   name = `node-v${version}-win-x64.zip`;
 const expected =
   "57f71ab3652e797d84acddc79c81cc9ff1c6ddb2a1974cdb83f00fee9bff4c73";
+const local = process.argv[2] === "local";
 const work = resolve(".local/agent-package"),
-  out = resolve("dist/agent-windows");
+  out = resolve(local ? "dist/local-windows" : "dist/agent-windows");
 await mkdir(work, { recursive: true });
 await mkdir(out, { recursive: true });
 const archive = join(work, name);
@@ -70,29 +71,45 @@ await zipOperation(
 } finally {$zip.Dispose()}`,
   [archive, out],
 );
-await copyFile("dist/agent/main.js", join(out, "main.js"));
+await copyFile(
+  local ? "dist/local/main.js" : "dist/agent/main.js",
+  join(out, "main.js"),
+);
 await writeFile(
   join(out, "package.json"),
   JSON.stringify({ type: "module", private: true }),
 );
-for (const [file, mode] of [
-  ["Einrichten.cmd", "pair"],
-  ["Start.cmd", "run"],
-  ["VirtualDJ-Pruefen.cmd", "check-vdj"],
-]) {
+for (const [file, mode] of local
+  ? [
+      ["Importieren.cmd", "import"],
+      ["Pakete-Anzeigen.cmd", "list"],
+      ["Pakete-Pruefen.cmd", "check-all"],
+    ]
+  : [
+      ["Einrichten.cmd", "pair"],
+      ["Start.cmd", "run"],
+      ["VirtualDJ-Pruefen.cmd", "check-vdj"],
+    ]) {
   await writeFile(
     join(out, file),
     `@echo off\r\n"%~dp0node.exe" "%~dp0main.js" ${mode}\r\npause\r\n`,
   );
 }
-await copyFile("docs/entwicklung/s2-agent.md", join(out, "Anleitung.md"));
-await copyFile("node_modules/ws/LICENSE", join(out, "ws-LICENSE.txt"));
+await copyFile(
+  local ? "docs/entwicklung/s3-paketablage.md" : "docs/entwicklung/s2-agent.md",
+  join(out, "Anleitung.md"),
+);
+if (!local)
+  await copyFile("node_modules/ws/LICENSE", join(out, "ws-LICENSE.txt"));
 await copyFile("node_modules/zod/LICENSE", join(out, "zod-LICENSE.txt"));
 await writeFile(
   join(out, "runtime-sha256.txt"),
   `${expected}  ${name}\nQuelle: https://nodejs.org/download/release/v${version}/SHASUMS256.txt\n`,
 );
-const zip = resolve("dist/shownight-agent-windows-x64.zip");
+const zipName = local
+  ? "shownight-local-windows-x64.zip"
+  : "shownight-agent-windows-x64.zip";
+const zip = resolve("dist/" + zipName);
 await unlink(zip).catch((e) => {
   if (e.code !== "ENOENT") throw e;
 });
@@ -104,6 +121,9 @@ await writeFile(
   zip + ".sha256",
   createHash("sha256")
     .update(await readFile(zip))
-    .digest("hex") + "  shownight-agent-windows-x64.zip\n",
+    .digest("hex") +
+    "  " +
+    zipName +
+    "\n",
 );
 console.log("Windows-x64-Paket erstellt; Laufzeit-SHA256 geprüft.");

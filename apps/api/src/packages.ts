@@ -11,6 +11,13 @@ import { eventAccess } from "./permissions.js";
 import { blobPath, fileHash } from "./media.js";
 import { HttpError, missing } from "./errors.js";
 import type { Config } from "./config.js";
+import { Readable } from "node:stream";
+import { mediaAccess } from "./permissions.js";
+import { transferManifest } from "../../../packages/contracts/src/transfer.js";
+import {
+  packageHeader,
+  packageBytes,
+} from "../../../packages/transfer/src/archive.js";
 export async function checkManifest(db: DB, cfg: Config, m: Manifest) {
   const errors = [...m.errors];
   for (const file of m.media) {
@@ -139,5 +146,57 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
       "ONLINE_PREPARATION_ONLY",
       "Online werden Pakete vorbereitet. Liveaktivierung folgt am lokalen Server in S3/S4.",
     );
+  });
+  app.get("/api/v1/packages/:id/download", async (req, reply) => {
+    const p = (
+      await db.query("SELECT * FROM packages WHERE id=$1", [
+        id.parse((req.params as any).id),
+      ])
+    ).rows[0];
+    if (!p) missing();
+    await eventAccess(db, req.actor, p.event_id);
+    const checked = await checkManifest(db, cfg, manifest.parse(p.manifest));
+    if (checked.status !== "valid")
+      throw new HttpError(
+        409,
+        "PACKAGE_INVALID",
+        "Paket nicht vollständig. Bitte Manifest erneut prüfen.",
+      );
+    const parsed = transferManifest.safeParse(checked);
+    if (!parsed.success)
+      throw new HttpError(
+        409,
+        "PACKAGE_UNSUPPORTED",
+        "Dieses Paket überschreitet die Grenzen der lokalen Vorbereitungsablage.",
+      );
+    const paths = new Map<string, string>();
+    for (const f of parsed.data.media) {
+      // Every embedded file requires the same access as its ordinary download.
+      const row = await mediaAccess(db, req.actor, f.id);
+      paths.set(f.id, blobPath(cfg, row.blob_key));
+    }
+    let header;
+    try {
+      header = packageHeader(parsed.data);
+    } catch {
+      throw new HttpError(
+        413,
+        "PACKAGE_LIMIT",
+        "Paketmanifest überschreitet das Übertragungslimit.",
+      );
+    }
+    return reply
+      .type("application/octet-stream")
+      .header("Cache-Control", "no-store")
+      .header(
+        "Content-Disposition",
+        `attachment; filename="shownight-${parsed.data.id}.snpkg"`,
+      )
+      .header(
+        "Content-Length",
+        header.bytes.length +
+          parsed.data.media.reduce((n, f) => n + f.sizeBytes, 0),
+      )
+      .send(Readable.from(packageBytes(parsed.data, (id) => paths.get(id)!)));
   });
 }

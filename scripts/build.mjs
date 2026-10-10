@@ -29,3 +29,12 @@ await build({
   },
 });
 await viteBuild({ configFile: "apps/web/vite.config.ts" });
+await mkdir("dist/local", { recursive: true });
+await build({
+  entryPoints: ["apps/local/src/main.ts"],
+  outfile: "dist/local/main.js",
+  platform: "node",
+  target: "node24",
+  bundle: true,
+  format: "esm",
+});

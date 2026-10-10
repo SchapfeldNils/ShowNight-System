@@ -134,6 +134,10 @@ Der Renderer darf alte laufende Szene gepinnt behalten; shared GO target bei bet
 Lokale Offlinekonten und MFA benötigen geschützte Übernahme und geprüfte Sperr-/Recovery-Regeln. Nicht sämtliche Cloud-Secrets oder sessions kopieren.
 Livezuständigkeit bleibt vor Ort. Online-Ersatz für Einlass/Organisation und kontrollierter Rückwechsel gehören in spätere Pakete, nicht in einen automatischen DNS-/Agent-Failover.
 
-## Netcup zuerst, danach Agenten
+## Implementierte Paketübertragung S3-01
+
+GET `/api/v1/packages/:id/download`: Rechteprüfung wie Manifest plus jede Originaldatei, Download als versioniertes `.snpkg` mit eingefrorenem Inhalt. Strikter gemeinsamer Vertrag `packages/contracts/src/transfer.ts`; Streamingformat `packages/transfer/src/archive.ts`. Länge und SHA256 für Manifest/alle Dateien, lokale vollständige Prüfung vor SQLite-Veröffentlichung. Import ist keine Aktivierung; keine Renderer-/GO-Nachricht wird erzeugt. Format und Grenzen verbindlich für diesen Prototyp in [s3-paketablage.md](s3-paketablage.md). Keine Cloud-Secrets/Benutzer-/Sitzungsfelder, keine Netzwerknachladung im Importer. Vollständiges Offlinekonto-/MFA- und Rendererpaket weiterhin offen.
+
+## Netcup zuerst, danach Agenten – ursprüngliche Reihenfolge
 Erster Sprint implementiert Auth/Rechte, PostgreSQL, Event/Show/Medienvorbereitung, Uploads, Health, Paketmanifest und einen deutlich simulierten Gerätekanal. Livebefehle als getestete gemeinsame Verträge vorbereiten, ohne reale Ausgabe zu behaupten.
 Danach Agentengrundlage unter Windows, Paarung, Heartbeats, Capability-/Diagnoseanzeige, Simulation und mindestens ein überprüfter realer Adapter. Anschließend lokalen Server/SQLite und Renderer anbinden.

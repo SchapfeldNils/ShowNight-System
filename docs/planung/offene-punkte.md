@@ -3,6 +3,8 @@ Stand: 10. Oktober 2026. Grundlage: Gesamtkonzept 2.0, Kapitel 18.
 
 Der Funktionsumfang ist weitgehend beschrieben. Die folgenden Punkte sind noch nicht entschieden oder praktisch nachgewiesen. Eine Anforderung ist kein bestandener Test.
 
+D017 (10. Oktober 2026): Betreiber erlaubt weitere vorbereitbare Softwarearbeiten und spätere Funktionstests. S3-01 ergänzt Inhaltspaketdownload und lokale SQLite-Prüfung; lokaler Mehrbenutzerserver, Offlinekonten/MFA, vollständiges Veranstaltungs-/Rendererpaket, Aktivierung und echte Ausgaben bleiben offen. [Stand und Grenzen](../entwicklung/s3-paketablage.md). Bestehende Geräte-/Betriebsfragen werden dadurch nicht als geklärt markiert.
+
 | Kennung | Bereich | Noch zu klären | Nachweis |
 | --- | --- | --- | --- |
 | O01 | Hauptrechner | Privat organisierte Hardware, Anschlüsse und Leistung | Test mit realer Medienlast |

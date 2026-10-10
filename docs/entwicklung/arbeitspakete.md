@@ -15,7 +15,9 @@ Stand: 9. Oktober 2026. D013 ersetzt die frühere unmittelbare Startreihenfolge 
 | S9 Ergänzungen | Sponsoren, Öffentlichkeit und einfache Einnahmen/Ausgaben | A28 |
 | S10 Auslieferung | Vollständiger Abgleich, Installer, bebilderte Anleitung, Sicherung/Rückfall und Gesamttest | A01–A30 einschließlich A17/A30 |
 
-Reihenfolge späterer Fachmodule kann begründet angepasst werden. Alle vereinbarten Module bleiben Teil der vollständigen ersten Veranstaltungsfreigabe. Früh in S2/S3 müssen die riskanten Geräte-/Renderingwege geprüft werden; keine breite Fachmodulentwicklung vor den wesentlichen technischen Nachweisen.
+Reihenfolge späterer Fachmodule kann begründet angepasst werden. Alle vereinbarten Module bleiben Teil der vollständigen ersten Veranstaltungsfreigabe. Früh in S2/S3 müssen die riskanten Geräte-/Renderingwege geprüft werden. D017 erlaubt ausdrücklich weitere vorbereitbare Softwarearbeiten, während Bedien-/Gerätefunktionstests nachgeholt werden; fehlende Nachweise bleiben Freigabevoraussetzung.
+
+S3-01: Inhaltspaketdownload, strenge Integritätsprüfung, lokale SQLite-Paketablage und portable Windows-CLI auf eigenem Branch. [Ablauf und Grenzen](s3-paketablage.md), [Issue #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6). Teilgrundlage von L-01; kein abgeschlossener S3-/Offline-/Rendererbetrieb.
 
 ## Agile Lieferung
 Je Paket: nutzbarer Ablauf, Daten-/Schnittstellenänderungen, angemessene Tests, Startanleitung, bekannte Grenzen, aktualisierte Dokumentation und eigener PR. Keine automatischen Merges.

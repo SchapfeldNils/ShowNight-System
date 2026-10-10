@@ -185,5 +185,9 @@ Durch D016 geklärt: Nginx läuft in Docker auf derselben VM; Portainer vorhande
 Codex soll eine einbindbare VHost-/Location-Vorlage und Integrationsanleitung liefern. Vorhandene Konfigurationen, Domains und Zertifikate erhalten; WebSockets, Uploadgrößen, Timeouts und vertrauenswürdige Proxyheader anhand des tatsächlichen Aufbaus prüfen. Die bloße Existenz von Nginx bestätigt keine fertige TLS-/Domain-Konfiguration für das neue System.
 
 
-## Vorhandene Docker-/Portainer-Umgebung – D016
+## Softwarefortsetzung und erster lokaler Baustein – D017/S3-01
+
+Am 10. Oktober 2026 erlaubt der Betreiber weitere vorbereitbare Softwarearbeiten bei späteren Funktionstests. S3-01 überträgt eingefrorene S1-Inhalte/Originalmedien in eine lokale SQLite-Paketablage. Portable Windows-CLI, keine direkte Datenbankreplikation und keine Netzwerkdienste beim Import. Paketaufbewahrung, Offlineanmeldung und Liveaktivierung bleiben getrennte Schritte. Kein Windows-Renderer-/HDMI-/Ton-/Hardwarebeleg; bestehender C++/GStreamer/Skia-Zielentwurf bleibt bestehen. [Ablauf, Format und Grenzen](entwicklung/s3-paketablage.md).
+
+## Vorhandene Docker-/Portainer-Umgebung – D016 (Betriebsentwurf)
 Genannte Proxy-Adresse: https://proxy.familie-schapfeld.de. app erhält Anschluss an externes Proxy-Netz und eigenes Backend-Netz; DB und Worker erhalten keine öffentlichen Dienstports. Proxyprodukt, tatsächliche Netzwerknamen und Portainer-Modus vor Deployment erheben. Vollständige Vorgaben: [Deployment](entwicklung/deployment.md).
