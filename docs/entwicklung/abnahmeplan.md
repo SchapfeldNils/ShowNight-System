@@ -1,5 +1,7 @@
 # Abnahmeplan – agile Entwicklung ab Netcup
 
+S3-03 (10. Oktober 2026): zu L-01/A01/A18/A19 Softwareprüfung der opt-in LAN-Konfiguration, ungültiger Ziele, exakter Host-/Origin-/MFA-/CSRF-Prüfung, fehlender Adresszuordnung und nativer Windows-IP-SAN-Zertifikate über isolierten Loopback-TLS-Transport ergänzen. Parallele Erstinitialisierung darf nur ein Profil erzeugen; wiederholte Einrichtung darf Schlüssel/Zertifikat nicht ändern. Keine Firewall-/Rootstoreänderung im automatisierten Test. Echte LAN/WLAN-Prüfung mit mehreren PCs, Clientvertrauen und Internettrennung später gesondert protokollieren; keine bestandene Gesamtprüfung aus dieser Softwaregrundlage. [Ablauf und Grenzen](s3-lan.md), [Ergebnisse](status.md).
+
 Stand: 9. Oktober 2026. Planung, keine bereits bestandenen Tests.
 Die Prüfungen konkretisieren F01–F50/A01–A30 für die ersten Arbeitspakete. Ein Zwischenstand ist keine vollständige Veranstaltungsfreigabe.
 

@@ -24,6 +24,7 @@ export async function localServer(
   origin: string,
   webRoot?: string,
   tls?: ServerOptions,
+  canonicalHost = false,
 ) {
   const app = Fastify({
     bodyLimit: 16384,
@@ -48,6 +49,12 @@ export async function localServer(
   await app.register(rateLimit, { max: 200, timeWindow: 60000 });
   app.decorateRequest("actor");
   app.addHook("onRequest", async (req, reply) => {
+    if (canonicalHost && req.headers.host !== new URL(origin).host)
+      throw new HttpError(
+        421,
+        "HOST",
+        "Bitte die eingerichtete Serveradresse verwenden.",
+      );
     if (!req.url.startsWith("/api/")) return;
     reply.header("Cache-Control", "no-store");
     if (

@@ -1,4 +1,6 @@
 # Offene Punkte
+
+S3-03 (10. Oktober 2026) ergänzt nach D017 die vorbereitbare LAN-Neueinrichtung mit gezielter IPv4-/HTTPS-Konfiguration und Diagnose. Reale Mehrgeräte-/Firewall-/Clientvertrauens-/Internettrennungsprüfung, bestehende Profilumstellung, Zertifikatserneuerung und mobile Clientinstallation bleiben offen. O01–O14 und Gesamtfreigabe unverändert. Nachfolgende S3-02-Absätze beschreiben den früheren Loopback-Stand. [Vertrag und Grenzen](../entwicklung/s3-lan.md).
 Stand: 10. Oktober 2026. Grundlage: Gesamtkonzept 2.0, Kapitel 18.
 
 Der Funktionsumfang ist weitgehend beschrieben. Die folgenden Punkte sind noch nicht entschieden oder praktisch nachgewiesen. Eine Anforderung ist kein bestandener Test.
