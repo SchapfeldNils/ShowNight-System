@@ -18,6 +18,7 @@ import {
   importAccounts,
 } from "./vault.js";
 import { localServer } from "./server.js";
+import { lanSetup, assignedAddress, certificateInfo } from "./network.js";
 async function inputPath(arg?: string) {
   const ui = createInterface({ input: stdin, output: stdout });
   let p = arg;
@@ -35,8 +36,14 @@ async function main() {
     secrets = join(process.env.LOCALAPPDATA, "ShowNight", "secrets"),
     packageRoot = join(process.env.LOCALAPPDATA, "ShowNight", "local-packages");
   const mode = process.argv[2] ?? "run";
-  if (mode === "init") {
-    const { vault, recovery } = await initVault(root, secrets);
+  if (mode === "init" || mode === "init-lan") {
+    const network =
+      mode === "init-lan"
+        ? lanSetup.parse(
+            await boundedJson(await inputPath(process.argv[3]), 4096),
+          )
+        : undefined;
+    const { vault, recovery } = await initVault(root, secrets, network);
     const a = new LocalAccounts(root, vault.key);
     try {
       a.configureRecovery(recovery);
@@ -56,9 +63,37 @@ async function main() {
       "Wiederherstellungsschlüssel separat sichern: " +
         join(secrets, "local-server-recovery.env"),
     );
+    console.log(
+      "Serveradresse: " +
+        vault.origin +
+        " · Zertifikatvertrauen und Firewall separat einrichten.",
+    );
     return;
   }
   const v = await loadVault(root);
+  if (mode === "network-check") {
+    console.log(
+      JSON.stringify(
+        {
+          mode: v.network ? "lan-preparation" : "loopback-preparation",
+          origin: v.origin,
+          bindAddress: v.network?.address ?? "127.0.0.1",
+          addressAssigned: assignedAddress(v.network?.address ?? "127.0.0.1"),
+          certificate: certificateInfo(
+            await readFile(join(root, "server.cer")),
+            v.origin,
+          ),
+          firewall: "manuell prüfen",
+          clientTrust: "auf jedem Client manuell prüfen",
+          liveEnabled: false,
+          mailEnabled: false,
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
   if (mode === "trust") {
     const trust = serverTrust.parse(
       await boundedJson(await inputPath(process.argv[3]), 16384),
@@ -124,6 +159,12 @@ async function main() {
         "Lokales Adminkonto wiederhergestellt. Neues Kennwort und lokale MFA beim nächsten Login verwenden; Datei-Kennwort wieder leeren.",
       );
     } else if (mode === "run") {
+      const bindAddress = v.network?.address ?? "127.0.0.1";
+      if (!assignedAddress(bindAddress))
+        throw new Error(
+          "Eingerichtete Netzwerkadresse ist diesem Rechner nicht zugewiesen.",
+        );
+      certificateInfo(await readFile(join(root, "server.cer")), v.origin);
       if (!a.meta("snapshot_id")) throw new Error("Anmeldestand fehlt.");
       // Refuse corrupt prepared files before opening any listener.
       for (const p of a.packageBindings())
@@ -137,16 +178,23 @@ async function main() {
       const webRoot = existsSync(bundledWeb)
         ? bundledWeb
         : resolve("dist/server/web");
-      const server = await localServer(a, packages, v.origin, webRoot, {
-        pfx: await readFile(join(root, "server.pfx")),
-        passphrase: v.pfxPassword,
-        minVersion: "TLSv1.2",
-      });
+      const server = await localServer(
+        a,
+        packages,
+        v.origin,
+        webRoot,
+        {
+          pfx: await readFile(join(root, "server.pfx")),
+          passphrase: v.pfxPassword,
+          minVersion: "TLSv1.2",
+        },
+        true,
+      );
       server.addHook("onClose", async () => {
         a.close();
         packages.close();
       });
-      await server.listen({ host: "127.0.0.1", port: 3443 });
+      await server.listen({ host: bindAddress, port: 3443 });
       retained = true;
       console.log(
         "ShowNight Offlinevorbereitung · " +

@@ -145,6 +145,10 @@
 
 ## Weitere Entscheidungen nach D017
 
+### S3-03 – technische Umsetzung, 10. Oktober 2026
+
+Status: technische Konkretisierung des beauftragten lokalen Servers nach D017, keine neue Fachentscheidung. Opt-in LAN-Neueinrichtung mit bestimmter privater IPv4-Adresse und passendem HTTPS-IP-Zertifikat; Loopback bleibt Standard. Clientvertrauen/Firewall werden gezielt manuell eingerichtet. Keine zusätzlichen Fachrechte, Regieübernahme, Wildcard, Liveautoritätsumschaltung oder Änderungen am vorgesehenen Ausfallverhalten. Bestehende Profilumstellung und echte Mehrgeräte-/Hardwareabnahme bleiben offen. [Anleitung](../entwicklung/s3-lan.md), [Nachweise](../entwicklung/status.md).
+
 ### S3-02 – technische Umsetzung, 10. Oktober 2026
 
 Status: Umsetzung im ausdrücklich beauftragten Arbeitspaket; keine neue Fachentscheidung. F30 verlangt vorbereitete interne Konten, MFA für Admin/Leitung, lokale Sperren, persönliche Offlineeinrichtung und gesonderte administrative Recovery. S3-02 konkretisiert dies mit einem separat signierten und zielverschlüsselten Kontenstand, CurrentUser-DPAPI und Loopback-HTTPS. Gemeinsame Quellidentitäten und vorhandene Veranstaltungsrollen bleiben erhalten. Lokale Änderungen werden vorgemerkt; Onlineabgleich und LAN bleiben offen. [Anleitung](../entwicklung/s3-lokalserver.md), [Status](../entwicklung/status.md).

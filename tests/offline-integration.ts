@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
 import { powershell } from "../apps/agent/src/identity.js";
 import { request as httpsRequest } from "node:https";
+import { checkServerIdentity } from "node:tls";
 import { DatabaseSync } from "node:sqlite";
 import { database, migrate } from "../apps/api/src/db.js";
 import { fixture, multipartFile } from "./fixture.js";
@@ -26,6 +27,11 @@ import { PackageStore } from "../apps/local/src/store.js";
 import { LocalAccounts } from "../apps/local/src/accounts.js";
 import { localServer } from "../apps/local/src/server.js";
 import { importAccounts, loadVault } from "../apps/local/src/vault.js";
+import {
+  lanOrigin,
+  assignedAddress,
+  certificateInfo,
+} from "../apps/local/src/network.js";
 test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", async (t) => {
   const f = await fixture(55436),
     target = createTarget(),
@@ -642,9 +648,93 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
         }
       },
     );
+    await t.test(
+      "LAN-API-Vertrag: Host, Origin, Rechte, sichere Cookies und Sitzungssperre",
+      async () => {
+        const path = join(f.dir, "lan-api");
+        await mkdir(path);
+        const a = new LocalAccounts(path, randomBytes(32).toString("hex"));
+        a.importSnapshot(snapshot);
+        const origin = lanOrigin("192.168.50.10"),
+          app = await localServer(
+            a,
+            packages,
+            origin,
+            undefined,
+            undefined,
+            true,
+          );
+        const call = (
+          url: string,
+          method = "GET",
+          payload?: any,
+          headers?: Record<string, string>,
+        ) =>
+          app.inject({
+            url,
+            method: method as any,
+            headers: { host: "192.168.50.10:3443", origin, ...headers },
+            ...(payload === undefined ? {} : { payload }),
+          });
+        try {
+          assert.equal(
+            (
+              await call("/health/live", "GET", undefined, {
+                host: "localhost:3443",
+              })
+            ).statusCode,
+            421,
+          );
+          assert.equal((await call("/api/local/packages")).statusCode, 401);
+          const body = { login: "member", password: memberPassword };
+          assert.equal(
+            (
+              await call("/api/local/auth/login", "POST", body, {
+                origin: "https://localhost:3443",
+              })
+            ).statusCode,
+            403,
+          );
+          const login = await call("/api/local/auth/login", "POST", body);
+          assert.equal(login.statusCode, 200);
+          assert.equal(login.cookies[0].secure, true);
+          assert.equal(login.cookies[0].httpOnly, true);
+          assert.equal(login.cookies[0].sameSite, "Strict");
+          const cookie = "sn_local_session=" + login.cookies[0].value;
+          const list = await call("/api/local/packages", "GET", undefined, {
+            cookie,
+          });
+          assert.equal(list.statusCode, 200);
+          assert.equal(list.json()[0].eventId, eventId);
+          const denied = await call(
+            "/api/local/events/" + secondEvent + "/users",
+            "GET",
+            undefined,
+            { cookie },
+          );
+          assert.equal(denied.statusCode, 404);
+          const admin = await call("/api/local/auth/login", "POST", {
+            login: "admin",
+            password: f.adminPassword,
+          });
+          assert.ok(admin.json().challenge);
+          assert.equal(admin.cookies.length, 0);
+          const mfa = a.verify(admin.json().challenge, totp(onlineSecret));
+          a.block(a.actor(mfa.session)!, memberId, true, eventId);
+          assert.equal(
+            (await call("/api/local/packages", "GET", undefined, { cookie }))
+              .statusCode,
+            401,
+          );
+        } finally {
+          await app.close();
+          a.close();
+        }
+      },
+    );
     if (process.platform === "win32")
       await t.test(
-        "Portables Windows-Bundle außerhalb des Repositories: DPAPI, ACL, Zertifikat und HTTPS ohne abgeschaltete Prüfung",
+        "Portables Windows-Bundle: DPAPI, parallele Einrichtung, Loopback-/LAN-Zertifikat und echte TLS-Schutzprüfungen",
         async () => {
           const isolated = await mkdtemp(
             join(tmpdir(), "shownight-server-zip-"),
@@ -660,14 +750,20 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
             serverRoot = join(profile, "ShowNight", "local-server"),
             exe = join(isolated, "server-windows", "main.js"),
             runtime = join(isolated, "server-windows", "node.exe");
-          async function cli(mode: string, arg?: string) {
-            return new Promise<void>((resolve, reject) => {
+          async function cli(
+            mode: string,
+            arg?: string,
+            selectedProfile = profile,
+          ) {
+            return new Promise<string>((resolve, reject) => {
               const p = spawn(runtime, [exe, mode, ...(arg ? [arg] : [])], {
                 cwd: isolated,
-                env: { ...process.env, LOCALAPPDATA: profile },
+                env: { ...process.env, LOCALAPPDATA: selectedProfile },
                 windowsHide: true,
-                stdio: ["ignore", "ignore", "ignore"],
+                stdio: ["ignore", "pipe", "ignore"],
               });
+              let output = "";
+              p.stdout.on("data", (b) => (output += b.toString()));
               const timer = setTimeout(() => {
                 p.kill();
                 reject(new Error("Portabler Befehl antwortet nicht."));
@@ -676,14 +772,18 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
               p.on("close", (c) => {
                 clearTimeout(timer);
                 c === 0
-                  ? resolve()
+                  ? resolve(output)
                   : reject(
                       new Error("Portabler Befehl fehlgeschlagen: " + mode),
                     );
               });
             });
           }
-          await cli("init");
+          const parallel = await Promise.allSettled([cli("init"), cli("init")]);
+          assert.equal(
+            parallel.filter((r) => r.status === "fulfilled").length,
+            1,
+          );
           const v = await loadVault(serverRoot);
           assert.equal(
             (await readFile(join(serverRoot, "server.dpapi"), "utf8")).includes(
@@ -697,6 +797,14 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
           );
           assert.equal(certificate.checkHost("localhost"), "localhost");
           assert.equal(certificate.checkIP("127.0.0.1"), "127.0.0.1");
+          const diagnostic = JSON.parse(await cli("network-check"));
+          assert.equal(diagnostic.mode, "loopback-preparation");
+          assert.equal(
+            diagnostic.certificate.fingerprintSha256,
+            certificate.fingerprint256,
+          );
+          assert.equal(diagnostic.addressAssigned, true);
+          assert.equal(JSON.stringify(diagnostic).includes(v.key), false);
           const trustPath = join(f.dir, "test.sntrust"),
             authPath = join(f.dir, "test.snauth");
           await writeFile(trustPath, JSON.stringify(trust));
@@ -781,6 +889,208 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
               if (server.exitCode !== null) resolve();
               else server.once("exit", () => resolve());
             });
+          }
+          // A LAN certificate is tested over isolated loopback transport. This
+          // proves TLS/identity/rights, not a real interface, firewall or WLAN.
+          const address = ["10.254.253.252", "192.168.254.253"].find(
+            (ip) => !assignedAddress(ip),
+          )!;
+          assert.ok(address);
+          const lanProfile = join(isolated, "lan-profile"),
+            lanRoot = join(lanProfile, "ShowNight", "local-server"),
+            networkFile = join(isolated, "network.json");
+          await writeFile(
+            networkFile,
+            JSON.stringify({ version: 1, address: "0.0.0.0" }),
+          );
+          await assert.rejects(() => cli("init-lan", networkFile, lanProfile));
+          await writeFile(networkFile, JSON.stringify({ version: 1, address }));
+          await cli("init-lan", networkFile, lanProfile);
+          const lv = await loadVault(lanRoot),
+            lc = new X509Certificate(
+              await readFile(join(lanRoot, "server.cer")),
+            );
+          assert.equal(lv.origin, lanOrigin(address));
+          assert.equal(lv.network?.address, address);
+          assert.equal(lc.checkIP(address), address);
+          assert.equal(lc.checkHost("localhost"), undefined);
+          assert.equal(lc.checkIP("127.0.0.1"), undefined);
+          assert.throws(() =>
+            certificateInfo(lc.raw, "https://localhost:3443"),
+          );
+          assert.throws(() =>
+            certificateInfo(lc.raw, lv.origin, Date.parse(lc.validTo) + 1),
+          );
+          const diag = JSON.parse(
+            await cli("network-check", undefined, lanProfile),
+          );
+          assert.equal(diag.addressAssigned, false);
+          assert.equal(diag.certificate.fingerprintSha256, lc.fingerprint256);
+          await assert.rejects(() => cli("run", undefined, lanProfile));
+          const a = new LocalAccounts(lanRoot, lv.key);
+          a.importSnapshot(snapshot);
+          const lan = await localServer(
+            a,
+            packages,
+            lv.origin,
+            undefined,
+            {
+              pfx: await readFile(join(lanRoot, "server.pfx")),
+              passphrase: lv.pfxPassword,
+              minVersion: "TLSv1.2",
+            },
+            true,
+          );
+          await lan.listen({ host: "127.0.0.1", port: 0 });
+          const port = (lan.server.address() as { port: number }).port;
+          async function request(
+            path: string,
+            options: {
+              host?: string;
+              identity?: string;
+              trusted?: boolean;
+              body?: unknown;
+              cookie?: string;
+              csrf?: string;
+              origin?: string;
+            } = {},
+          ) {
+            return new Promise<{ status: number; body: any; cookie: string }>(
+              (resolve, reject) => {
+                const body =
+                  options.body === undefined
+                    ? undefined
+                    : JSON.stringify(options.body);
+                const r = httpsRequest(
+                  {
+                    hostname: "127.0.0.1",
+                    port,
+                    path,
+                    method: body ? "POST" : "GET",
+                    rejectUnauthorized: true,
+                    ...(options.trusted === false ? {} : { ca: lc.toString() }),
+                    checkServerIdentity: (_h, c) =>
+                      checkServerIdentity(options.identity ?? address, c),
+                    headers: {
+                      host: options.host ?? address + ":3443",
+                      origin: options.origin ?? lv.origin,
+                      cookie: options.cookie ?? "",
+                      "x-csrf-token": options.csrf ?? "",
+                      ...(body
+                        ? {
+                            "content-type": "application/json",
+                            "content-length": Buffer.byteLength(body),
+                          }
+                        : {}),
+                    },
+                  },
+                  (res) => {
+                    let data = "";
+                    res.on("data", (b) => (data += b.toString()));
+                    res.on("end", () =>
+                      resolve({
+                        status: res.statusCode!,
+                        body: JSON.parse(data),
+                        cookie:
+                          res.headers["set-cookie"]?.[0].split(";")[0] ?? "",
+                      }),
+                    );
+                    res.on("error", reject);
+                  },
+                );
+                r.setTimeout(5000, () =>
+                  r.destroy(new Error("TLS-Testzeit abgelaufen.")),
+                );
+                r.on("error", reject);
+                r.end(body);
+              },
+            );
+          }
+          try {
+            assert.equal((await request("/health/live")).status, 200);
+            await assert.rejects(() =>
+              request("/health/live", { trusted: false }),
+            );
+            await assert.rejects(() =>
+              request("/health/live", { identity: "127.0.0.1" }),
+            );
+            assert.equal(
+              (await request("/health/live", { host: "localhost:3443" }))
+                .status,
+              421,
+            );
+            assert.equal((await request("/api/local/packages")).status, 401);
+            const body = { login: "admin", password: f.adminPassword };
+            assert.equal(
+              (
+                await request("/api/local/auth/login", {
+                  body,
+                  origin: "https://localhost:3443",
+                })
+              ).status,
+              403,
+            );
+            const login = await request("/api/local/auth/login", { body });
+            assert.equal(login.status, 200);
+            assert.ok(login.body.challenge);
+            assert.equal(
+              (await request("/api/local/packages", { cookie: login.cookie }))
+                .status,
+              401,
+            );
+            const auth = await request("/api/local/auth/mfa/verify", {
+              body: {
+                challenge: login.body.challenge,
+                code: totp(onlineSecret),
+              },
+            });
+            assert.equal(auth.status, 200);
+            assert.match(auth.cookie, /^sn_local_session=/);
+            assert.equal(
+              (await request("/api/local/packages", { cookie: auth.cookie }))
+                .status,
+              200,
+            );
+            assert.equal(
+              (
+                await request("/api/local/auth/logout", {
+                  body: {},
+                  cookie: auth.cookie,
+                })
+              ).status,
+              403,
+            );
+            assert.equal(
+              (
+                await request("/api/local/auth/logout", {
+                  body: {},
+                  cookie: auth.cookie,
+                  csrf: auth.body.csrfToken,
+                })
+              ).status,
+              200,
+            );
+            assert.equal(
+              (await request("/api/local/packages", { cookie: auth.cookie }))
+                .status,
+              401,
+            );
+            // Rejected reinitialization must leave this target/certificate intact.
+            await assert.rejects(() =>
+              cli("init-lan", networkFile, lanProfile),
+            );
+            assert.equal(
+              (await loadVault(lanRoot)).target.targetId,
+              lv.target.targetId,
+            );
+            assert.equal(
+              new X509Certificate(await readFile(join(lanRoot, "server.cer")))
+                .fingerprint256,
+              lc.fingerprint256,
+            );
+          } finally {
+            await lan.close();
+            a.close();
           }
         },
       );

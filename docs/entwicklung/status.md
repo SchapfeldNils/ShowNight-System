@@ -1,5 +1,15 @@
 # Entwicklungsstatus
 
+## S3-03: gezielte LAN-Einrichtung
+
+Runtime `44d19c6`, [Entwurfs-PR #11](https://github.com/SchapfeldNils/ShowNight-System/pull/11) gegen S3-02-Branch. Vollständige aktuelle CI und versionierte Windows-Artefakte unter [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/11/checks). Diese dynamische Prüfquelle zeigt den tatsächlichen Stand des letzten Dokumentations-/Runtimecommits; lokale Ergebnisse unten sind davon getrennt. Kein Merge.
+
+10. Oktober 2026, Branch `codex/s3-lan-setup`, [Issue #10](https://github.com/SchapfeldNils/ShowNight-System/issues/10), auf S3-02 / PR #9 aufgebaut. Implementiert: ausdrückliche Neueinrichtung auf einer bestimmten privaten IPv4-Adresse, passendes IP-SAN-Zertifikat, verschlüsselte Netzwerkzuordnung, Prüfung von lokaler Adresszuordnung/Zertifikat vor Start, kanonischer Hostheader sowie lokale Diagnose mit SHA256-Fingerabdruck. Loopback-Profile bleiben lesbar und Standard. Exklusive Initialisierung und Ablehnung vorhandener/teilweiser Dateien verhindern konkurrierendes Überschreiben. Portable Startdateien, JSON-Beispiel und gezielte manuelle Firewall-/Vertrauensanleitung liegen im ZIP. Keine neue Abhängigkeit oder Datenbankmigration. [Bedienung und Grenzen](s3-lan.md).
+
+Typprüfung, Build, server:package und neun Unitprüfungen lokal bestanden. Abschließende Offline-/Windows-Prüfung 10/10 bestanden, einschließlich zusätzlichem plattformübergreifendem LAN-Rechtevertrag, paralleler Einrichtung, neuer LAN-Zertifikate und TLS/Host/Origin/MFA/CSRF/Sitzungswiderruf. CI und weitergehende Regressionen werden am Entwurfs-PR protokolliert; noch kein Ergebnis vorwegnehmen. Echte LAN-IP-Zertifikatsprüfung erfolgt über isolierten Loopback-Transport mit vollständiger Vertrauens-/Identitätsprüfung, ohne reales Veranstaltungsnetz zu öffnen.
+
+Offen: Umstellung bestehender Loopback-Profile/Zertifikatsrotation, Mehrgeräte-LAN/WLAN und Internettrennung am echten Aufbau, mobile Vertrauensinstallation, vollständiger lokaler Fachumfang/Onlineabgleich, Renderer/GO/Ausgabe und Hardware-/Veranstaltungsabnahme. Keine reale Firewall-/Rootstoreänderung oder Produktivinstallation; Netcup bleibt S2/Schema 2. F01–F50/A01–A30 bleiben verbindlich. Nachfolgende S3-02-/S3-01-Einträge dokumentieren ihre früheren isolierten Grenzen.
+
 ## S3-02: lokaler HTTPS-Server und vorbereitete Offlinekonten
 
 Stand: 10. Oktober 2026. Beauftragte Softwarefortsetzung gemäß D017; Branch codex/s3-local-server von S3-01 e9a78f3, [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8), [Entwurfs-PR #9](https://github.com/SchapfeldNils/ShowNight-System/pull/9). Runtime 7ab7b8b; der jeweils aktuelle native AMD64-/ARM64-/Windows-Prüfstand und die Artefakte stehen unter [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/9/checks). Keine Zusammenführung und kein Netcup-Update.

@@ -163,6 +163,8 @@ if (server) {
 for (const [file, mode] of server
   ? [
       ["Server-Einrichten.cmd", "init"],
+      ["Server-LAN-Einrichten.cmd", "init-lan"],
+      ["Server-Netzwerk-Pruefen.cmd", "network-check"],
       ["Serverschluessel-Importieren.cmd", "trust"],
       ["Anmeldestand-Importieren.cmd", "import-auth"],
       ["Server-Start.cmd", "run"],
@@ -195,6 +197,13 @@ await copyFile(
 );
 if (!local && !server)
   await copyFile("node_modules/ws/LICENSE", join(out, "ws-LICENSE.txt"));
+if (server) {
+  await copyFile(
+    "deploy/windows/local-network.example.json",
+    join(out, "local-network.example.json"),
+  );
+  await copyFile("docs/entwicklung/s3-lan.md", join(out, "LAN-Anleitung.md"));
+}
 await copyFile("node_modules/zod/LICENSE", join(out, "zod-LICENSE.txt"));
 await writeFile(
   join(out, "runtime-sha256.txt"),

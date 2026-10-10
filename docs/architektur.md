@@ -1,5 +1,7 @@
 # Show Night – Technische Architektur
 
+S3-03, 10. Oktober 2026: optionaler gezielter LAN-Zugang des lokalen Vorbereitungsservers. Eine private IPv4-Schnittstelle, passendes selbstsigniertes IP-SAN-Zertifikat, manuelle Client-Vertrauens-/Firewallkonfiguration und lokale Diagnose. Loopback bleibt Standard und bestehende Profile bleiben erhalten. Der nachfolgende S3-02-Satz beschreibt den früheren Teilstand. Keine neue Fach-/Live-/Ausfallarchitektur, Renderer bleibt C++/GStreamer/Skia; tatsächliche Mehrgeräte-/Internettrennungsabnahme offen. [Bedienung und Grenzen](entwicklung/s3-lan.md).
+
 Version 2.0 · Entwicklungsgrundlage vom 9. Oktober 2026
 
 Implementierter Teilstand vom 10. Oktober 2026: S3-02 ergänzt einen lokalen HTTPS-Vorbereitungsdienst mit eigener SQLite-Kontenablage, signiertem/verschlüsseltem Quellimport und bestehender Veranstaltungsrechteprüfung. Loopback, lesende Pakete, lokale Konten/MFA/Sperren/Recovery; noch kein LAN, Onlineabgleich oder Renderer. [Bedienung und Grenzen](entwicklung/s3-lokalserver.md). Das folgende vollständige Architekturziel bleibt verbindlich; Netcup bleibt Vorbereitung ohne HDMI.

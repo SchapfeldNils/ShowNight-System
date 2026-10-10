@@ -1,5 +1,7 @@
 # Kostenlose Komponenten und Lizenzen – S1/S2/S3
 
+S3-03 ergänzt keine neue Komponente: vorhandene Node-/Fastify-/Zod-Laufzeit, SQLite und Windows DPAPI/PKI. Netzwerkdiagnose verwendet Node-Bordmittel. Manuelle Windows-Firewall-/Zertifikatskonfiguration ist eine Betriebssystemvoraussetzung; keine gekaufte zusätzliche Software. Die vollständigen bisherigen Lizenztexte bleiben im Server-ZIP enthalten. [LAN-Anleitung](s3-lan.md).
+
 Nachprüfung des S3-02-ZIPs: abstract-logging 2.0.1 bringt nur MIT-Metadaten und einen Autoren-Lizenzlink mit. Der vollständige Autoren-Lizenztext wurde am 10. Oktober 2026 geprüft und mit Quellenvermerk festgehalten; der Builder nimmt ihn versionsgebunden in die ZIP auf. [Quelle](licenses/abstract-logging-source.md). Jeder der 69 Paketlizenzordner enthält damit einen Lizenz-/Notice-Text.
 
 S3-02 benötigt keine zusätzliche npm-Abhängigkeit. Der portable lokale Server nutzt vorhandenes Fastify mit Cookie-/Helmet-/RateLimit-/Static-Plugins, Zod, SQLite und Windows DPAPI/PKI. Windows-Systemfunktionen sind externe Betriebssystemvoraussetzungen. Der ZIP-Builder übernimmt Paketmetadaten und vorhandene License-/Notice-Dateien aller tatsächlich gebündelten Serverpakete sowie React/React-DOM/Scheduler für die Weboberfläche, dazu den vollständigen offiziellen Node-Lizenztext. Kein kostenpflichtiger Zusatzdienst und kein Renderer-/Codecbuild in diesem Paket.

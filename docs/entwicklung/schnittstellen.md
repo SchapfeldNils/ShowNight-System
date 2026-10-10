@@ -1,5 +1,7 @@
 # Schnittstellen und Zustandsprotokoll – Entwicklungsstart
 
+S3-03 (10. Oktober 2026) ergänzt den nachfolgend dokumentierten S3-02-Loopback-Weg um `init-lan <JSON-Datei>` und `network-check`. Striktes JSON Version 1 mit einer privaten IPv4-Adresse, Grenze 4096 Byte. Neue Profile binden ausdrücklich diese Schnittstelle auf Port 3443, HTTPS-IP-SAN und exakter Origin/Host. Falscher Host: 421; API-Origin/CSRF/MFA/Rechte bleiben unverändert. Diagnose zeigt keine Geheimnisse und prüft keine fremden Geräte. Bestehende Loopback-Profile bleiben lesbar; kein Profilwechsel, neue Netzwerk-/Agent-Autorität oder Live-Protokoll. [Start und offene echte LAN-Abnahme](s3-lan.md).
+
 S2-Prototyp verwendet die tatsächlich implementierten Version-1-Verträge in `packages/contracts/src/agent.ts`. Geräteverwaltung unter `/api/v1/devices` mit bestehenden Admin-/MFA-/CSRF-Regeln, gesonderte native Einmalpaarung `/api/agent/v1/pair`, Bearer-WSS `/api/agent/v1/ws`. Online-Allowlist ausschließlich Diagnose/No-op, keine unten geplanten Liveaktionen. HELLO/WELCOME, 5-Sekunden-Heartbeat, 15-Sekunden-Liveness, Verbindungs-Epoch, Widerruf und dauerhaft deduplizierte Dispatch-ID: [Agentanleitung](s2-agent.md). Ab Agent 0.2.1 optionale aktuelle Fähigkeiten im Heartbeat und begrenzte lokale VirtualDJ-Lesediagnose; Server ergänzt Empfangszeit/Freshness, keine SQL-Migration. [Konkreter Vertrag](s2-virtualdj-diagnose.md). S2 ist noch kein Nachweis der folgenden lokalen Live- und Hardwareverträge.
 
 Stand: 9. Oktober 2026. Grundlage D003–D013, Architektur und Datenmodell.
