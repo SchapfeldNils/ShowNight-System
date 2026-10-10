@@ -685,8 +685,9 @@ function App() {
                     <h2>Paketmanifest</h2>
                     <p>
                       Pinnt Event- und Showrevisionen sowie Medienprüfsummen.
-                      Vollständiger Offlineimport und Liveaktivierung folgen in
-                      S3/S4.
+                      Der Download enthält diesen Vorbereitungsstand und seine
+                      Medien. Lokaler Paketimport aktiviert keine Show;
+                      Offlinekonten und Livebetrieb folgen.
                     </p>
                     <button
                       disabled={loading}
@@ -720,6 +721,16 @@ function App() {
                         {packageResult.errors.map((e, i) => (
                           <p key={i}>{e}</p>
                         ))}
+                        {packageResult.status === "valid" && (
+                          <p>
+                            <a
+                              href={`/api/v1/packages/${packageResult.id}/download`}
+                              download
+                            >
+                              Paket mit Medien herunterladen
+                            </a>
+                          </p>
+                        )}
                         <details>
                           <summary>Gepinnte Inhalte anzeigen</summary>
                           <pre>{JSON.stringify(packageResult, null, 2)}</pre>

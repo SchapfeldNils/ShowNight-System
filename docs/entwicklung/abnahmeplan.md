@@ -42,6 +42,8 @@ S1-12 bleibt blocked, falls VM-/Domain-/Zugangsdaten fehlen. S1-01 bis S1-11 sin
 Nicht vorhandene Hardware blockiert nur ihren realen Nachweis, nicht die Protokollimplementierung. Keine fiktiven API-Aufrufe als fertige Integration deklarieren.
 
 ## S3/S4 – lokaler Server und erster Showablauf
+
+S3-01 prüft Download/Import/Integrität/Persistenz und gebündelte Windows-Paketablage automatisiert mit synthetischen Daten. Dies liefert nur eine Teilgrundlage von L-01; lokale Anmeldung/Rechte, Browser-/LAN-Server, Internettrennung des Gesamtaufbaus, Renderer und Liveaktivierung fehlen noch. D017 erlaubt weiterführende Softwarearbeiten vor späteren Bedien-/Gerätefunktionstests. [Nachweise und Grenzen](s3-paketablage.md).
 | ID | Schritte | Erwartetes Ergebnis | Bezug |
 | --- | --- | --- | --- |
 | L-01 | Vorbereitung vollständig lokal bereitstellen; Internet trennen, lokal anmelden | Eigener lokaler Server/SQLite und vorbereitete Rechte funktionieren; Cloud nicht Livevoraussetzung | F25/F26/A01 |

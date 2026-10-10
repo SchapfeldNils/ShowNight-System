@@ -1,4 +1,6 @@
-# Kostenlose Komponenten und Lizenzen – S1/S2
+# Kostenlose Komponenten und Lizenzen – S1/S2/S3-01
+
+S3-01 verwendet bestehendes Zod (MIT) und SQLite aus der offiziellen Node-Laufzeit. Keine zusätzliche npm-Abhängigkeit. Portable Windows-Paketablage enthält dieselbe SHA256-geprüfte Node-24.19.0-Laufzeit inklusive vollständigem Node-/Drittlizenztext und Zod-Lizenz. Kein FFmpeg-/Rendererbuild in dieser ZIP; dessen Auslieferungs-/Codecprüfung bleibt offen. [Paketablage](s3-paketablage.md).
 
 S2-Agent: direkte Laufzeitabhängigkeit `ws` (MIT) und bereits verwendetes Zod (MIT), installierte Versionen im Lockfile/Inventar. Portable Windows-x64-ZIP enthält den offiziellen Node-24.19.0-Build, dessen vollständigen Lizenztext einschließlich Drittlizenzen sowie ws-/Zod-Lizenzdateien. Hersteller-ZIP gegen festgelegten SHA256 geprüft; keine kostenpflichtige zusätzliche Komponente. Vorhandene VirtualDJ-Pro-/Daslight-/Hardwarevoraussetzungen sind getrennt und noch kein Praxisnachweis. Einzelheiten: [Agentanleitung](s2-agent.md).
 

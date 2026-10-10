@@ -1,5 +1,7 @@
 # ShowNight-System
 
+S3-01 auf `codex/s3-local-packages`: [Vorbereitungsstände mit Medien herunterladen und lokal in SQLite prüfen](docs/entwicklung/s3-paketablage.md), [Arbeitspaket #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6). Portable Windows-Paketablage ohne Internetzugriff; Import aktiviert keine Ausgabe. Noch kein lokaler Mehrbenutzerserver, Offlinekonto-/MFA-Verfahren oder Renderer. Dieser S3-Stand ist noch nicht produktiv installiert.
+
 S2-Agentprototyp auf eigenem Arbeitsbranch: [Windows-Agent starten, paaren und diagnostizieren](docs/entwicklung/s2-agent.md). Online-Server am 10. Oktober 2026 nach Betreiberfreigabe auf S2/Schema 2 aktualisiert; DJ-Rechner gepaart und echte WSS-Diagnose bestätigt. Agent 0.2.1 meldet laufende VirtualDJ-Leseprüfungen mit frischem Serverstatus; echter Authfehler und Erholung bei bestehender Verbindung geprüft. [Aktualisierung und Nachweise](docs/entwicklung/s2-virtualdj-update.md). Steuerungs-/Daslight-/Controller-/FLX4-Abnahmen bleiben offen. Keine Bühnensteuerung oder Veranstaltungsfreigabe.
 
 Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Veranstaltungsformen.

@@ -2,7 +2,15 @@
 
 Stand: 10. Oktober 2026. S1-Onlinevorbereitung und S2-Agentgrundlage; S2-Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-[PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). Erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
 
-## Implementiert
+## S3-01: Inhaltspaketdownload und lokale SQLite-Ablage
+
+Auf `codex/s3-local-packages`, [Issue #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6), abhängig von S2 PR #5. D017 erlaubt Softwarefortsetzung bei späteren Bedien-/Gerätefunktionstests. Implementiert: authentifizierter Download eines eingefrorenen S1-Stands mit Originalmedien, striktes begrenztes Streamingformat, SHA256/Referenzprüfung, Staging und transaktionale SQLite-Ablage. Portable Windows-x64-CLI importiert, zeigt Pakete und prüft Dateien erneut; kein npm beim Anwender. [Bedienung, Vertrag und Grenzen](s3-paketablage.md).
+
+Lokaler Windows-Nachweis: Typen/Build/beide Windows-ZIPs, 8/8 Unitprüfungen, S1 13/13 sowie Browser 1/1 mit echtem Paketdownload bestanden. S3-Integration 9/9 (acht Prüfgruppen plus übergeordneter Test) mit eigener nativer PostgreSQL-17.9-DB auf Port 55435 und synthetischen Medien: Rechte, eingefrorene Revisionen, SQLite-Neustart, Hash-/Längen-/Referenzfehler, idempotente/parallele Importe, Konflikterhalt, Blockgrenzen/Manifestbytes/medienloser Stand und gebündelte Windows-CLI außerhalb Repository. Kein Internetzugriff im Importcode. Reale Gerätewirkung wird daraus nicht abgeleitet.
+
+Keine Produktivinstallation dieses S3-Stands, Online-Schema bleibt 2. Inhaltspaket umfasst bisherige Event-/Show-/Einsatz-/Medienobjekte, keine vollständigen Veranstaltungsdaten aller Fachmodule, Offlinekonten/MFA oder Schriften. Kein lokaler Browser-/LAN-Server, Renderer, Liveaktivierung, GO oder Ausgabe. L-01/A04/A17 bleiben vollständig offen trotz dieser Teilgrundlage; Gesamtfreigabe bleibt F01–F50/A01–A30. Vorhandene produktive S2-/DJ-Laufzeit während Entwicklung erhalten.
+
+## Implementiert in S1/S2
 
 Gemeinsamer React/TypeScript-Webkern, Fastify/TypeScript-API, PostgreSQL-Migration, validierte Zod-Verträge, sicherer Session-/MFA-/Einrichtungsablauf, eventbezogene Rollen und Team-/Showrechte. Name genügt für Eventanlage; Vorlagen, Datum/Ort und Module ergänzbar. Unabhängige Shows, geordnete Einsätze, Notizen, Medienreferenzen und eigenständige Eventkopien mit Herkunft. Revisionskonflikte in Transaktionen, sichtbarer Vergleich im Browser. Originaluploads, Worker-Prüfung, geschützte Byte-Ranges, Paketmanifest mit erneutem Hashvergleich. Persistente Mailwarteschlange und konfigurierbarer SMTP-/Testadapter. Health/Readiness und authentifizierte Rechte-Snapshots über WebSocket.
 

@@ -147,6 +147,12 @@ Sichern umfasst Datenbank, Dateien und Manifest. Migrationen mit neuer Datenbank
 Zuerst User/Session/MFA, Event, Team/Rechte, Show, Media, Revision und Geräteinventar in PostgreSQL implementieren. Szenen-/Durchlauf-/Befehlsobjekte als validierte Verträge vorbereiten; volle Liveausführung nach Agentengrundlage.
 Nicht alle Fachmodule vorab mit leeren Tabellen vortäuschen. Ticketshop, Saalplan, Einlass, Quiz, Organisation, Bühne, Moderation, Sponsoren und Finanzen erhalten später vollständige Modulmodelle nach F01–F50. Diese Reihenfolge reduziert nicht den vereinbarten Gesamtscope.
 
-## Implementierungsstand S1
+## Implementierungsstand S3-01: lokale Paketablage
+
+`apps/local/src/store.ts`: SQLite-Schema 1 mit STRICT-Tabellen `packages`, `package_shows`, `package_cues`, `package_media`. Kennungen und Revisionen des eingefrorenen S1-Manifests bleiben erhalten; Cue-Kennung ist je Show eindeutig, nicht über verschiedene Showkopien hinweg. Paketkennung und Manifestprüfsumme begrenzen Idempotenz/Konflikte. Dateien liegen unter eigenen erzeugten Verzeichnisschlüsseln, nicht unter importierten Anzeigenamen oder Serverpfaden. Transaktion und Fremdschlüssel verbinden Metadaten; WAL/FULL und Dateisynchronisation vor Veröffentlichung.
+
+Kein Direktabgleich zwischen PostgreSQL und SQLite, keine Konten-/MFA-Replikation und keine lokale Anmeldung/Livezustände. Keine Online-Schemamigration. Vollständiges lokales Fachmodell und Rechteadapter folgen; dieser Speicher dient nur gehaltenen Vorbereitungsständen. [Format, Start und Grenzen](s3-paketablage.md).
+
+## Implementierungsstand S1 (weiterhin gültig)
 
 PostgreSQL-Migration `apps/api/migrations/001_core.sql`, gemeinsame Schemas `packages/contracts/src/index.ts`. Normalisierte Identitäten, Rollen, Teams, Events, Shows, Dateireferenzen, unveränderliche Revisionen, Paketmanifeste und Mailaufträge. Geordnete Cue-Grunddaten in S1 als strikt validierte Show-Definition; eigenständige Szenen-/Aktions-/Durchlaufentitäten folgen mit S3/S4. Keine leeren Tabellen späterer Fachmodule. Exakter implementierter Umfang und technische Abweichungen: [s1-api.md](s1-api.md), reale Prüfungen: [status.md](status.md). Der übrige Entwurf bleibt Ziel, keine Implementierungsbehauptung.

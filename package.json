@@ -24,7 +24,10 @@
     "local:db": "tsx scripts/local.ts db",
     "licenses:inventory": "node scripts/licenses.mjs",
     "test:agents": "tsx --test tests/agents-integration.ts",
-    "agent:package": "node scripts/agent-package.mjs"
+    "agent:package": "node scripts/agent-package.mjs",
+    "local:package": "node scripts/agent-package.mjs local",
+    "local:packages": "tsx apps/local/src/main.ts",
+    "test:packages": "tsx --test tests/packages-integration.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
