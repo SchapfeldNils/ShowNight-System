@@ -137,6 +137,21 @@ if (server) {
     const dir = join(out, "licenses", String(++i));
     await mkdir(dir, { recursive: true });
     await copyFile(join(root, "package.json"), join(dir, "package.json"));
+    const metadata = JSON.parse(
+      await readFile(join(root, "package.json"), "utf8"),
+    );
+    if (metadata.name === "abstract-logging") {
+      if (metadata.version !== "2.0.1")
+        throw new Error("abstract-logging-Lizenzstand erneut prüfen.");
+      await copyFile(
+        "docs/entwicklung/licenses/abstract-logging-MIT.txt",
+        join(dir, "LICENSE.txt"),
+      );
+      await copyFile(
+        "docs/entwicklung/licenses/abstract-logging-source.md",
+        join(dir, "Quelle.md"),
+      );
+    }
     for (const entry of await readdir(root, { withFileTypes: true }))
       if (
         entry.isFile() &&

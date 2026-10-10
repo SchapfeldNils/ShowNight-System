@@ -2,6 +2,8 @@
 
 ## 10. Oktober 2026 – S3-02: lokaler Server, Offlinekonten und MFA
 
+Nachprüfung der 69 Lizenzordner fand abstract-logging 2.0.1 ohne separate LICENSE-Datei im npm-Paket. Hersteller-Readme verweist auf die Autoren-MIT-Seite; tatsächlichen Lizenztext mit Quellenvermerk festgehalten und versionsgebunden in den ZIP-Builder aufgenommen. Keine neue Komponente. Runtimecode bleibt 7ab7b8b, Paket-/Dokumentationskorrektur als eigener Commit; erneute CI mit tatsächlichem vollständigem ZIP angefordert. Lokal ZIP neu gebaut, vollständige Lizenzdateien in allen 69 Ordnern und SHA256 geprüft.
+
 Betreiber beauftragt die nächste Softwareumsetzung, während Gerätefunktionstests später stattfinden. Grundlagen und bestätigte F30-Regeln geprüft; [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8) über GitHub-Plugin angelegt. Branch codex/s3-local-server von e9a78f3/S3-01, eigener abhängiger Entwurfs-PR. Keine neuen Live-/Regierechte und kein Produktivupdate.
 
 Online-Export setzt Admin/MFA voraus und begrenzt Konten auf die gewählten Vorbereitungsveranstaltungen. Inhaltspaket bleibt ohne Zugangsdaten. Separater strikter Anmeldestand mit Ed25519-Signatur, AES-GCM und RSA-OAEP-SHA256-Zielbindung; authentifiziert heruntergeladener Serverschlüssel wird ausdrücklich lokal importiert. Monotone Exportfolge und signierte Manifestprüfsummen verhindern Rückspielung oder andere Inhalte. Additive Migration 003 enthält lediglich Exportnachweise und Reihenfolge, keine Geheimnisse.
