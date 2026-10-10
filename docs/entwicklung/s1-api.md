@@ -1,5 +1,7 @@
 # Implementierter S1-Vertrag
 
+Ergänzung S3-02 vom 10. Oktober 2026: Admin/MFA kann GET /api/v1/offline/trust und POST /api/v1/offline/exports für getrennte, zielverschlüsselte Offline-Anmeldestände verwenden. Additive Entwicklungsmigration 003; produktiv bleibt Schema 2 bis zum gesonderten Update. [Vollständiger neuer Vertrag](s3-lokalserver.md). Die übrigen S1-Routen bleiben erhalten.
+
 Stand: 9. Oktober 2026. Führende Implementierung: `packages/contracts/src/index.ts`, `apps/api/src`. Der umfassendere [Schnittstellenentwurf](schnittstellen.md) bleibt das Ziel für spätere Pakete. Nur folgende Teilmenge ist jetzt implementiert.
 
 ## Auth und Rechte

@@ -1,18 +1,21 @@
 # Entscheidungsprotokoll
 
 ## D001 – Dokumentationsstand 2.0
+
 - Status: bestätigt als Ausgangsstand der bisherigen Planung
 - Datum: 9. Oktober 2026
 - Inhalt: Gesamtkonzept, Spezifikation und Architektur wurden zusammengeführt. Sie beschreiben Anforderungen und offene Nachweise, keine fertige Software.
 - Grundlagen: [Gesamtkonzept](../gesamtkonzept.md), [Anforderungen](../anforderungen.md), [Architektur](../architektur.md).
 
 ## D002 – Planung in GitHub
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Auftrag: aktuelle Dokumentation im Repository ShowNight-System ablegen und anschließend die Planung dort dokumentieren.
 - Umsetzung: Markdown als bearbeitbarer Dokumentationsstand; Word als datierter Export. Offene Fragen werden getrennt von bestätigten Entscheidungen geführt.
 
 ## D003 – Entwicklungsübergabe
+
 - Status: bestätigt; ursprüngliche Startreihenfolge durch D013 präzisiert
 - Datum: 9. Oktober 2026
 - Antwort: alle zehn Optionen A bestätigt.
@@ -21,6 +24,7 @@
 - Offene Bedienfragen zur Veranstaltung bleiben davon unberührt.
 
 ## D004 – Veranstaltung anlegen
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A, 2A, 3A, 4A, 5A, 6A, 7C, 8A, 9A, 10A.
@@ -28,6 +32,7 @@
 - Ergebnis: Name als einzige erste Pflichtangabe, Vorlagen und anpassbare Module, persönliche Übersicht, feste Seitenleiste und dauerhaft erreichbarer Veranstaltungswechsel.
 
 ## D005 – Show anlegen und vorbereiten
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -35,6 +40,7 @@
 - Ergebnis: direkte Arbeitsfläche, aufklappbare Abschnitte, frei einfügbare Einsätze, Vorlagen, Einsatzhinweise, zugewiesene Platzhalter und Team-Prüfübersicht.
 
 ## D006 – Bedienung des Szeneneditors
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -42,6 +48,7 @@
 - Ergebnis: eingebetteter Editor, direkte Werkzeuge, kontextbezogene Eigenschaften, automatische Entwurfsspeicherung, eigene Wiedergabeprüfung und sichtbare Medienfehler.
 
 ## D007 – Bedienung der Live-Regie
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -49,6 +56,7 @@
 - Ergebnis: Vorschauauswahl getrennt von GO, eigener Direktbefehl, einmalige Übergangswahl, Übernahmesperre während des Übergangs, direkte zusätzliche Ansichten und sichtbare Eingriffe/Fehler.
 
 ## D008 – Daten, Versionen und Zusammenarbeit
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -56,6 +64,7 @@
 - Ergebnis: Veranstaltungskopien, bewusste Vorlagenupdates, Löschschutz, Papierkorb, explizite Textkonflikte, Wiederherstellungsentwürfe und nachvollziehbare Versionierung.
 
 ## D009 – Liveaktivierung vorbereiteter Datenstände
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -63,6 +72,7 @@
 - Ergebnis: geprüfte vollständige Aktivierung, laufende Ausgabe bleibt, veraltete Vorbereitung wird markiert, bewusste GO-Zielbestätigung bei Löschung/Verschiebung, atomare Rückkehr.
 
 ## D010 – Szenen, Einsätze, Aktionen und Durchläufe
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -71,6 +81,7 @@
 - Ergebnis: wiederverwendbare Szenen, Einstellungen je Einsatz, reine Aktionseinsätze, versionierte Bausteine und getrennte Durchläufe.
 
 ## D011 – Persönliche Vorschau und gemeinsamer Showablauf
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -78,6 +89,7 @@
 - Ergebnis: persönliche Vorschau, gemeinsames GO-Ziel, explizite Vorbereitung, erste gültige konkurrierende Änderung, gemeinsamer Vorhörkanal je Notebook.
 
 ## D012 – Durchläufe starten, wechseln und beenden
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A (Groß-/Kleinschreibung ohne Bedeutung).
@@ -85,6 +97,7 @@
 - Ergebnis: bewusster Start ohne ersten GO, isolierte Simulationsprobe, expliziter Showwechsel, vorbereitete Wechsel-/Abschlussaktionen und erhaltene Durchlaufhistorie.
 
 ## D013 – Agiler Start: Netcup-Server vor Windows-Agenten
+
 - Status: bestätigt durch ausdrücklichen Auftrag
 - Datum: 9. Oktober 2026
 - Auftrag: drei technische Übergabedokumente vorbereiten und Startprompt erstellen; Entwicklung mit Netcup-Server beginnen, danach Agent für die Rechner.
@@ -94,6 +107,7 @@
 - Technische Schemas/Bezeichner sind abgeleitete Implementierungsvorschläge, keine zusätzlich bestätigten Produktregeln.
 
 ## D014 – Systemdomain und Mailanbieter
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Systemdomain: eventmanagement.jungschuetzen-flueren.de.
@@ -102,6 +116,7 @@
 - Nicht bestätigt: bereits erfolgte DNS-/Postfachanlage, Testdomain, öffentliche Shopadresse oder erfolgreiche Zustellung.
 
 ## D015 – Vorhandenen Nginx verwenden
+
 - Status: vorhandener Nginx durch Benutzer bestätigt
 - Datum: 9. Oktober 2026
 - Folge: Bestehenden Reverse Proxy integrieren; keinen zusätzlichen Proxy als Voraussetzung aufbauen.
@@ -109,6 +124,7 @@
 - Containeraufteilung Anwendung/PostgreSQL/Worker bleibt technischer Startvorschlag; kein Fachmodul-Microservice-Zwang.
 
 ## D016 – Nginx-Container auf derselben VM und Portainer
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Umgebung: Nginx als Docker-Container auf derselben Netcup-VM, Portainer vorhanden.
@@ -128,6 +144,10 @@
 - Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
 
 ## Weitere Entscheidungen nach D017
+
+### S3-02 – technische Umsetzung, 10. Oktober 2026
+
+Status: Umsetzung im ausdrücklich beauftragten Arbeitspaket; keine neue Fachentscheidung. F30 verlangt vorbereitete interne Konten, MFA für Admin/Leitung, lokale Sperren, persönliche Offlineeinrichtung und gesonderte administrative Recovery. S3-02 konkretisiert dies mit einem separat signierten und zielverschlüsselten Kontenstand, CurrentUser-DPAPI und Loopback-HTTPS. Gemeinsame Quellidentitäten und vorhandene Veranstaltungsrollen bleiben erhalten. Lokale Änderungen werden vorgemerkt; Onlineabgleich und LAN bleiben offen. [Anleitung](../entwicklung/s3-lokalserver.md), [Status](../entwicklung/status.md).
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.

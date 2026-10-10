@@ -17,6 +17,10 @@ await build({
 });
 await copyFile("apps/api/migrations/001_core.sql", "dist/api/001_core.sql");
 await copyFile("apps/api/migrations/002_agents.sql", "dist/api/002_agents.sql");
+await copyFile(
+  "apps/api/migrations/003_offline.sql",
+  "dist/api/003_offline.sql",
+);
 await build({
   entryPoints: ["apps/agent/src/main.ts"],
   outfile: "dist/agent/main.js",
@@ -38,3 +42,22 @@ await build({
   bundle: true,
   format: "esm",
 });
+await build({
+  entryPoints: ["apps/local/src/server-main.ts"],
+  outfile: "dist/server/main.js",
+  platform: "node",
+  target: "node24",
+  bundle: true,
+  format: "esm",
+  metafile: true,
+  banner: {
+    js: 'import {createRequire} from "node:module"; const require=createRequire(import.meta.url);',
+  },
+}).then(async (result) => {
+  const { writeFile } = await import("node:fs/promises");
+  await writeFile(
+    "dist/server/bundle-inputs.json",
+    JSON.stringify(Object.keys(result.metafile.inputs)),
+  );
+});
+await viteBuild({ configFile: "apps/local-web/vite.config.ts" });

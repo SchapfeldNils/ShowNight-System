@@ -27,6 +27,7 @@ import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
 import { packageRoutes } from "./packages.js";
 import { agentRoutes } from "./agents.js";
+import { offlineRoutes } from "./offline.js";
 import {
   pairingInput,
   diagnosticInput,
@@ -78,6 +79,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   mediaRoutes(app, db, cfg);
   packageRoutes(app, db, cfg);
   agentRoutes(app, db);
+  offlineRoutes(app, db, cfg);
   app.setErrorHandler((e, req, reply) => {
     let status = 500,
       code = "INTERNAL",
@@ -133,8 +135,8 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       const r = await db.query(
         "SELECT version FROM schema_migrations ORDER BY version",
       );
-      if (r.rows.map((r) => r.version).join(",") !== "1,2") throw new Error();
-      return { status: "ready", schemaVersion: 2 };
+      if (r.rows.map((r) => r.version).join(",") !== "1,2,3") throw new Error();
+      return { status: "ready", schemaVersion: 3 };
     } catch {
       return reply.code(503).send({ status: "not_ready" });
     }

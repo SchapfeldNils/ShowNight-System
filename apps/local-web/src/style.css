@@ -1,0 +1,60 @@
+.offline-app {
+  max-width: 1200px;
+  margin: auto;
+  overflow-wrap: anywhere;
+}
+.offline-app header {
+  padding: 24px 30px 0;
+  flex-wrap: wrap;
+}
+.offline-app main {
+  padding: 24px 30px;
+}
+.offline-app aside {
+  position: static;
+  height: auto;
+  display: block;
+  border: 1px solid #454151;
+  border-radius: 8px;
+  margin: 12px 0;
+  padding: 16px;
+}
+.offline-app section {
+  border: 1px solid #2c3546;
+  background: #161c27;
+  border-radius: 9px;
+  padding: 22px;
+  margin: 18px 0;
+}
+.offline-app article {
+  border-top: 1px solid #2c3546;
+  padding: 15px 0;
+}
+.offline-app a {
+  color: #cded84;
+}
+.offline-app li {
+  margin: 12px 0;
+}
+.offline-app code {
+  white-space: pre-wrap;
+}
+.offline-app footer {
+  color: #99a5b8;
+  padding: 12px 30px 30px;
+  font-size: 12px;
+}
+.offline-app [role="alert"] {
+  color: #ffb5b5;
+}
+@media (max-width: 600px) {
+  .offline-app main {
+    padding: 12px;
+  }
+  .offline-app header {
+    padding: 20px 12px 0;
+  }
+  .offline-app section {
+    padding: 16px;
+  }
+}

@@ -1,6 +1,17 @@
-import { readFile, writeFile, mkdir, copyFile, unlink } from "node:fs/promises";
+import {
+  readFile,
+  writeFile,
+  mkdir,
+  copyFile,
+  unlink,
+  cp,
+  readdir,
+  realpath,
+  rm,
+} from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { join, resolve } from "node:path";
+import { join, resolve, dirname, sep } from "node:path";
+import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 if (process.platform !== "win32")
   throw new Error("Windows-Paket auf Windows erstellen.");
@@ -9,9 +20,24 @@ const version = "24.19.0",
 const expected =
   "57f71ab3652e797d84acddc79c81cc9ff1c6ddb2a1974cdb83f00fee9bff4c73";
 const local = process.argv[2] === "local";
+const server = process.argv[2] === "server";
 const work = resolve(".local/agent-package"),
-  out = resolve(local ? "dist/local-windows" : "dist/agent-windows");
+  out = resolve(
+    server
+      ? "dist/server-windows"
+      : local
+        ? "dist/local-windows"
+        : "dist/agent-windows",
+  );
 await mkdir(work, { recursive: true });
+if (
+  !out.startsWith(resolve("dist") + sep) ||
+  !["agent-windows", "local-windows", "server-windows"].includes(
+    out.split(sep).at(-1),
+  )
+)
+  throw new Error("Ungültiges eigenes Paketverzeichnis.");
+await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 const archive = join(work, name);
 let bytes;
@@ -72,43 +98,113 @@ await zipOperation(
   [archive, out],
 );
 await copyFile(
-  local ? "dist/local/main.js" : "dist/agent/main.js",
+  server
+    ? "dist/server/main.js"
+    : local
+      ? "dist/local/main.js"
+      : "dist/agent/main.js",
   join(out, "main.js"),
 );
 await writeFile(
   join(out, "package.json"),
   JSON.stringify({ type: "module", private: true }),
 );
-for (const [file, mode] of local
+if (server) {
+  await cp("dist/server/web", join(out, "web"), { recursive: true });
+  // Bundle inputs identify every bundled package, including transitive packages.
+  // Include each installed package's manifest and license/notice files.
+  const inputs = JSON.parse(
+      await readFile("dist/server/bundle-inputs.json", "utf8"),
+    ),
+    roots = new Set();
+  roots.add(resolve("node_modules/react"));
+  roots.add(resolve("node_modules/react-dom"));
+  roots.add(
+    dirname(
+      createRequire(
+        await realpath("node_modules/react-dom/package.json"),
+      ).resolve("scheduler/package.json"),
+    ),
+  );
+  for (const input of inputs) {
+    const m = input
+      .replaceAll("\\", "/")
+      .match(/^(.*\/node_modules\/(?:@[^/]+\/)?[^/]+)\//);
+    if (m) roots.add(m[1]);
+  }
+  let i = 0;
+  for (const root of roots) {
+    const dir = join(out, "licenses", String(++i));
+    await mkdir(dir, { recursive: true });
+    await copyFile(join(root, "package.json"), join(dir, "package.json"));
+    const metadata = JSON.parse(
+      await readFile(join(root, "package.json"), "utf8"),
+    );
+    if (metadata.name === "abstract-logging") {
+      if (metadata.version !== "2.0.1")
+        throw new Error("abstract-logging-Lizenzstand erneut prüfen.");
+      await copyFile(
+        "docs/entwicklung/licenses/abstract-logging-MIT.txt",
+        join(dir, "LICENSE.txt"),
+      );
+      await copyFile(
+        "docs/entwicklung/licenses/abstract-logging-source.md",
+        join(dir, "Quelle.md"),
+      );
+    }
+    for (const entry of await readdir(root, { withFileTypes: true }))
+      if (
+        entry.isFile() &&
+        /^(license|licence|copying|notice)/i.test(entry.name)
+      )
+        await copyFile(join(root, entry.name), join(dir, entry.name));
+  }
+}
+for (const [file, mode] of server
   ? [
-      ["Importieren.cmd", "import"],
-      ["Pakete-Anzeigen.cmd", "list"],
-      ["Pakete-Pruefen.cmd", "check-all"],
+      ["Server-Einrichten.cmd", "init"],
+      ["Serverschluessel-Importieren.cmd", "trust"],
+      ["Anmeldestand-Importieren.cmd", "import-auth"],
+      ["Server-Start.cmd", "run"],
+      ["Admin-Wiederherstellen.cmd", "recover"],
+      ["Admin-Konten-Anzeigen.cmd", "admins"],
     ]
-  : [
-      ["Einrichten.cmd", "pair"],
-      ["Start.cmd", "run"],
-      ["VirtualDJ-Pruefen.cmd", "check-vdj"],
-    ]) {
+  : local
+    ? [
+        ["Importieren.cmd", "import"],
+        ["Pakete-Anzeigen.cmd", "list"],
+        ["Pakete-Pruefen.cmd", "check-all"],
+      ]
+    : [
+        ["Einrichten.cmd", "pair"],
+        ["Start.cmd", "run"],
+        ["VirtualDJ-Pruefen.cmd", "check-vdj"],
+      ]) {
   await writeFile(
     join(out, file),
     `@echo off\r\n"%~dp0node.exe" "%~dp0main.js" ${mode}\r\npause\r\n`,
   );
 }
 await copyFile(
-  local ? "docs/entwicklung/s3-paketablage.md" : "docs/entwicklung/s2-agent.md",
+  server
+    ? "docs/entwicklung/s3-lokalserver.md"
+    : local
+      ? "docs/entwicklung/s3-paketablage.md"
+      : "docs/entwicklung/s2-agent.md",
   join(out, "Anleitung.md"),
 );
-if (!local)
+if (!local && !server)
   await copyFile("node_modules/ws/LICENSE", join(out, "ws-LICENSE.txt"));
 await copyFile("node_modules/zod/LICENSE", join(out, "zod-LICENSE.txt"));
 await writeFile(
   join(out, "runtime-sha256.txt"),
   `${expected}  ${name}\nQuelle: https://nodejs.org/download/release/v${version}/SHASUMS256.txt\n`,
 );
-const zipName = local
-  ? "shownight-local-windows-x64.zip"
-  : "shownight-agent-windows-x64.zip";
+const zipName = server
+  ? "shownight-server-windows-x64.zip"
+  : local
+    ? "shownight-local-windows-x64.zip"
+    : "shownight-agent-windows-x64.zip";
 const zip = resolve("dist/" + zipName);
 await unlink(zip).catch((e) => {
   if (e.code !== "ENOENT") throw e;

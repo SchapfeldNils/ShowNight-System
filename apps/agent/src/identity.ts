@@ -33,7 +33,7 @@ const identitySchema = z
     credential: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
   })
   .strict();
-function powershell(script: string, input: string): Promise<string> {
+export function powershell(script: string, input: string): Promise<string> {
   if (process.platform !== "win32")
     throw new Error("Diese Identitätsablage benötigt Windows DPAPI.");
   return new Promise((resolve, reject) => {
@@ -52,7 +52,19 @@ function powershell(script: string, input: string): Promise<string> {
           "utf16le",
         ).toString("base64"),
       ],
-      { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] },
+      {
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+        // A parent PowerShell 7 process may export its incompatible module path.
+        // This helper deliberately runs the built-in Windows PowerShell 5.1.
+        env: {
+          ...process.env,
+          PSModulePath: join(
+            process.env.SystemRoot ?? "C:/Windows",
+            "System32/WindowsPowerShell/v1.0/Modules",
+          ),
+        },
+      },
     );
     let output = "";
     const timer = setTimeout(() => {
@@ -77,6 +89,19 @@ function powershell(script: string, input: string): Promise<string> {
     p.stdin.on("error", () => {});
     p.stdin.end(input);
   });
+}
+export async function protectBytes(value: Buffer) {
+  return powershell(
+    "[void][Reflection.Assembly]::LoadWithPartialName('System.Security');$b=[Convert]::FromBase64String([Console]::In.ReadToEnd());[Convert]::ToBase64String([Security.Cryptography.ProtectedData]::Protect($b,$null,[Security.Cryptography.DataProtectionScope]::CurrentUser))",
+    value.toString("base64"),
+  );
+}
+export async function unprotectBytes(value: string) {
+  const plain = await powershell(
+    "[void][Reflection.Assembly]::LoadWithPartialName('System.Security');$b=[Convert]::FromBase64String([Console]::In.ReadToEnd());[Convert]::ToBase64String([Security.Cryptography.ProtectedData]::Unprotect($b,$null,[Security.Cryptography.DataProtectionScope]::CurrentUser))",
+    value,
+  );
+  return Buffer.from(plain, "base64");
 }
 export async function secureDirectory(dir: string) {
   await mkdir(dir, { recursive: true, mode: 0o700 });
