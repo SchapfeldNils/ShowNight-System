@@ -2,6 +2,8 @@
 
 Stand: 10. Oktober 2026. Entwicklungsprototyp 0.3.0 auf `codex/s3-local-packages`, abhängig von S2 PR #5, [Issue #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6). Software-/Geräteabnahme getrennt; keine Veranstaltungsfreigabe.
 
+[Entwurfs-PR #7 und aktuelle Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/7/checks), Runtime `f5309d2`. Lokal nach Paketbuilderänderung zusätzlich S2-Regression 8/8 bestanden. Windows-ZIP als eigenes Actions-Artefakt `shownight-local-windows-x64` des vollständig geprüften jeweiligen Commits; lokaler Entwicklerbuild unter `dist/shownight-local-windows-x64.zip` mit SHA256-Datei. Kein produktives Serverupdate aus Artefakterstellung ableiten.
+
 ## Bedienbarer Ablauf
 
 1. Auf einem Server mit diesem Entwicklungsstand anmelden. Veranstaltung → Übersicht → **Paketmanifest erzeugen**. Fehler beheben; nur gültige Manifeste bieten **Paket mit Medien herunterladen**. `.snpkg` enthält die eingefrorenen Event-/Show-/Einsatzdaten und sämtliche darin aufgeführten Originalmedien. Spätere Onlineänderungen ändern diesen Stand nicht.

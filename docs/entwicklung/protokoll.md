@@ -12,6 +12,8 @@ Erster Browserstart durch belegten Test-DB-Port 55434 verhindert. Gezieltes Proz
 
 Vollständiger lokaler Server, Offlinekonten/MFA, vollständige Pakete/Schriften/Module, Windows-Renderer und Aktivierung folgen. Geräte-/Show-/Ausfall-/Last-/Synchronitätsabnahme sowie volle F01–F50/A01–A30 bleiben offen. [Start/Format/Grenzen](s3-paketablage.md).
 
+Runtime als `f5309d2` gepusht, über GitHub-Plugin [Entwurfs-PR #7](https://github.com/SchapfeldNils/ShowNight-System/pull/7) gegen S2-Branch erstellt und im Chat angehängt. S2-Regression nach Paketbuilderänderung vollständig 8/8 bestanden. Geheimnisabgleich aller 114 verfolgten Dateien gegen tatsächliche lokale Zugangswerte ohne Treffer; Anhänge und private Helfer nicht eingecheckt. CI-Ergebnisse und Artefakte werden unveränderlich über Actions am PR geführt; vollständige Windows-/AMD64-/ARM64-Prüfungen sind Teil der Reviewgrundlage. Kein automatischer Merge.
+
 ## 10. Oktober 2026 – Lesediagnose produktiv aktualisiert und geprüft
 
 [CI 38006960819](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38006960819) für Runtime `a8b062f` vollständig grün auf Windows und nativen AMD64-/ARM64-Runnern. Geprüfte CI-Archive heruntergeladen; Hashes, Architektur, Config und alle RootFS-Layer am Ziel verglichen. Frisches Wartungsbackup bei gestoppter eigener App/Worker, externe SHA256-Prüfung und isolierter Schema-2-Restore: alle 21 Tabellen und Medienstand identisch, keine Medien im Backup. Recovery danach gestoppt. Private Konfiguration zusätzlich DPAPI/CurrentUser mit identischem Roundtrip gesichert; unabhängiges Backup-/Schlüsselziel bleibt offen.
