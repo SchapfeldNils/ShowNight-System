@@ -2,6 +2,8 @@
 
 Version 2.0 · Entwicklungsgrundlage vom 9. Oktober 2026
 
+Implementierter Teilstand vom 10. Oktober 2026: S3-02 ergänzt einen lokalen HTTPS-Vorbereitungsdienst mit eigener SQLite-Kontenablage, signiertem/verschlüsseltem Quellimport und bestehender Veranstaltungsrechteprüfung. Loopback, lesende Pakete, lokale Konten/MFA/Sperren/Recovery; noch kein LAN, Onlineabgleich oder Renderer. [Bedienung und Grenzen](entwicklung/s3-lokalserver.md). Das folgende vollständige Architekturziel bleibt verbindlich; Netcup bleibt Vorbereitung ohne HDMI.
+
 ## 1. Entscheidung
 
 Wir entwickeln ein modulares Veranstaltungssystem mit lokaler Showplattform mit Browseroberfläche, zentralem Showserver, eigenem nativen Medienprozess und Geräteadaptern. Der Onlinebetrieb dient der Vorbereitung und kann nach bewusster Umschaltung Einlass und Organisation übernehmen. Vollständig bereitgestellter lokaler Betrieb benötigt kein Internet. Diese Auswahl ist die Grundlage für technische Prototypen, keine bereits bestandene Hardware- oder Integrationsabnahme.

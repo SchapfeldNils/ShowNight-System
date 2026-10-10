@@ -551,7 +551,7 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
       },
     );
     await t.test(
-      "Migration 1 → 2 erhält bestehende Daten und ist wiederholbar",
+      "Migration 1 → 3 erhält bestehende Daten und ist wiederholbar",
       async () => {
         await f.pg.createDatabase("shownight_upgrade");
         const upgrade = database(
@@ -583,7 +583,7 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
                 "SELECT version FROM schema_migrations ORDER BY version",
               )
             ).rows.map((r) => r.version),
-            [1, 2],
+            [1, 2, 3],
           );
         } finally {
           await upgrade.end();

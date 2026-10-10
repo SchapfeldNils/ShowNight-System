@@ -6,7 +6,7 @@ import {
   manifest,
   type Manifest,
 } from "../../../packages/contracts/src/index.js";
-import { transaction, type DB } from "./db.js";
+import { transaction, type DB, type Queryable } from "./db.js";
 import { eventAccess } from "./permissions.js";
 import { blobPath, fileHash } from "./media.js";
 import { HttpError, missing } from "./errors.js";
@@ -18,7 +18,7 @@ import {
   packageHeader,
   packageBytes,
 } from "../../../packages/transfer/src/archive.js";
-export async function checkManifest(db: DB, cfg: Config, m: Manifest) {
+export async function checkManifest(db: Queryable, cfg: Config, m: Manifest) {
   const errors = [...m.errors];
   for (const file of m.media) {
     const row = (

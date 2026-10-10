@@ -78,6 +78,17 @@ export class PackageStore {
       dir: join(this.root, "packages", key),
     };
   }
+  metadata(id: string) {
+    const { manifest } = this.record(id);
+    const row = this.db.prepare("SELECT header_sha FROM packages WHERE id=?").get(id)!;
+    return { manifest, headerHash: String(row.header_sha) };
+  }
+  file(id: string, mediaId: string) {
+    const { manifest, dir } = this.record(id);
+    const media = manifest.media.find(m => m.id === mediaId);
+    if (!media) throw new Error("Medium nicht im Paket.");
+    return { path: join(dir, media.id), media };
+  }
   async verify(id: string) {
     const { manifest: m, dir } = this.record(id),
       errors: string[] = [];

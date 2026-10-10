@@ -1,8 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { randomBytes } from "node:crypto";
+import {
+  createTarget,
+  decryptSnapshot,
+} from "../../packages/transfer/src/offline.js";
+import { PackageStore } from "../../apps/local/src/store.js";
+import { LocalAccounts } from "../../apps/local/src/accounts.js";
+import { localServer } from "../../apps/local/src/server.js";
 import { pair } from "../../apps/agent/src/identity.js";
 import { startAgent } from "../../apps/agent/src/client.js";
 import { baseCapabilities } from "../../apps/agent/src/diagnostics.js";
@@ -94,6 +102,135 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     /^shownight-[0-9a-f-]+\.snpkg$/,
   );
   await downloaded.saveAs("test-results/s3-browser-package.snpkg");
+  // Full source UI export -> signed import -> local portal, with synthetic data.
+  const target = createTarget(),
+    targetPath = resolve(".local/browser-target.sntarget");
+  await writeFile(targetPath, JSON.stringify(target.target), { mode: 0o600 });
+  await page.getByLabel("Zielanfrage (.sntarget)").setInputFiles(targetPath);
+  const authDownload = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Verschlüsselten Anmeldestand herunterladen" })
+    .click();
+  await (await authDownload).saveAs("test-results/s3-browser.snauth");
+  const trust = await context.request.get("/api/v1/offline/trust");
+  expect(trust.ok()).toBeTruthy();
+  const snapshot = decryptSnapshot(
+    JSON.parse(await readFile("test-results/s3-browser.snauth", "utf8")),
+    target.privateKey,
+    target.target.targetId,
+    await trust.json(),
+  );
+  const localRoot = await mkdtemp(join(tmpdir(), "shownight-offline-browser-")),
+    pr = join(localRoot, "packages");
+  await mkdir(pr);
+  const packages = new PackageStore(pr),
+    accounts = new LocalAccounts(localRoot, randomBytes(32).toString("hex"));
+  await packages.importArchive(
+    resolve("test-results/s3-browser-package.snpkg"),
+  );
+  accounts.importSnapshot(snapshot);
+  // Browser contract uses localhost HTTP only in this isolated test. Native
+  // Windows bundle tests separately validate the actual PFX HTTPS connection.
+  const local = await localServer(
+    accounts,
+    packages,
+    "http://localhost:3444",
+    resolve("dist/server/web"),
+  );
+  await local.listen({ host: "127.0.0.1", port: 3444 });
+  const localPage = await context.newPage();
+  localPage.on("pageerror", (e) => errors.push(e.message));
+  try {
+    await localPage.goto("http://localhost:3444");
+    await localPage
+      .getByLabel("Benutzername", { exact: true })
+      .fill(credentials.login);
+    await localPage
+      .getByLabel("Kennwort", { exact: true })
+      .fill(credentials.password);
+    await localPage
+      .getByRole("button", { name: "Anmelden", exact: true })
+      .click();
+    await expect(
+      localPage.getByRole("heading", { name: "Zusätzliche Bestätigung" }),
+    ).toBeVisible();
+    await localPage
+      .getByLabel("Authenticator- oder Offline-Recoverycode")
+      .fill(totp(secret));
+    await localPage
+      .getByRole("button", { name: "Bestätigen", exact: true })
+      .click();
+    await expect(
+      localPage.getByRole("heading", {
+        name: "Offline-Recoverycodes einmalig sichern",
+      }),
+    ).toBeVisible();
+    await localPage
+      .getByRole("button", { name: "Codes gesichert", exact: true })
+      .click();
+    await localPage
+      .getByRole("button", { name: "Paket ansehen", exact: true })
+      .click();
+    await expect(
+      localPage
+        .getByRole("heading", { name: "Browser Musterabend", exact: true })
+        .last(),
+    ).toBeVisible();
+    await expect(
+      localPage.getByText("Originalfassung für die Veranstaltung"),
+    ).toBeVisible();
+    await localPage
+      .getByLabel("Benutzername", { exact: true })
+      .fill("offline.browser");
+    await localPage
+      .getByLabel("Name", { exact: true })
+      .fill("Offline Musterkonto");
+    await localPage
+      .getByRole("button", { name: "Konto vorbereiten", exact: true })
+      .click();
+    await expect(
+      localPage.getByText(/Persönlicher Einrichtungscode/),
+    ).toBeVisible();
+    await localPage
+      .getByRole("button", { name: "Persönlich übernommen" })
+      .click();
+    await expect(
+      localPage.getByText("Offline Musterkonto", { exact: true }),
+    ).toBeVisible();
+    const offlineUser = localPage
+      .locator("li")
+      .filter({ hasText: "Offline Musterkonto" });
+    await offlineUser
+      .getByRole("button", { name: "Für Veranstaltung sperren", exact: true })
+      .click();
+    await expect(
+      offlineUser.getByText(/Für diese Veranstaltung gesperrt/),
+    ).toBeVisible();
+    await expect(
+      localPage.getByText(/2 lokale Änderungen vorgemerkt/),
+    ).toBeVisible();
+    await localPage.screenshot({
+      path: "test-results/s3-offline-server.png",
+      fullPage: true,
+    });
+    await localPage.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await localPage.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await localPage
+      .getByRole("button", { name: "Abmelden", exact: true })
+      .click();
+    await expect(
+      localPage.getByRole("heading", { name: "Lokal anmelden" }),
+    ).toBeVisible();
+  } finally {
+    await localPage.close();
+    await local.close();
+    accounts.close();
+    packages.close();
+  }
   await page.screenshot({
     path: "test-results/s1-desktop.png",
     fullPage: true,

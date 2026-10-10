@@ -1,5 +1,19 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 10. Oktober 2026 – S3-02: lokaler Server, Offlinekonten und MFA
+
+Betreiber beauftragt die nächste Softwareumsetzung, während Gerätefunktionstests später stattfinden. Grundlagen und bestätigte F30-Regeln geprüft; [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8) über GitHub-Plugin angelegt. Branch codex/s3-local-server von e9a78f3/S3-01, eigener abhängiger Entwurfs-PR. Keine neuen Live-/Regierechte und kein Produktivupdate.
+
+Online-Export setzt Admin/MFA voraus und begrenzt Konten auf die gewählten Vorbereitungsveranstaltungen. Inhaltspaket bleibt ohne Zugangsdaten. Separater strikter Anmeldestand mit Ed25519-Signatur, AES-GCM und RSA-OAEP-SHA256-Zielbindung; authentifiziert heruntergeladener Serverschlüssel wird ausdrücklich lokal importiert. Monotone Exportfolge und signierte Manifestprüfsummen verhindern Rückspielung oder andere Inhalte. Additive Migration 003 enthält lediglich Exportnachweise und Reihenfolge, keine Geheimnisse.
+
+Lokale SQLite-Identitäten, Passwortableitungen, verschlüsselte MFA-Schlüssel, Sitzungen, Challenges, separate Offline-Recoverycodes und Sperren persistent eingerichtet. Quellenrefresh widerruft Sitzungen, erhält lokale Sperren und verbrauchte Codes, deaktiviert fehlende Quellkonten und erhält lokal angelegte Konten. Persönliche Einrichtungscodes ohne Mailversand. Administrative Recovery mit separat gesichertem Schlüssel; lokale Kennwort-/MFA-Recovery wird erst durch tatsächlich geänderte Quellwerte ersetzt. Audit speichert Akteur, betroffene Identität, Vorgang und Zeitpunkt; Onlineabgleich ausdrücklich noch nicht implementiert.
+
+Windows-Paket enthält gebündelten Server, deutsche Weboberfläche, offizielle SHA256-geprüfte Node-Laufzeit, Lizenztexte der gebündelten Server-/Webpakete und Startwerkzeuge. Private Einrichtung unter LOCALAPPDATA mit CurrentUser-DPAPI und Benutzer-/SYSTEM-ACL. Eigenes temporäres Zertifikat aus CurrentUser/My als passwortgeschütztes PFX exportiert, genau dieser temporäre Storeeintrag danach entfernt. Kein automatischer Rootstoreimport, keine Firewalländerung. Loopback-HTTPS und keine Ausgaben.
+
+Erster Windows-Ersteinrichtungstest scheiterte tatsächlich am von PowerShell 7 geerbten Modulpfad: Windows PowerShell lud inkompatible Security-Module, Cert-Laufwerk fehlte. Helfer verwendet nun gezielt die eingebauten Windows-PowerShell-Module. S2-DPAPI-/Agentregression weiterhin bestanden. Erster Browserstart durch übrig gebliebene eigene Test-PostgreSQL auf Port 55434 verhindert; Prozesspfad geprüft und ausschließlich diese lokale Testinstanz per pg_ctl beendet, danach Browserablauf bestanden. Keine produktiven Prozesse oder DJ-Identitäten geändert.
+
+Lokale Prüfungen: Typen/Build/Windows-ZIP, Unit 8/8, S1 13/13, S2 8/8, Pakete 9/9, Offline 9/9 einschließlich HTTPS mit voller Zertifikats-/Hostnamenprüfung, Browser 1/1 und Produktionsaudit ohne bekannte Schwachstellen. Alle Konten/Medien synthetisch. Quellenexport/Kontoabgleich niemals als produktiv installiert oder Online-Synchronisation bezeichnet. Abschließender CI-/PR-/Artefaktnachweis wird nach dem Push ergänzt.
+
 ## 10. Oktober 2026 – S3-01: Übertragung und lokale Paketablage
 
 Betreiber beauftragt weitere vorbereitbare Themen und spätere Funktionstests (D017). Pflichtgrundlagen erneut geprüft, Teilpaket [Issue #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6) über GitHub-Plugin angelegt, eigener Branch `codex/s3-local-packages` vom dokumentierten S2-Stand `974264f`. Kein Merge oder produktives Update. S1/S2 bleiben Ausgangsbasis; erster lokaler Baustein importiert ausschließlich bestehende Vorbereitungsinhalte, keine neue Rechte-/Liveausfallentscheidung.

@@ -10,6 +10,7 @@ import type {
 import "./style.css";
 import { moduleKeys } from "../../../packages/contracts/src/index.js";
 import { Devices } from "./devices.js";
+import { OfflineExport } from "./offline.js";
 type Me = {
   id: string;
   displayName: string;
@@ -687,7 +688,8 @@ function App() {
                       Pinnt Event- und Showrevisionen sowie Medienprüfsummen.
                       Der Download enthält diesen Vorbereitungsstand und seine
                       Medien. Lokaler Paketimport aktiviert keine Show;
-                      Offlinekonten und Livebetrieb folgen.
+                      Offlinekonten werden getrennt vorbereitet. Livebetrieb
+                      folgt.
                     </p>
                     <button
                       disabled={loading}
@@ -722,14 +724,20 @@ function App() {
                           <p key={i}>{e}</p>
                         ))}
                         {packageResult.status === "valid" && (
-                          <p>
+                          <div>
                             <a
                               href={`/api/v1/packages/${packageResult.id}/download`}
                               download
                             >
                               Paket mit Medien herunterladen
                             </a>
-                          </p>
+                            {me.admin && (
+                              <OfflineExport
+                                packageId={packageResult.id}
+                                csrf={me.csrfToken}
+                              />
+                            )}
+                          </div>
                         )}
                         <details>
                           <summary>Gepinnte Inhalte anzeigen</summary>

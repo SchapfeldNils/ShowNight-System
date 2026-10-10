@@ -27,7 +27,10 @@
     "agent:package": "node scripts/agent-package.mjs",
     "local:package": "node scripts/agent-package.mjs local",
     "local:packages": "tsx apps/local/src/main.ts",
-    "test:packages": "tsx --test tests/packages-integration.ts"
+    "test:packages": "tsx --test tests/packages-integration.ts",
+    "test:offline": "tsx --test tests/offline-integration.ts",
+    "server:package": "node scripts/agent-package.mjs server",
+    "server:local": "tsx apps/local/src/server-main.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
