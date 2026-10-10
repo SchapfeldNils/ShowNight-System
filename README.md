@@ -1,5 +1,7 @@
 # ShowNight-System
 
+S3-02-Review: [Entwurfs-PR #9](https://github.com/SchapfeldNils/ShowNight-System/pull/9), Runtime 7ab7b8b, [aktuelle Prüfungen und Windows-Artefakte](https://github.com/SchapfeldNils/ShowNight-System/pull/9/checks). Nicht gemergt und nicht auf Netcup installiert.
+
 Aktueller weiterer Baustein S3-02: [lokaler HTTPS-Server mit Offlinekonten und MFA](docs/entwicklung/s3-lokalserver.md), [Arbeitspaket #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8), Branch codex/s3-local-server. Verschlüsselter, signierter Anmeldestand für einen vorbereiteten Rechner, lesende Paketansicht, lokale Konten und Sperren. Windows-ZIP ohne npm beim Anwender. Softwareprüfungen sind dokumentiert; LAN, Onlineabgleich, Renderer und Livebetrieb bleiben offen. Keine Produktivinstallation; Netcup bleibt beim geprüften S2-Stand. Der folgende S3-01-Absatz beschreibt den eigenständigen vorherigen Teilstand.
 
 S3-01 auf `codex/s3-local-packages`: [Vorbereitungsstände mit Medien herunterladen und lokal in SQLite prüfen](docs/entwicklung/s3-paketablage.md), [Arbeitspaket #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6), [Entwurfs-PR #7](https://github.com/SchapfeldNils/ShowNight-System/pull/7). Portable Windows-Paketablage ohne Internetzugriff; Import aktiviert keine Ausgabe. Noch kein lokaler Mehrbenutzerserver, Offlinekonto-/MFA-Verfahren oder Renderer. Dieser S3-Stand ist noch nicht produktiv installiert.

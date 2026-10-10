@@ -2,7 +2,9 @@
 
 ## S3-02: lokaler HTTPS-Server und vorbereitete Offlinekonten
 
-Stand: 10. Oktober 2026. Beauftragte Softwarefortsetzung gemäß D017; Branch codex/s3-local-server von S3-01 e9a78f3, [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8). Eigener Entwurfs-PR und CI-Prüfstand folgen unten nach tatsächlicher Erstellung. Keine Zusammenführung und kein Netcup-Update.
+Stand: 10. Oktober 2026. Beauftragte Softwarefortsetzung gemäß D017; Branch codex/s3-local-server von S3-01 e9a78f3, [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8), [Entwurfs-PR #9](https://github.com/SchapfeldNils/ShowNight-System/pull/9). Runtime 7ab7b8b; der jeweils aktuelle native AMD64-/ARM64-/Windows-Prüfstand und die Artefakte stehen unter [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/9/checks). Keine Zusammenführung und kein Netcup-Update.
+
+Lokales tatsächlich entpacktes Windows-Server-ZIP: 35.356.156 Bytes, SHA256 b81a101acf4a573f828b873adf6974baab683728c74680241e071be338ab7bf2. Offizieller Node-24.19.0-Windows-x64-Build, 69 Lizenzverzeichnisse für Server-/Webpakete; Ausführung vollständig im Windows-Temp-Verzeichnis mit mitgelieferter node.exe. ZIP/Prüfsumme liegen unter dist, werden nicht in Git eingebracht. CI liefert eigene datierte ZIP-Artefakte. Geheimnisabgleich über 130 versionierte Dateien ohne Treffer.
 
 Implementiert: getrennt signierter, für den lokalen RSA-Zielschlüssel verschlüsselter Anmeldestand, bestehende Identitäten/Veranstaltungsrechte, lokale SQLite-Sitzungen/MFA/Recovery, persistente lokale Sperren, persönliche Offlineeinrichtung neuer Veranstaltungskonten, administrative Wiederherstellung mit separatem Schlüssel. Windows-DPAPI/ACL, selbstsigniertes HTTPS mit bewusster Vertrauensinstallation, portable Laufzeit und deutsche Browseroberfläche für lesende Pakete/Konten. Lokale Auditänderungen bleiben als noch abzugleichen vorgemerkt. [Bedienung und genaue Grenzen](s3-lokalserver.md).
 
