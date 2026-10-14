@@ -21,7 +21,14 @@
     "version": "0.3.7",
     "expiresAt": "2026-10-21T19:46:34Z",
     "artifactZipSha256": "5a5e966e75baa9d3ce7560af3d58ce4b3828d3c93e66a9be75b56540206ac684",
-    "locallyDownloaded": false
+    "locallyDownloaded": true,
+    "artifactDigestVerified": true,
+    "setupHashVerified": true,
+    "localSetupPath": "dist/streaming-installer/ShowNight-Streaming-Setup-0.3.7-x64.exe",
+    "setupSizeBytes": 30033580,
+    "setupSha256": "907dc3e13b10d31407b3d21b286d9feb1b33283c8b10be79f4515d29e324b285",
+    "rendererIncluded": true,
+    "signed": false
   },
   "publicReadOnlyObservation": {
     "dateTime": "2026-10-14T21:47:00+02:00",
