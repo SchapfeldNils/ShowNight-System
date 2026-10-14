@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
+import nodemailer from "nodemailer";
 import {
   writeFile,
   readFile,
@@ -14,7 +15,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fixture, multipartFile } from "./fixture.js";
 import { bootstrap } from "../apps/api/src/auth.js";
-import { migrate, database } from "../apps/api/src/db.js";
+import { migrate, database, migrationVersions } from "../apps/api/src/db.js";
 import { hash, totp } from "../apps/api/src/security.js";
 import { seedDemo } from "../apps/api/src/demo.js";
 import { processMedia, processMail } from "../apps/api/src/worker.js";
@@ -28,6 +29,7 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
     otherId = "",
     sourceId = "",
     copyId = "",
+    copiedMediaShowId = "",
     mediaId = "",
     packageId = "",
     teamId = "",
@@ -504,6 +506,7 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
           { sourceShowId: sourceId, sourceRevision: source.json().revision },
         );
         assert.equal(secondCopy.statusCode, 200);
+        copiedMediaShowId = secondCopy.json().id;
         assert.equal(
           (
             await request("/media/" + mediaId, "GET", undefined, {
@@ -518,17 +521,60 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
     await t.test(
       "S1-09: gepinnte Pakete, fehlende/geänderte Dateien; keine Onlineaktivierung",
       async () => {
-        // Remove failed attachment from this test copy; no delete API bypass is introduced.
         const failed = (
           await db.query("SELECT id FROM media WHERE status='failed'")
         ).rows[0].id;
-        await db.query(
-          "DELETE FROM show_media WHERE show_id IN(SELECT id FROM shows WHERE event_id=$1) AND media_id=$2",
-          [eventId, failed],
-        );
         const p = await request("/events/" + eventId + "/packages", "POST", {});
         assert.equal(p.statusCode, 200, p.body);
         assert.equal(p.json().status, "valid", p.body);
+        assert(!p.json().media.some((m: { id: string }) => m.id === failed));
+        assert.equal(
+          (await request("/media/" + failed)).json().status,
+          "failed",
+        );
+        // A failed file becomes required through a saved cue, including disabled cues.
+        const show = (await request("/shows/" + copiedMediaShowId)).json();
+        const reference = await request(
+          "/shows/" + copiedMediaShowId,
+          "PATCH",
+          {
+            expectedRevision: show.revision,
+            cues: [
+              {
+                id: randomUUID(),
+                name: "Defekte Referenz",
+                enabled: false,
+                triggerHint: "",
+                notes: "",
+                mediaIds: [failed],
+              },
+            ],
+          },
+        );
+        assert.equal(reference.statusCode, 200, reference.body);
+        const invalid = await request(
+          "/events/" + eventId + "/packages",
+          "POST",
+          {},
+        );
+        assert.equal(invalid.json().status, "invalid", invalid.body);
+        assert(invalid.json().errors.some((e: string) => e.includes("failed")));
+        const removeReference = await request(
+          "/shows/" + copiedMediaShowId,
+          "PATCH",
+          {
+            expectedRevision: reference.json().revision,
+            cues: show.cues,
+          },
+        );
+        assert.equal(removeReference.statusCode, 200, removeReference.body);
+        const recovered = await request(
+          "/events/" + eventId + "/packages",
+          "POST",
+          {},
+        );
+        assert.equal(recovered.json().status, "valid", recovered.body);
+        // No direct SQL removal of the original or its show attachment is needed.
         packageId = p.json().id;
         assert.equal(p.json().liveActivationSupported, false);
         assert(!p.body.includes("password_hash"));
@@ -664,7 +710,7 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
     );
     await t.test(
       "Mailwarteschlange: dauerhaft, dedupliziert, simuliert; unterbrochene Übergabe unknown",
-      async () => {
+      async (mailTest) => {
         const input = {
           businessKey: "synthetic-test",
           recipient: "demo@example.invalid",
@@ -679,16 +725,131 @@ test("S1 mit echtem PostgreSQL, Originaldateien und isoliertem Restore", async (
           (await request("/mail-jobs", "POST", input)).json().duplicate,
           true,
         );
-        await processMail(db, cfg);
+        let transports = 0;
+        mailTest.mock.method(nodemailer, "createTransport", () => {
+          transports++;
+          return {
+            async sendMail() {
+              return { messageId: "synthetic-smtp-contract" };
+            },
+            close() {},
+          };
+        });
+        const smtpCfg = {
+          ...cfg,
+          DEMO_ENABLED: "false" as const,
+          MAIL_MODE: "smtp" as const,
+          MAIL_DELIVERY_ENABLED: "true" as const,
+        };
+        // The API enqueues in test mode while the worker has real delivery enabled.
+        await processMail(db, smtpCfg);
+        assert.equal(
+          transports,
+          0,
+          "Testauftrag darf keinen SMTP-Transport öffnen.",
+        );
         assert.equal(
           (await request("/mail-jobs")).json()[0].status,
           "simulated",
+        );
+        assert.equal(
+          (await request("/mail-jobs")).json()[0].deliveryMode,
+          "test",
+        );
+        await db.query(
+          "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status,delivery_mode) VALUES($1,'synthetic-real-mode','demo@example.invalid','Synthetisch','Vertragstest','queued','smtp')",
+          [randomUUID()],
+        );
+        assert.equal(await processMail(db, cfg), false);
+        assert.equal(transports, 0);
+        assert.equal(
+          (
+            await db.query(
+              "SELECT status FROM mail_jobs WHERE business_key='synthetic-real-mode'",
+            )
+          ).rows[0].status,
+          "queued",
+        );
+        await processMail(db, smtpCfg);
+        assert.equal(transports, 1);
+        assert.equal(
+          (
+            await db.query(
+              "SELECT status FROM mail_jobs WHERE business_key='synthetic-real-mode'",
+            )
+          ).rows[0].status,
+          "accepted_by_smtp",
         );
         await db.query(
           "UPDATE mail_jobs SET status='sending',started_at=now()-interval '10 minutes'",
         );
         await processMail(db, cfg);
         assert.equal((await request("/mail-jobs")).json()[0].status, "unknown");
+      },
+    );
+    await t.test(
+      "Mailmigration aus bestehenden Schemas → 5 erhält alte Testaufträge sicher und ist wiederholbar",
+      async () => {
+        const legacyFiles = (await readdir("apps/api/migrations"))
+          .filter(
+            (file) =>
+              /^\d{3}_[a-z_]+\.sql$/.test(file) &&
+              file !== "005_mail_delivery.sql",
+          )
+          .sort();
+        for (let version = 1; version <= legacyFiles.length; version++) {
+          const name = "shownight_mail_upgrade_" + version;
+          await f.pg.createDatabase(name);
+          const upgrade = database(
+            cfg.DATABASE_URL.replace("shownight_test", name),
+          );
+          try {
+            for (const file of legacyFiles.slice(0, version))
+              await upgrade.query(
+                await readFile("apps/api/migrations/" + file, "utf8"),
+              );
+            const jobId = randomUUID();
+            await upgrade.query(
+              "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status) VALUES($1,'legacy-test','demo@example.invalid','Synthetisch','Kein Versand','queued')",
+              [jobId],
+            );
+            await migrate(upgrade);
+            await migrate(upgrade);
+            const oldJob = (
+              await upgrade.query("SELECT * FROM mail_jobs WHERE id=$1", [
+                jobId,
+              ])
+            ).rows[0];
+            assert.equal(oldJob.delivery_mode, "test");
+            assert.equal(oldJob.status, "queued");
+            assert.equal(oldJob.business_key, "legacy-test");
+            assert.deepEqual(
+              (
+                await upgrade.query(
+                  "SELECT version FROM schema_migrations ORDER BY version",
+                )
+              ).rows.map((r) => r.version),
+              await migrationVersions(),
+            );
+            await processMail(upgrade, {
+              ...cfg,
+              DEMO_ENABLED: "false",
+              MAIL_MODE: "smtp",
+              MAIL_DELIVERY_ENABLED: "true",
+            });
+            assert.equal(
+              (
+                await upgrade.query(
+                  "SELECT status FROM mail_jobs WHERE id=$1",
+                  [jobId],
+                )
+              ).rows[0].status,
+              "simulated",
+            );
+          } finally {
+            await upgrade.end();
+          }
+        }
       },
     );
     await t.test(

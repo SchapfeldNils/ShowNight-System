@@ -1,5 +1,16 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
+
+
+
+
 ## 14. Oktober 2026 · S3-05 Abschlussnachweis
 
 Finale Runtime 5d3c34e: Native renderer 38599883983 vollständig erfolgreich, native Suite 5/5 und portable Suite 6/6. Tatsächliche PNG-/VP8-Dekodierung, Windows-Dateisperren, unveränderte geladene Kopie, Videoende, ungültige PNG-Signatur/Decoderfehler mit Freigabe, echter Edge-Desktop-/Mobilbrowser und gebündelter CLI-Paketimport bestanden. Setup 0.3.5 einschließlich zusätzlichem Import-Startmenüeintrag, Installation, aktiver Updatesperre, Update und datenerhaltender Deinstallation bestanden. S1 checks 38599883927 auf Windows/AMD64/ARM64 und Server-Installer 38599884010 ebenfalls vollständig grün.
