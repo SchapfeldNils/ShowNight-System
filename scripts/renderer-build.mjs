@@ -8,6 +8,7 @@ import {
   lstat,
   rename,
   unlink,
+  open,
 } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -23,6 +24,8 @@ const jsonHash =
   "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63";
 const gstVersion = "1.28.8",
   gstName = "gstreamer-1.0-msvc-x86_64-" + gstVersion + ".exe";
+const gstExpectedHash =
+  "e4c41ee6ee9c6c32a45d198463ec08d79bac3bd5fa58adc93d13fe4a08abc9d9";
 const gstUrl =
   "https://gstreamer.freedesktop.org/pkg/windows/" +
   gstVersion +
@@ -41,23 +44,84 @@ async function download(url, path, expected) {
     if (expected && url.endsWith(".exe")) {
       const temporary = path + ".download";
       try {
-        command("curl.exe", [
-          "--http1.1",
-          "--location",
-          "--fail",
-          "--retry",
-          "5",
-          "--retry-all-errors",
-          "--retry-delay",
-          "3",
-          "--connect-timeout",
-          "30",
-          "--max-time",
-          "600",
-          "--output",
-          temporary,
-          url,
-        ]);
+        const probe = await fetch(url, {
+          headers: { Range: "bytes=0-0", "Accept-Encoding": "identity" },
+          signal: AbortSignal.timeout(30000),
+        });
+        const range = probe.headers
+          .get("content-range")
+          ?.match(/^bytes 0-0\/([0-9]+)$/);
+        if (probe.status === 206 && range) {
+          await probe.arrayBuffer();
+          const size = Number(range[1]),
+            step = 4 * 1024 * 1024;
+          if (!Number.isSafeInteger(size) || size < 1024 || size > 1024 ** 3)
+            throw new Error("SDK-Länge unzulässig.");
+          const file = await open(temporary, "w");
+          let position = 0;
+          try {
+            await Promise.all(
+              Array.from({ length: 4 }, async () => {
+                while (position < size) {
+                  const start = position,
+                    end = Math.min(size, start + step) - 1;
+                  position = end + 1;
+                  let completed = false;
+                  for (let attempt = 0; attempt < 3 && !completed; ++attempt) {
+                    try {
+                      const r = await fetch(url, {
+                        headers: {
+                          Range: "bytes=" + start + "-" + end,
+                          "Accept-Encoding": "identity",
+                        },
+                        signal: AbortSignal.timeout(60000),
+                      });
+                      if (
+                        r.status !== 206 ||
+                        r.headers.get("content-range") !==
+                          "bytes " + start + "-" + end + "/" + size
+                      )
+                        throw new Error("SDK-Teilbereich nicht bestätigt.");
+                      const data = Buffer.from(await r.arrayBuffer());
+                      if (data.length !== end - start + 1)
+                        throw new Error("SDK-Teilbereich unvollständig.");
+                      let n = 0;
+                      while (n < data.length)
+                        n += (
+                          await file.write(data, n, data.length - n, start + n)
+                        ).bytesWritten;
+                      completed = true;
+                    } catch (e) {
+                      if (attempt === 2) throw e;
+                      await pause(1000);
+                    }
+                  }
+                }
+              }),
+            );
+          } finally {
+            await file.close();
+          }
+        } else {
+          await probe.body?.cancel();
+          command("curl.exe", [
+            "--http1.1",
+            "--location",
+            "--fail",
+            "--retry",
+            "5",
+            "--retry-all-errors",
+            "--retry-delay",
+            "3",
+            "--connect-timeout",
+            "30",
+            "--max-time",
+            "600",
+            "--output",
+            temporary,
+            url,
+          ]);
+        }
         const archive = await readFile(temporary);
         if (hash(archive) !== expected)
           throw new Error("SDK-SHA256 stimmt nicht.");
@@ -114,6 +178,8 @@ const gstHashBytes = await download(
 );
 const gstHash = gstHashBytes.toString("utf8").match(/^[a-f0-9]{64}(?=\s)/)?.[0];
 if (!gstHash) throw new Error("Offizielle GStreamer-Prüfsumme fehlt.");
+if (gstHash !== gstExpectedHash)
+  throw new Error("Offizieller SDK-Hash weicht vom bestätigten Stand ab.");
 console.log("Offizieller GStreamer-SDK-SHA256: " + gstHash);
 const installer = join(work, gstName);
 await download(gstUrl, installer, gstHash);

@@ -2,6 +2,8 @@
 
 ## 14. Oktober 2026 – S3-04: Renderer ohne zweiten Client entwickeln
 
+Zweiter nativer Lauf 38525838177 bestätigte den offiziellen SDK-SHA256 e4c41ee6ee9c6c32a45d198463ec08d79bac3bd5fa58adc93d13fe4a08abc9d9, brach aber auch mit curl vor Installerbytes ab (541.543.793 Byte fehlend). SDK-Hash nun im Repository gepinnt; begrenzte verifizierte HTTP-Teilbereiche ergänzen, sofern der offizielle Server Range unterstützt. Gesamthash bleibt zwingend. Keine unverifizierte Quelle oder ausgeschaltete TLS-Prüfung als Ersatz. Native Kompilation weiterhin offen.
+
 Runtime a09cd5b über GitHub-Plugin als [Entwurfs-PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13) gegen codex/s3-lan-setup eröffnet und im Chat angehängt. Erster nativer Lauf 38525323695 erreichte die offiziellen Prüfsummen, scheiterte beim großen SDK-Download mit unterbrochener TLS-Verbindung; noch keine C++-Kompilation oder native Erfolgsaussage. Download auf curl mit Wiederholung/HTTP1.1 und unveränderter zwingender SHA256-Prüfung umgestellt. Vertragstest für ausgeschlossene physische Ausgaben verwendet jetzt einen sonst vollständig gültigen Zustand; native Protokollfehler trennen den Kanal ausdrücklich. Prüfungen am neuen Head erneut erforderlich.
 
 Betreiber bestätigt die Renderer-Grundlage trotz fehlendem Client und späteren umfangreichen Tests. Pflichtdokumente, D013/D017 und bestehende Architektur geprüft. Eigenen Branch codex/s3-renderer-foundation auf ab77a46 angelegt und über GitHub-Plugin [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12) eröffnet. Lokaler Rechner bleibt DJ; keine System-Compiler-/SDK-/Geräteinstallation, kein Netcup-/DJ-Update.
