@@ -223,6 +223,21 @@ await copyFile(
 if (!local && !server)
   await copyFile("node_modules/ws/LICENSE", join(out, "ws-LICENSE.txt"));
 if (server) {
+  // Windows PowerShell 5.1 treats BOM-less source as the active ANSI codepage.
+  await writeFile(
+    join(out, "Server-Oberflaeche.ps1"),
+    "\ufeff" +
+      (await readFile("deploy/windows/Server-Oberflaeche.ps1", "utf8")).replace(
+        /^\ufeff/,
+        "",
+      ),
+  );
+  await writeFile(
+    join(out, "Server-Oberflaeche.cmd"),
+    '@echo off\r\nstart "" "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File "%~dp0Server-Oberflaeche.ps1"' +
+      (renderer ? " -Renderer" : "") +
+      "\r\n",
+  );
   await copyFile(
     "deploy/windows/local-network.example.json",
     join(out, "local-network.example.json"),

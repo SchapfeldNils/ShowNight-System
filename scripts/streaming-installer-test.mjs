@@ -104,10 +104,69 @@ try {
     "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\ShowNight Streaming starten.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",
     { TEST_GROUP: group },
   ).trim();
-  assert.equal(
-    shortcut.toLowerCase(),
-    join(folder, "Streaming-Start.cmd").toLowerCase(),
+  assert.equal(shortcut.toLowerCase(), ps.toLowerCase());
+  const launcherArguments = powershell(
+    "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\ShowNight Streaming starten.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).Arguments",
+    { TEST_GROUP: group },
+  ).trim();
+  assert.ok(launcherArguments.includes(join(folder, "Server-Oberflaeche.ps1")));
+  assert.match(launcherArguments, /-STA/);
+  const launcherStatus = execFileSync(
+    ps,
+    [
+      "-NoProfile",
+      "-STA",
+      "-ExecutionPolicy",
+      "RemoteSigned",
+      "-File",
+      join(folder, "Server-Oberflaeche.ps1"),
+      "-CheckOnly",
+    ],
+    {
+      env: { ...process.env, LOCALAPPDATA: profile },
+      encoding: "utf8",
+      windowsHide: true,
+    },
   );
+  assert.equal(JSON.parse(launcherStatus).ready, false);
+  assert.equal(
+    JSON.parse(launcherStatus).dataRoot,
+    join(profile, "ShowNight/local-server"),
+  );
+  const nativeUi = JSON.parse(
+    execFileSync(
+      ps,
+      [
+        "-NoProfile",
+        "-STA",
+        "-ExecutionPolicy",
+        "RemoteSigned",
+        "-File",
+        join(folder, "Server-Oberflaeche.ps1"),
+        "-UiCheck",
+      ],
+      {
+        env: { ...process.env, LOCALAPPDATA: profile },
+        encoding: "utf8",
+        windowsHide: true,
+        timeout: 30000,
+      },
+    ),
+  );
+  assert.equal(nativeUi.title, "ShowNight · Lokaler Server");
+  assert.ok(
+    nativeUi.details.includes(
+      "Datenordner: " + join(profile, "ShowNight/local-server"),
+    ),
+  );
+  assert.ok(
+    nativeUi.details.includes(
+      "Paketordner: " + join(profile, "ShowNight/local-packages"),
+    ),
+  );
+  assert.match(nativeUi.details, /Profil: fehlt/);
+  assert.equal(nativeUi.startEnabled, false);
+  assert.equal(nativeUi.openEnabled, false);
   const env = { ...process.env, LOCALAPPDATA: profile };
   const statusShortcut = powershell(
     "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\Einrichtungsstatus prüfen.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",

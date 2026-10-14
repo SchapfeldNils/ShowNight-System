@@ -176,3 +176,7 @@ Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente 
 ## PR-Bug-Korrekturen – technische Umsetzung, 14. Oktober 2026
 
 Status: ausdrücklich beauftragte Fehlerbehebung, keine neue Fachentscheidung. Bestehende gleichberechtigte Leitungsrechte, MFA-Pflicht und Rechtewiderruf werden durchgesetzt; Einladungsrecovery setzt keine eingerichteten Kennwörter zurück. Mailversandart dauerhaft gespeichert; neue Migration 5 vermeidet Kollision mit bestehender Szenenmigration 4. Alle offenen PRs erhalten Nachprüfung ihrer aktuellen Softwarestände; unbelegte Hardware-/Dauerbetriebs-/Zustellfälle bleiben offen. Kein autonomer PR-Merge oder Produktivupdate. [Nachweise](../entwicklung/pr-bug-abnahme.md).
+
+## S3-08 – lokale Übersicht, technische Umsetzung, 14. Oktober 2026
+
+Status: ausdrücklich beauftragt, keine neue Fachentscheidung. Bestehende lokale Weboberfläche um MFA-geschützte Systemübersicht ergänzen, vorgeschalteter kleiner Windows-PowerShell-/Forms-Launcher für vorhandene Startbefehle und Datenpfade. Read-only DisplayConfig/CoreAudio-Inventar ist keine Ausgabezuordnung oder Hardwarefreigabe. Kein neues Desktopframework, keine geänderten Rechte/Regie-/Ausfallregeln. Fehlende Kameras/Streams/physische Ausgabe bleiben offen. [Ablauf und Nachweise](../entwicklung/s3-serveruebersicht.md).

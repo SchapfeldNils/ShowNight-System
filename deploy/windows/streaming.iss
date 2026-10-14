@@ -7,7 +7,7 @@
 [Setup]
 AppId={{91B460DA-7153-4619-9B7D-DC6EAD45982B}
 AppName=ShowNight Streaming
-AppVersion=0.3.7
+AppVersion=0.3.8
 AppPublisher=ShowNight
 AppPublisherURL=https://github.com/SchapfeldNils/ShowNight-System
 DefaultDirName={localappdata}\Programs\ShowNight\Streaming
@@ -38,7 +38,11 @@ Name: "desktopicon"; Description: "Verknüpfung auf dem Desktop erstellen"; Flag
 Source: "{#PayloadDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\ShowNight Streaming starten"; Filename: "{app}\Streaming-Start.cmd"; WorkingDir: "{app}"
+#ifdef WithRenderer
+Name: "{group}\ShowNight Streaming starten"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File ""{app}\Server-Oberflaeche.ps1"" -Renderer"; WorkingDir: "{app}"
+#else
+Name: "{group}\ShowNight Streaming starten"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File ""{app}\Server-Oberflaeche.ps1"""; WorkingDir: "{app}"
+#endif
 Name: "{group}\1 - Lokalen Server einrichten"; Filename: "{app}\Server-Einrichten.cmd"; WorkingDir: "{app}"
 Name: "{group}\Inhaltspaket importieren"; Filename: "{app}\Server-Paket-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\2 - Serverschlüssel importieren"; Filename: "{app}\Serverschluessel-Importieren.cmd"; WorkingDir: "{app}"
@@ -48,7 +52,11 @@ Name: "{group}\Einrichtungsstatus prüfen"; Filename: "{app}\Server-Status.cmd";
 Name: "{group}\Installationshinweise"; Filename: "{app}\Installationshinweise.txt"
 Name: "{group}\Programmordner"; Filename: "{app}"
 Name: "{group}\Deinstallieren"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\ShowNight Streaming"; Filename: "{app}\Streaming-Start.cmd"; WorkingDir: "{app}"; Tasks: desktopicon
+#ifdef WithRenderer
+Name: "{autodesktop}\ShowNight Streaming"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File ""{app}\Server-Oberflaeche.ps1"" -Renderer"; WorkingDir: "{app}"; Tasks: desktopicon
+#else
+Name: "{autodesktop}\ShowNight Streaming"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File ""{app}\Server-Oberflaeche.ps1"""; WorkingDir: "{app}"; Tasks: desktopicon
+#endif
 
 [Code]
 function OwnApplicationRunning: Boolean;

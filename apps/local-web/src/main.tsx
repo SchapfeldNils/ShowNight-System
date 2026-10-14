@@ -5,6 +5,7 @@ import "../../web/src/style.css";
 import "./style.css";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
 import { RendererPanel } from "./renderer.js";
+import { ServerOverview } from "./server-overview.js";
 type Me = {
   id: string;
   displayName: string;
@@ -287,6 +288,7 @@ function App() {
                 <button onClick={() => setCodes([])}>Codes gesichert</button>
               </section>
             )}
+            {me.admin && <ServerOverview api={api} />}
             {me.admin && <RendererPanel api={api} selected={selected} />}
             <section>
               <h2>Vorbereitete Pakete</h2>

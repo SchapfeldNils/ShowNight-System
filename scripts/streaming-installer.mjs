@@ -22,6 +22,7 @@ const stage = resolve(
 const out = resolve("dist/streaming-installer");
 await access(join(source, "node.exe"));
 await access(join(source, "main.js"));
+await access(join(source, "Server-Oberflaeche.ps1"));
 if (renderer) await access(join(source, "renderer/integrity.json"));
 const stagingRoot = resolve(".local/streaming-installer");
 await mkdir(stagingRoot, { recursive: true });
@@ -42,9 +43,7 @@ await mkdir(out, { recursive: true });
 await cp(source, stage, { recursive: true });
 await writeFile(
   join(stage, "Streaming-Start.cmd"),
-  '@echo off\r\n"%~dp0node.exe" "%~dp0main.js" ' +
-    (renderer ? "run-renderer" : "run") +
-    "\r\npause\r\n",
+  '@echo off\r\ncall "%~dp0Server-Oberflaeche.cmd"\r\n',
 );
 await writeFile(
   join(stage, "Installationshinweise.txt"),
@@ -59,13 +58,17 @@ await writeFile(
     "Keine Freigabe für Veranstaltungsbetrieb, HDMI, Audio oder OBS-Ausgabe.",
     "",
     "Nach der Installation über das Startmenü:",
-    "Zuerst 'Einrichtungsstatus prüfen' öffnen; fehlende Schritte werden einzeln erklärt.",
+    "'ShowNight Streaming starten' öffnet die grafische Serverübersicht.",
+    "Sie zeigt den tatsächlich verwendeten Datenpfad und erklärt fehlende Schritte.",
     "1. Lokalen Server einmal einrichten. Bestehende Einrichtung nicht erneut initialisieren.",
     "   Danach .snpkg-Dateien über Inhaltspaket importieren im Startmenü laden.",
     "2. Serverschlüssel und für diesen Rechner ausgestellten Anmeldestand importieren.",
     "   Ablauf und Voraussetzungen stehen in Anleitung.md im Programmordner.",
     "3. Lokales HTTPS-Zertifikat wie dort beschrieben prüfen und vertrauen.",
-    "4. ShowNight Streaming starten, dann die ausgegebene HTTPS-Adresse im Browser öffnen.",
+    "4. In der Serverübersicht 'Server starten' und danach 'Server im Browser' wählen.",
+    "   Nach dem Start 'Status aktualisieren' wählen. Die Weboberfläche benötigt Anmeldung und MFA.",
+    "   Dort zeigt die Adminübersicht erkannte Windows-Displays und Audioendpunkte.",
+    "   Erkannte Geräte sind weder zugeordnet noch für die Veranstaltung freigegeben.",
     "   Zum Beenden im Serverfenster Strg+C verwenden.",
     "",
     "Node/npm, Compiler und GStreamer-SDK sind beim Anwender nicht erforderlich.",
@@ -113,6 +116,7 @@ execFileSync(
   [
     "/DPayloadDir=" + stage,
     "/DOutputDir=" + out,
+    ...(renderer ? ["/DWithRenderer"] : []),
     resolve("deploy/windows/streaming.iss"),
   ],
   { stdio: "inherit", windowsHide: true, timeout: 300000 },
@@ -127,7 +131,7 @@ await writeFile(
   join(out, "build-info.json"),
   JSON.stringify(
     {
-      version: "0.3.7",
+      version: "0.3.8",
       rendererIncluded: renderer,
       stage: "software-preparation",
       signed: false,

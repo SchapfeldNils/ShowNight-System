@@ -1,5 +1,7 @@
 # S3-02 · Lokaler HTTPS-Server und Offlinekonten
 
+Ergänzung 14. Oktober 2026: [Serverübersicht, Startdiagnose und Windows-Inventar](s3-serveruebersicht.md), Setupquellen 0.3.8. Bestehende Profile erhalten; bei widersprüchlichem „Profil fehlt“ zuerst angezeigten Datenpfad/Benutzer prüfen.
+
 Ergänzung S3-03 vom 10. Oktober 2026: [gezielte LAN-Neueinrichtung](s3-lan.md) ist als weiteres Softwarepaket implementiert. Der nachfolgende Ablauf beschreibt unverändert die Loopback-Einrichtung; echte Mehrgeräteprüfung und Umstellung bestehender Profile bleiben offen. Zusätzliche Startdateien im Server-ZIP: Server-LAN-Einrichten.cmd und Server-Netzwerk-Pruefen.cmd. Keine automatische Firewall-/Vertrauensinstallation.
 
 Stand: 2026-10-10 · Softwaregrundlage lokal geprüft, GitHub-Prüfstand siehe Status. Kein Netcup-Update und keine Veranstaltungsfreigabe.

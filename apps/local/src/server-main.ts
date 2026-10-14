@@ -21,6 +21,61 @@ import { localServer } from "./server.js";
 import { lanSetup, assignedAddress, certificateInfo } from "./network.js";
 import { RendererClient, disabledRenderer } from "./renderer.js";
 import { StartupError, startupStatus, printStartupStatus } from "./startup.js";
+import { createWindowsIoProvider } from "./windows-io.js";
+import { get as httpsGet } from "node:https";
+import { X509Certificate } from "node:crypto";
+
+async function listenerStatus(root: string, origin?: string) {
+  if (!origin) return "not-confirmed";
+  try {
+    const ca = new X509Certificate(
+      await readFile(join(root, "server.cer")),
+    ).toString();
+    return await new Promise<"alive" | "not-confirmed">((done) => {
+      const url = new URL("/health/live", origin);
+      const request = httpsGet(
+        url,
+        {
+          ca,
+          rejectUnauthorized: true,
+          timeout: 1500,
+          ...(url.hostname === "localhost" ? { family: 4 } : {}),
+        },
+        (response) => {
+          let body = "";
+          response.on("data", (chunk) => {
+            body += chunk;
+            if (body.length > 4096) request.destroy();
+          });
+          response.on("end", () => {
+            try {
+              const result = JSON.parse(body);
+              done(
+                response.statusCode === 200 &&
+                  result.status === "alive" &&
+                  result.mode === "offline-preparation"
+                  ? "alive"
+                  : "not-confirmed",
+              );
+            } catch {
+              done("not-confirmed");
+            }
+          });
+          response.on("error", () => done("not-confirmed"));
+        },
+      );
+      request.on("timeout", () => request.destroy());
+      request.on("error", () => done("not-confirmed"));
+      const deadline = setTimeout(() => {
+        done("not-confirmed");
+        request.destroy();
+      }, 2000);
+      request.on("close", () => clearTimeout(deadline));
+    });
+  } catch {
+    return "not-confirmed";
+  }
+}
 async function inputPath(arg?: string) {
   const ui = createInterface({ input: stdin, output: stdout });
   let p = arg;
@@ -38,8 +93,22 @@ async function main() {
     secrets = join(process.env.LOCALAPPDATA, "ShowNight", "secrets"),
     packageRoot = join(process.env.LOCALAPPDATA, "ShowNight", "local-packages");
   const mode = process.argv[2] ?? "run";
-  if (mode === "status" || mode === "run" || mode === "run-renderer") {
+  if (
+    mode === "status-json" ||
+    mode === "status" ||
+    mode === "run" ||
+    mode === "run-renderer"
+  ) {
     const status = await startupStatus(root, packageRoot);
+    if (mode === "status-json") {
+      console.log(
+        JSON.stringify({
+          ...status,
+          listener: await listenerStatus(root, status.origin),
+        }),
+      );
+      return;
+    }
     if (mode === "status" || !status.ready) {
       printStartupStatus(status);
       if (mode !== "status") {
@@ -246,6 +315,7 @@ async function main() {
         },
         true,
         renderer,
+        createWindowsIoProvider(),
       );
       server.addHook("onClose", async () => {
         await renderer.close();

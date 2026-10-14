@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Issue #24: lokale Serverübersicht und lesendes Windows-Inventar
+
+14. Oktober 2026, `codex/s3-server-overview`: grafischer Windows-Launcher und MFA-geschützte Adminübersicht implementiert. Effektiver Datenpfad sichtbar, fehlend/unzugänglich getrennt, keine erneute Einrichtung. Bestehender Hostdienst 0.3.7 mit neuem lesendem Status als HTTPS-erreichbar bestätigt. Echte reine Aufzählung: ein Display, zwei Audioeingänge, drei Audioausgänge, nichts aktiviert. Erkannte/nutzbare Wege getrennt; Kameras/physische Ausgabe offen. 27/27 Units, Browser 4/4, Build, Windows-Paket und PowerShell-5.1-Oberflächenkonstruktion bestanden. Setupquellen 0.3.8; Auslieferungs-/Gesamt-CI-Nachweis erst nach Abschluss ergänzen. [Bedienung und Protokoll](s3-serveruebersicht.md). Vorbereiteter MFA-Erststart/Online-Schema-4-Betrieb separat in [PR #23](https://github.com/SchapfeldNils/ShowNight-System/pull/23); ältere Abschnitte unten sind historische Teilstände.
+
 ## Issue #3: portable verschlüsselte Sicherung vorbereitet
 
 Abschlussnachweis: PR #22, Runtime `37c1d10`, [S1 checks 38626408226](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38626408226) Windows/AMD64/ARM64 vollständig erfolgreich, einschließlich neuer Negativprüfungen, tatsächlichem Linux-Wartungsrunner, verschlüsselter Sicherung/Entschlüsselung und isoliertem PostgreSQL-/Medienrestore. [Server-Installer 38626408257](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38626408257) ebenfalls erfolgreich. [Strukturierter Nachweis](nachweise/backup-vault.json). Reiner Dokumentationsabschluss; kein produktiver Sicherungsjob oder Merge. Die folgende Angabe zur noch ausstehenden CI ist historisch.

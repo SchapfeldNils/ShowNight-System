@@ -28,6 +28,8 @@ import {
   RendererFault,
   type RendererControl,
 } from "./renderer.js";
+import type { WindowsIoReport } from "../../../packages/contracts/src/local-status.js";
+import { unavailableWindowsIo } from "./windows-io.js";
 export async function localServer(
   accounts: LocalAccounts,
   packages: PackageStore,
@@ -36,7 +38,10 @@ export async function localServer(
   tls?: ServerOptions,
   canonicalHost = false,
   renderer: RendererControl = disabledRenderer,
+  ioProvider: () => Promise<WindowsIoReport> = async () =>
+    unavailableWindowsIo(),
 ) {
+  const startedAt = new Date().toISOString();
   const app = Fastify({
     bodyLimit: 16384,
     logger: false,
@@ -184,7 +189,7 @@ export async function localServer(
       throw new HttpError(
         403,
         "FORBIDDEN",
-        "Systemadministration für die Rendererdiagnose erforderlich.",
+        "Systemadministration für die lokale Systemdiagnose erforderlich.",
       );
   };
   const rendererError = (e: unknown): never => {
@@ -198,6 +203,38 @@ export async function localServer(
       );
     throw e;
   };
+  app.get("/api/local/server-status", async (req) => {
+    rendererAdmin(req);
+    const [io, report] = await Promise.all([
+      ioProvider().catch(() => unavailableWindowsIo()),
+      renderer.status().catch(() => ({
+        availability: "unavailable" as const,
+        mode: "software-diagnostics" as const,
+        physicalOutputEnabled: false as const,
+        audioOutputEnabled: false as const,
+        state: null,
+      })),
+    ]);
+    // Device enumeration yields; imported snapshots or local blocks may revoke
+    // this session while the operating system is answering.
+    rendererAdmin(req);
+    return {
+      checkedAt: new Date().toISOString(),
+      service: {
+        origin,
+        startedAt,
+        tls: !!tls,
+        liveEnabled: false,
+        mailEnabled: false,
+      },
+      preparation: {
+        packages: packages.list().length,
+        accountSnapshotPrepared: !!accounts.meta("snapshot_id"),
+      },
+      renderer: report,
+      io,
+    };
+  });
   app.get("/api/local/renderer", async (req) => {
     rendererAdmin(req);
     try {
