@@ -1,3 +1,7 @@
+# Produktivstand – 15. Oktober 2026
+
+Nach ausdrücklicher Betreiberfreigabe gemeinsame Runtime `f232483` tatsächlich auf Netcup bereitgestellt, öffentliche HTTPS-Readiness Schema 6. Frisches konsistentes Backup, verschlüsselte Windows-Kopie samt Entschlüsselungsprüfung und isolierter Schema4-Restore/Schema6-Migration mit Bestandsvergleich bestanden. Originalvolumes und altes Image erhalten. Kontomailversand aktiv, SMTP-TLS/Anmeldung aus Worker bestätigt; tatsächliche Zustellung und gewünschter Passwortreset warten noch auf persönliche Adressbestätigung. Kein Passwort-/MFA-Bypass. [Wartungsprotokoll und Grenzen](online-produktivupdate.md). Frühere Aussagen „noch nicht bereitgestellt“ unten sind historische Stände.
+
 # Aktueller Abschlussnachweis – 15. Oktober 2026
 
 Gemeinsamer Kandidat `f232483fd04f47dfa8c973fe1892859a3e84d27b`, [PR #38](https://github.com/SchapfeldNils/ShowNight-System/pull/38): alle vier CI-Workflows erfolgreich (S1 Windows/AMD64/ARM64, Schema4→6 mit Rückkehr AMD64/ARM64, Native, Installer). Lokal Konto-/E-Mailbrowser 2/2, Kontointegration 14/14, Szenenintegration5/5, Build/Typprüfung und gezielte Windows-/Socket-/Vorlagenprüfungen bestanden. Gesamtcode unabhängig geprüft; bestätigte Recovery-/Timeoutfehler behoben und erneut geprüft. Finale CI-, Artefakt-, Dokumentations- und Bildnachweise unabhängig geprüft, keine bestätigten Blocker. Echte SMTP-Verbindung/TLS/Anmeldung bestätigt, keine Nachricht versendet. Codezusammenführung ist beauftragt; produktive Bereitstellung ist nicht erfolgt.
