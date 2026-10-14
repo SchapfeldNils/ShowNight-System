@@ -68,6 +68,13 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+.renderer-panel fieldset {
+  min-width: 0;
+}
+.renderer-panel select {
+  width: 100%;
+  max-width: 100%;
+}
 @media (max-width: 600px) {
   .offline-app main {
     padding: 12px;

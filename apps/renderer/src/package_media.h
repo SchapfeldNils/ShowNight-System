@@ -65,7 +65,14 @@ public:
     const unsigned char png[] = {137,80,78,71,13,10,26,10};
     const unsigned char webm[] = {26,69,223,163};
     if (media.at("mime") == "image/png") {
-      if (bytes.size() < 24 || memcmp(bytes.data(),png,8)) throw std::runtime_error("MEDIA");
+      if (bytes.size() < 33 || memcmp(bytes.data(),png,8) ||
+          bytes[8] || bytes[9] || bytes[10] || bytes[11] != 13 ||
+          memcmp(bytes.data()+12,"IHDR",4)) throw std::runtime_error("MEDIA");
+      auto big32 = [&](size_t n) { return (uint32_t(bytes[n])<<24)|(uint32_t(bytes[n+1])<<16)|
+        (uint32_t(bytes[n+2])<<8)|uint32_t(bytes[n+3]); };
+      uint32_t w = big32(16),h = big32(20);
+      if (!w || !h || w > 4096 || h > 4096 || uint64_t(w)*h > 16777216)
+        throw std::runtime_error("MEDIA");
     } else {
       if (bytes.size() < 4 || memcmp(bytes.data(),webm,4)) throw std::runtime_error("MEDIA");
       bytes.clear(); bytes.shrink_to_fit();

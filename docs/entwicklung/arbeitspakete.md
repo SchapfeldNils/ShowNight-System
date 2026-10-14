@@ -1,5 +1,7 @@
 # Entwicklungsplan – Server zuerst, danach Agenten
 
+S3-05, 14. Oktober 2026: verifizierte Paketmedien an die stumme native Softwarediagnose anbinden; [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), [Entwurfs-PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Erst einzelne PNG-/VP8-WebM-Medien mit aktueller Berechtigung/Bindung und unveränderlicher Kopie; vorhandenes Paketformat enthält noch keine vollständigen Szenen. Vollständige Szenen, persönliche Regievorschau, Ausgabe und Show-GO bleiben nachfolgende Arbeiten. [Ablauf und Grenzen](s3-paketmedien.md).
+
 D018, 14. Oktober 2026: Windows-Setup-Anwendung für Streaming-Rechner verbindlich. [Installation und Prüfungen](s3-streaming-installer.md). Echte isolierte Installation/Update/Deinstallation mit erhaltenen Daten prüfen; Server-Vorabpaket ohne Renderer eindeutig kennzeichnen, vollständiges Rendererpaket erst nach erfolgreichem nativen Build.
 
 S3-04, 14. Oktober 2026: ausdrücklich beauftragte native Renderer-Grundlage ohne zweiten Client. [Ablauf und Grenzen](s3-renderer.md), [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12). Separater C++-/GStreamer-/Skia-Prozess, lokaler Steuerkanal, synthetische Diagnosebilder und sichere Kanaltrennung. Softwarebuilds/kleine automatische Prüfungen jetzt, praktische LAN-/Ausgabe-/Hardwareabnahme später. Vollständiger S3/S4-Scope bleibt offen.

@@ -29,6 +29,7 @@ import { PackageStore } from "../apps/local/src/store.js";
 import { packageHeader } from "../packages/transfer/src/archive.js";
 import { encryptSnapshot, trustFor } from "../packages/transfer/src/offline.js";
 import { totp } from "../apps/api/src/security.js";
+import { rendererBrowserProof } from "./renderer-browser.js";
 
 test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", async (t) => {
   assert.equal(
@@ -196,6 +197,16 @@ test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", a
             mime: "video/webm",
             bytes: video,
           },
+          {
+            name: "Synthetische falsche PNG-Signatur",
+            mime: "image/png",
+            bytes: Buffer.alloc(32),
+          },
+          {
+            name: "Synthetischer PNG-Decoderfehler",
+            mime: "image/png",
+            bytes: png.subarray(0, 33),
+          },
         ]);
         const app = await localServer(
           local.accounts,
@@ -322,6 +333,40 @@ test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", a
             (await client.status()).state!.program!.videoFrames,
             finalFrames,
           );
+          const stageDir = join(f.root, "frames", dir);
+          const stagedCount = async () =>
+            (await readdir(stageDir)).filter((n) => n.startsWith("input-"))
+              .length;
+          const beforeInvalid = await stagedCount();
+          for (const invalid of local.manifest.media.slice(2)) {
+            response = await post("package-media", {
+              ...prepare,
+              commandId: randomUUID(),
+              expectedRevision: state.revision,
+              mediaId: invalid.id,
+            });
+            assert.equal(response.statusCode, 503, response.body);
+            assert.equal(
+              (await client.status()).state!.revision,
+              state.revision,
+            );
+            assert.equal(
+              await stagedCount(),
+              beforeInvalid,
+              "Konstruktor-/Decoderfehler geben Dateisperre frei.",
+            );
+          }
+          if (process.env.RENDERER_TEST_BROWSER === "true") {
+            await rendererBrowserProof(
+              local.accounts,
+              local.packages,
+              client,
+              login.session,
+              local.manifest,
+              output,
+            );
+            state = (await client.status()).state!;
+          }
           state = await client.command({
             commandId: randomUUID(),
             expectedRevision: state.revision,

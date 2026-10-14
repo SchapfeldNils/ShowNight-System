@@ -1,5 +1,15 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 · S3-05 Paketmedien und lokale KI
+
+Betreiber setzt Softwarearbeit fort und fordert Verwendung des lokalen Helpers für kleine Entwürfe/Reviews. Eigener Branch codex/s3-package-renderer, Issue #15, Entwurfs-PR #16 gegen PR #13; kein Merge/Produktivupdate. Aktuelles Paketformat enthält noch keine vollständigen Szenen. Daher erster technisch begrenzter Medienbaustein: gebundene PNG-/VP8-WebM-Dateien, private verifizierte Kopie, native Hash-/Dateisperrprüfung, explizite stumme Diagnose mit sichtbarer Paketreferenz/Videoende.
+
+LocalAI tatsächlich dreimal mit versionierten Projektdateien aufgerufen: kleiner Entwurf und zwei Reviews. Aussagen über Rechte/MP4/fehlende Streamhashprüfung/Member-RAII fachlich geprüft und verworfen; kein Modelltext als Testergebnis. Erster Reviewversuch wurde wegen noch unversionierter neuer Datei vom Helper abgelehnt, nach Commit erneut ausgeführt. [Umfang, Kontext, Tokenstände und Prüfung](s3-paketmedien.md).
+
+Runtime 5cdea40: lokal Typen, 13 Unit-/Vertragsprüfungen und Build bestanden. Native renderer 38596382799 vollständig erfolgreich: native Paketmedienprüfung 5/5, portable HTTPS-/DPAPI-/Renderer-Suite 6/6 sowie Setup 0.3.5 mit erhaltenen privaten Daten. Windows-Schreib-/Löschsperre, verändertes Original bei unveränderter geladener Kopie, Deduplizierung und Ende ohne automatischen Loop tatsächlich geprüft. S1 checks 38596382954 Windows/AMD64/ARM64 und Streaming installer 38596382868 ebenfalls grün.
+
+Anschließend gezielte Ergänzungen: PNG-IHDR-Grenze vor Decoder, ungültige Signatur/Decoderfehler mit tatsächlicher Sperrfreigabe, echter Browserablauf mit nativem Renderer in Desktop-/Mobilansicht. Früherer CSP-Bildweg benötigte blob: für die verwendeten Blob-URLs; eng auf img-src ergänzt. Diese zusätzlichen Fälle sind beim folgenden Runtimecommit erneut auszuführen. Kein Hardware-/HDMI-/Ton-/Szenen-/Showbeleg.
+
 ## 14. Oktober 2026 · Abschluss des nativen Softwarebuilds nachgeprüft
 
 GitHub-Lauf 38588768652 zur Runtime d101808 ist inzwischen vollständig erfolgreich. Offizieller SDK-Download mit bestätigtem Gesamt-SHA256, tatsächlicher Skia-/MSVC-Build, native Tests 4/4, portabler HTTPS-/DPAPI-/Rendererablauf 5/5 und Renderer-Setup mit Installations-/Update-/Deinstallationsprüfung bestanden. Keine weitere Runtimeänderung nötig.

@@ -1,5 +1,7 @@
 # ShowNight-System
 
+In Arbeit: [Paketmedien in der nativen Softwarediagnose](docs/entwicklung/s3-paketmedien.md), [PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Neue native Nachweise separat; keine fertige Szenen-/Show-/Geräteausgabe behauptet.
+
 Streaming-Rechner: [Windows-Setup-Anwendung, Installation und Grenzen](docs/entwicklung/s3-streaming-installer.md). Server-Vorabpaket und Renderer-Diagnosepaket getrennt; tatsächlichen Build-/Prüfstand beachten.
 
 Setup mit nativer Renderer-Grundlage erfolgreich gebaut und geprüft: [Nachweise](docs/entwicklung/nachweise/s3-renderer.json). Softwarediagnose mit synthetischen Assets; tatsächliche HDMI-/Ton-/Streaming-/Showfunktion bleibt offen.

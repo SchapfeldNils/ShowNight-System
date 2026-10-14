@@ -44,6 +44,8 @@ jobs:
             .local/renderer-build/gstreamer-1.0-msvc-x86_64-1.28.8.exe
           key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v1
       - name: Test real native process without display or audio output
+        env:
+          RENDERER_TEST_BROWSER: "true"
         run: pnpm test:renderer
       - run: pnpm renderer:package
       - name: Test portable server and renderer bundle

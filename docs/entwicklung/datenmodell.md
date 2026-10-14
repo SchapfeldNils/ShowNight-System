@@ -1,5 +1,7 @@
 # Fachliches Datenmodell – erster Showablauf
 
+S3-05 ergänzt ausschließlich den flüchtigen Rendererdiagnosezustand um Paket-/Medien-/Manifest-/Dateihash, MIME, Größe und private Ressourcenkennung. Kein SQL-/Paketformatwechsel und kein vollständiges Szenenmodell. Native Scene hält geprüfte Kopie/Dateisperre bis zur Freigabe; Paketoriginal und bereits geladener Diagnoseinhalt sind getrennt. [Technischer Vertrag](s3-paketmedien.md).
+
 S3-04, 14. Oktober 2026: ausschließlich flüchtiger Rendererdiagnosezustand je Prozess-Epoch, getrennte Testszene/Videozähler für preview/program, eigene Diagnoserevision und begrenzte Receipts. Kein SQLite-/Online-Schemawechsel, kein persistenter Live-/GO-/Durchlauf-/Szenenstand. Prozesse beginnen ohne vorbereitete/übernommene Szene; bild-/tonbezogene Hardwarefähigkeiten bleiben aus. [Vertrag und Grenzen](s3-renderer.md).
 
 S3-03 (10. Oktober 2026): optionales strikt validiertes `network: { version: 1, address: privateIPv4 }` in der CurrentUser-DPAPI-geschützten lokalen Einrichtung. `origin` muss exakt `https://<address>:3443` sein; ohne Netzwerkfeld ausschließlich der bisherige Loopback-Origin. Kein SQL-Schemawechsel, keine zusätzlichen Rechte. Netzwerkdaten sind Aufbaukonfiguration, keine Showinhalte. Nur Neueinrichtung, kein automatischer Wechsel bestehender Profile oder Liveautorität. [Vertrag und Grenzen](s3-lan.md).
