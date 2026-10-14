@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-15",
+  "issue": 3,
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/35",
+  "branch": "codex/netcup-backup-hardening",
+  "baseCommit": "e0c94d7f7365a6971d0d63a3cbbe154e008a4e0b",
+  "runtimeCommit": "06c25ec223f791430c3e8ba5ab3993928348e1e4",
+  "scope": "F50/A17 partial software hardening",
+  "local": {
+    "environment": "Windows x64, Node24.19.0, actual Windows ACL and child processes",
+    "typecheck": "passed",
+    "build": "passed",
+    "units": {
+      "failed": 0,
+      "passed": 18
+    },
+    "backup": {
+      "failed": 0,
+      "passed": 6,
+      "skipped": 2,
+      "cases": [
+        "authenticated roundtrip and no partial residue",
+        "two concurrent publishers exactly one authenticated winner",
+        "actual subprocess kill after encrypted bytes written",
+        "caught streaming failure cleans private temporary file",
+        "wrong password, tamper and truncation",
+        "existing destination preservation"
+      ],
+      "skips": "Linux runner tests intentionally skipped on Windows",
+      "beforeFix": "4 of 5 passed; crash test found final archive visible during stream"
+    }
+  },
+  "independentReview": {
+    "reviewer": "non-implementing netcup_github_audit",
+    "status": "complete code/test and final CI/documentation review; no confirmed findings",
+    "confirmedFindings": 0
+  },
+  "ci": {
+    "s1": {
+      "runId": 38648600570,
+      "backupStep": "passed on all three platforms; Linux 8 tests, Windows 6 with 2 Linux skips",
+      "status": "success",
+      "jobs": {
+        "arm64": 116141538441,
+        "amd64": 116141538499,
+        "windows": 116141538102
+      },
+      "containerRestore": "passed on amd64 and arm64; real encrypted archive, PostgreSQL restore and media hash check"
+    },
+    "installer": {
+      "status": "success",
+      "runId": 38648600602
+    },
+    "native": {
+      "status": "in_progress",
+      "runId": 38648600593
+    }
+  },
+  "limits": [
+    "Hardlink-capable same-directory target required; no unsafe fallback",
+    "Hard abort may leave private .partial; not a final archive",
+    "No new guarantee of directory-entry durability through power loss",
+    "No production update, timer, retention, external delivery or merge",
+    "Independent archive/password custody and provider restore unverified",
+    "PR34 worker correction absent from this older full-schema basis; consciously integrate before release",
+    "No hardware or event acceptance"
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Netcup-Priorität: Sicherungshärtung, 15. Oktober 2026
 
-Issue #3: atomare Archivveröffentlichung und Kennwortdateiprüfung vor Wartung in Arbeit, eigener Folgebranch auf PR #22. Implementierung, passende Fehlerfalltests und unabhängiger Review vor Abschluss. Kein produktiver Sicherungsjob oder Update. [Arbeitsstand/Grenzen](netcup-backup-haertung.md). Ältere Absätze unten sind historische Teilstände.
+Issue #3: atomare Archivveröffentlichung und Kennwortdateiprüfung vor Wartung implementiert, eigener Folge-PR #35 auf PR #22. Lokal Typprüfung/Build, Units 18/18 und Vault 6/6 bestanden. Vollständige S1-CI 38648600570 erfolgreich auf Windows/AMD64/ARM64: Linuxbackup 8/8, Windows 6/6 mit 2 ausdrücklichen Linux-Skips; verschlüsselter echter Containerrestore auf beiden Linuxarchitekturen. Unabhängiger Code-/Testreview ohne bestätigte Befunde. Kein produktiver Sicherungsjob oder Update. [Arbeitsstand/Grenzen](netcup-backup-haertung.md). Ältere Absätze unten sind historische Teilstände.
 
 ## Issue #3: portable verschlüsselte Sicherung vorbereitet
 
