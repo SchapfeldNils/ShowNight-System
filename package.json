@@ -30,7 +30,10 @@
     "test:packages": "tsx --test tests/packages-integration.ts",
     "test:offline": "tsx --test tests/offline-integration.ts",
     "server:package": "node scripts/agent-package.mjs server",
-    "server:local": "tsx apps/local/src/server-main.ts"
+    "server:local": "tsx apps/local/src/server-main.ts",
+    "renderer:build": "node scripts/renderer-build.mjs",
+    "renderer:package": "node scripts/agent-package.mjs server-renderer",
+    "test:renderer": "tsx --test tests/renderer-native.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

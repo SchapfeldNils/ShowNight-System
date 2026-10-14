@@ -1,0 +1,53 @@
+name: Native renderer
+on:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: renderer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  windows-renderer:
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with: { node-version: "24.19.0" }
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - name: MSVC build environment
+        shell: pwsh
+        run: |
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module (Join-Path $vsPath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
+          Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          @('PATH','INCLUDE','LIB','LIBPATH','VCToolsInstallDir','VCToolsVersion','WindowsSdkDir','WindowsSDKVersion','UniversalCRTSdkDir','UCRTVersion') | ForEach-Object { $value = [Environment]::GetEnvironmentVariable($_); if ($value) { "$_=$value" >> $env:GITHUB_ENV } }
+      - run: pnpm typecheck
+      - run: pnpm build
+      - name: Build native renderer from pinned sources
+        run: pnpm renderer:build
+      - name: Test real native process without display or audio output
+        run: pnpm test:renderer
+      - run: pnpm renderer:package
+      - name: Test portable server and renderer bundle
+        env:
+          RENDERER_TEST_PORTABLE: "true"
+        run: pnpm test:renderer
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: shownight-renderer-software-proof
+          retention-days: 7
+          path: |
+            test-results/renderer/
+            .local/renderer-build/gst-install.log
+            dist/renderer-windows/versions.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: shownight-server-renderer-windows-x64
+          retention-days: 7
+          path: |
+            dist/shownight-server-renderer-windows-x64.zip
+            dist/shownight-server-renderer-windows-x64.zip.sha256

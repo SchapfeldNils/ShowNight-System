@@ -145,6 +145,10 @@
 
 ## Weitere Entscheidungen nach D017
 
+### S3-04 – technischer Umsetzungsteil, 14. Oktober 2026
+
+Status: Betreiber beauftragt Renderer-Grundlage trotz fehlendem Testclient; umfangreiche Funktionstests später. Architektur bleibt C++/GStreamer/Skia. Erstes Paket verwendet einen isolierten stummen Offscreen-Diagnoseweg und lokale Prozessanbindung; Full HD/Direct3D11/HDMI/WebRTC/Ton/Regie-/Ausfallabnahme bleiben Ziele mit offenen Nachweisen. Keine bestätigten Fachrechte oder Ersatzregeln durch einen Prototyp ändern. [Anleitung](../entwicklung/s3-renderer.md), [Status](../entwicklung/status.md).
+
 ### S3-03 – technische Umsetzung, 10. Oktober 2026
 
 Status: technische Konkretisierung des beauftragten lokalen Servers nach D017, keine neue Fachentscheidung. Opt-in LAN-Neueinrichtung mit bestimmter privater IPv4-Adresse und passendem HTTPS-IP-Zertifikat; Loopback bleibt Standard. Clientvertrauen/Firewall werden gezielt manuell eingerichtet. Keine zusätzlichen Fachrechte, Regieübernahme, Wildcard, Liveautoritätsumschaltung oder Änderungen am vorgesehenen Ausfallverhalten. Bestehende Profilumstellung und echte Mehrgeräte-/Hardwareabnahme bleiben offen. [Anleitung](../entwicklung/s3-lan.md), [Nachweise](../entwicklung/status.md).

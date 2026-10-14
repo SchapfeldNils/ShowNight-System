@@ -47,6 +47,27 @@
 .offline-app [role="alert"] {
   color: #ffb5b5;
 }
+.renderer-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+.renderer-images figure {
+  margin: 0;
+}
+.renderer-images img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+  border: 1px solid #454151;
+}
+.renderer-panel .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 @media (max-width: 600px) {
   .offline-app main {
     padding: 12px;

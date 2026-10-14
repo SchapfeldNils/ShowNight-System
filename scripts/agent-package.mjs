@@ -20,21 +20,27 @@ const version = "24.19.0",
 const expected =
   "57f71ab3652e797d84acddc79c81cc9ff1c6ddb2a1974cdb83f00fee9bff4c73";
 const local = process.argv[2] === "local";
-const server = process.argv[2] === "server";
+const renderer = process.argv[2] === "server-renderer";
+const server = process.argv[2] === "server" || renderer;
 const work = resolve(".local/agent-package"),
   out = resolve(
-    server
-      ? "dist/server-windows"
-      : local
-        ? "dist/local-windows"
-        : "dist/agent-windows",
+    renderer
+      ? "dist/server-renderer-windows"
+      : server
+        ? "dist/server-windows"
+        : local
+          ? "dist/local-windows"
+          : "dist/agent-windows",
   );
 await mkdir(work, { recursive: true });
 if (
   !out.startsWith(resolve("dist") + sep) ||
-  !["agent-windows", "local-windows", "server-windows"].includes(
-    out.split(sep).at(-1),
-  )
+  ![
+    "agent-windows",
+    "local-windows",
+    "server-windows",
+    "server-renderer-windows",
+  ].includes(out.split(sep).at(-1))
 )
   throw new Error("Ungültiges eigenes Paketverzeichnis.");
 await rm(out, { recursive: true, force: true });
@@ -111,6 +117,19 @@ await writeFile(
 );
 if (server) {
   await cp("dist/server/web", join(out, "web"), { recursive: true });
+  if (renderer) {
+    await cp("dist/renderer-windows", join(out, "renderer"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(out, "Server-Mit-Renderer-Start.cmd"),
+      '@echo off\r\n"%~dp0node.exe" "%~dp0main.js" run-renderer\r\npause\r\n',
+    );
+    await copyFile(
+      "docs/entwicklung/s3-renderer.md",
+      join(out, "Renderer-Anleitung.md"),
+    );
+  }
   // Bundle inputs identify every bundled package, including transitive packages.
   // Include each installed package's manifest and license/notice files.
   const inputs = JSON.parse(
@@ -209,11 +228,13 @@ await writeFile(
   join(out, "runtime-sha256.txt"),
   `${expected}  ${name}\nQuelle: https://nodejs.org/download/release/v${version}/SHASUMS256.txt\n`,
 );
-const zipName = server
-  ? "shownight-server-windows-x64.zip"
-  : local
-    ? "shownight-local-windows-x64.zip"
-    : "shownight-agent-windows-x64.zip";
+const zipName = renderer
+  ? "shownight-server-renderer-windows-x64.zip"
+  : server
+    ? "shownight-server-windows-x64.zip"
+    : local
+      ? "shownight-local-windows-x64.zip"
+      : "shownight-agent-windows-x64.zip";
 const zip = resolve("dist/" + zipName);
 await unlink(zip).catch((e) => {
   if (e.code !== "ENOENT") throw e;

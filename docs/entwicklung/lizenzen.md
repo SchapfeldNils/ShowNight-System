@@ -1,5 +1,7 @@
 # Kostenlose Komponenten und Lizenzen – S1/S2/S3
 
+S3-04: Skia (BSD), libpng/zlib gemäß mitgelieferten Quelllizenztexten, nlohmann/json 3.12.0 (MIT), GStreamer/GLib und tatsächlich benötigte SDK-DLLs gemäß offiziellem Lizenzbestand. Native Quellen, Parameter und Lizenztexte im Rendererpaket. GStreamer dynamisch eingebunden; keine FFmpeg-Binary-Auslieferung, keine kostenpflichtige Komponente. MSVC/CMake/Ninja/Python sind Buildvoraussetzungen; Windows x64/Arial/VC-v14-x64-Laufzeit externe Laufzeitvoraussetzungen. Tatsächlicher Paket-/Lizenznachweis entsteht mit erfolgreichem CI-Build, noch nicht aus dieser Auswahl. [Buildquellen und Grenzen](s3-renderer.md).
+
 S3-03 ergänzt keine neue Komponente: vorhandene Node-/Fastify-/Zod-Laufzeit, SQLite und Windows DPAPI/PKI. Netzwerkdiagnose verwendet Node-Bordmittel. Manuelle Windows-Firewall-/Zertifikatskonfiguration ist eine Betriebssystemvoraussetzung; keine gekaufte zusätzliche Software. Die vollständigen bisherigen Lizenztexte bleiben im Server-ZIP enthalten. [LAN-Anleitung](s3-lan.md).
 
 Nachprüfung des S3-02-ZIPs: abstract-logging 2.0.1 bringt nur MIT-Metadaten und einen Autoren-Lizenzlink mit. Der vollständige Autoren-Lizenztext wurde am 10. Oktober 2026 geprüft und mit Quellenvermerk festgehalten; der Builder nimmt ihn versionsgebunden in die ZIP auf. [Quelle](licenses/abstract-logging-source.md). Jeder der 69 Paketlizenzordner enthält damit einen Lizenz-/Notice-Text.

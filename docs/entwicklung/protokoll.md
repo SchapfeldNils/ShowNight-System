@@ -1,5 +1,13 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 – S3-04: Renderer ohne zweiten Client entwickeln
+
+Betreiber bestätigt die Renderer-Grundlage trotz fehlendem Client und späteren umfangreichen Tests. Pflichtdokumente, D013/D017 und bestehende Architektur geprüft. Eigenen Branch codex/s3-renderer-foundation auf ab77a46 angelegt und über GitHub-Plugin [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12) eröffnet. Lokaler Rechner bleibt DJ; keine System-Compiler-/SDK-/Geräteinstallation, kein Netcup-/DJ-Update.
+
+Native C++-Softwaregrundlage mit echtem Skia-Raster/GStreamer-VP8-Decode, beiden Diagnosekanälen, gepinntem Quellenbuild, lokaler ACL-/Token-/Epoch-Pipe und serverseitiger Admin/MFA-Prüfung geschrieben. Physische Sinks bleiben ausgeschlossen. Deutscher Ablauf mit nativen PNG-Standbildern, ausdrücklichem Vorbereiten/Übernehmen/Leeren; kein Show-GO. Keine neuen Fachrechte, Regieübernahme oder bestätigte Hardware-/Ausfallentscheidung.
+
+Erste Typprüfung fand zwei Testtreiberfehler; korrigiert. Erste Unit-Ausführung fand fehlendes liveActivationSupported=false im synthetischen Manifest; Testfixture an vorhandenen Paketvertrag angepasst, Schutz unverändert. Anschließend Typen, elf Unit-/API-Vertragsprüfungen und kompletter Web-/Node-Build bestanden. Offizieller GStreamer-Endpunkt beim lokalen Zugriff HTTP 503; der native Windows-Build ist bis zu tatsächlichem CI-Ergebnis offen. Primärquellen/Buildparameter/Lizenzen und Grenzen in s3-renderer.md dokumentiert; erzeugte Workflows sind kein erfolgreicher nativer Nachweis.
+
 ## 10. Oktober 2026 – S3-03: LAN-Einrichtung vorbereiten
 
 Runtime als `44d19c6` gepusht, über GitHub-Plugin [Entwurfs-PR #11](https://github.com/SchapfeldNils/ShowNight-System/pull/11) gegen `codex/s3-local-server` erstellt und im Chat angehängt. Aktueller vollständiger Windows-/AMD64-/ARM64-Nachweis einschließlich S1/S2/Paketen/Offline/Browser/Container/Backup/Restore und Artefakten wird in [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/11/checks) und dem datierten PR-Protokoll geführt. Vorangehende Läufe können durch den aktuellen Dokumentationscommit ersetzt werden; kein funktionaler Erfolg vor Abschluss behauptet.

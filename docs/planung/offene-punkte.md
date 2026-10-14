@@ -1,5 +1,7 @@
 # Offene Punkte
 
+S3-04, 14. Oktober 2026: Betreiber beauftragt vorbereitbare native Renderer-Grundlage ohne zweiten Client. Softwarediagnose/Prozessanbindung ersetzt keine LAN-/Bildschirm-/Ton-/Kamera-/Last-/Synchronitätsprüfung. Native Build-/Paketnachweise und alle realen O01–O14-/F-/A-Abnahmen nur mit tatsächlichem Ergebnis führen. [Ablauf und Grenzen](../entwicklung/s3-renderer.md).
+
 S3-03 (10. Oktober 2026) ergänzt nach D017 die vorbereitbare LAN-Neueinrichtung mit gezielter IPv4-/HTTPS-Konfiguration und Diagnose. Reale Mehrgeräte-/Firewall-/Clientvertrauens-/Internettrennungsprüfung, bestehende Profilumstellung, Zertifikatserneuerung und mobile Clientinstallation bleiben offen. O01–O14 und Gesamtfreigabe unverändert. Nachfolgende S3-02-Absätze beschreiben den früheren Loopback-Stand. [Vertrag und Grenzen](../entwicklung/s3-lan.md).
 Stand: 10. Oktober 2026. Grundlage: Gesamtkonzept 2.0, Kapitel 18.
 

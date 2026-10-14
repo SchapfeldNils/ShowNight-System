@@ -1,5 +1,13 @@
 # Entwicklungsstatus
 
+## S3-04: native Renderer-Grundlage
+
+14. Oktober 2026, Betreiberauftrag zur Umsetzung ohne zweiten Client, umfangreiche Hardwaretests später. Branch codex/s3-renderer-foundation, [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12), auf S3-03 aufgebaut. C++-/GStreamer-/Skia-Prozess und geschützter lokaler Pipe-Kanal, getrennte Vorschau-/Programmdiagnose, begrenzte Revisions-/Receiptprüfung, aktuelle Admin-/MFA-/Origin-/CSRF-Prüfung, PNG-Frameauslieferung und deutsche Diagnoseoberfläche implementiert. Sicherer leerer Start, keine physische Bild-/Ton-/Geräteausgabe. [Ablauf, Build und Grenzen](s3-renderer.md).
+
+Lokal auf Windows x64: Typprüfung, elf Unit-/Vertragstests und Web-/Node-Build bestanden. Kein C++-Compiler/GStreamer-SDK auf dem DJ-Rechner; nativer Build und tatsächliche C++-/Video-/Skia-/portable HTTPS-Prüfung erfolgen separat in GitHub Actions. Aktueller lokaler Download des offiziellen GStreamer-SHA256-Endpunkts liefert HTTP 503; Zielbuild noch nicht als bestanden behaupten. Tatsächliche Ergebnisse werden am PR ergänzt.
+
+Offen bleiben vollständiger S3/S4-Umfang, Direct3D11/HDMI/Full HD, persönliche Regievorschau, Ton, WebRTC, reale Medien-/Kamera-/Mehrmonitor-/Last-/Synchronitäts-/Ausfallabnahme und F01–F50/A01–A30. Netcup bleibt S2/Schema 2; vorhandener DJ-Aufbau unverändert. Nachfolgende Einträge sind historische Teilstände.
+
 ## S3-03: gezielte LAN-Einrichtung
 
 Runtime `44d19c6`, [Entwurfs-PR #11](https://github.com/SchapfeldNils/ShowNight-System/pull/11) gegen S3-02-Branch. Vollständige aktuelle CI und versionierte Windows-Artefakte unter [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/11/checks). Diese dynamische Prüfquelle zeigt den tatsächlichen Stand des letzten Dokumentations-/Runtimecommits; lokale Ergebnisse unten sind davon getrennt. Kein Merge.

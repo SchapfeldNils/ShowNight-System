@@ -19,6 +19,7 @@ import {
 } from "./vault.js";
 import { localServer } from "./server.js";
 import { lanSetup, assignedAddress, certificateInfo } from "./network.js";
+import { RendererClient, disabledRenderer } from "./renderer.js";
 async function inputPath(arg?: string) {
   const ui = createInterface({ input: stdin, output: stdout });
   let p = arg;
@@ -121,6 +122,7 @@ async function main() {
   const packages = new PackageStore(packageRoot),
     a = new LocalAccounts(root, v.key);
   let retained = false;
+  let renderer = disabledRenderer;
   try {
     if (mode === "import-auth") {
       const r = await importAccounts(
@@ -158,7 +160,7 @@ async function main() {
       console.log(
         "Lokales Adminkonto wiederhergestellt. Neues Kennwort und lokale MFA beim nächsten Login verwenden; Datei-Kennwort wieder leeren.",
       );
-    } else if (mode === "run") {
+    } else if (mode === "run" || mode === "run-renderer") {
       const bindAddress = v.network?.address ?? "127.0.0.1";
       if (!assignedAddress(bindAddress))
         throw new Error(
@@ -178,6 +180,20 @@ async function main() {
       const webRoot = existsSync(bundledWeb)
         ? bundledWeb
         : resolve("dist/server/web");
+      if (mode === "run-renderer") {
+        const bundledNative = join(
+          dirname(fileURLToPath(import.meta.url)),
+          "renderer",
+        );
+        const client = new RendererClient(
+          existsSync(bundledNative)
+            ? bundledNative
+            : resolve("dist/renderer-windows"),
+          join(process.env.LOCALAPPDATA, "ShowNight", "renderer-diagnostics"),
+        );
+        await client.start();
+        renderer = client;
+      }
       const server = await localServer(
         a,
         packages,
@@ -189,8 +205,10 @@ async function main() {
           minVersion: "TLSv1.2",
         },
         true,
+        renderer,
       );
       server.addHook("onClose", async () => {
+        await renderer.close();
         a.close();
         packages.close();
       });
@@ -211,6 +229,7 @@ async function main() {
     } else throw new Error("Unbekannter Modus.");
   } finally {
     if (!retained) {
+      await renderer.close();
       a.close();
       packages.close();
     }

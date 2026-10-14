@@ -18,6 +18,12 @@ import { HttpError } from "../../api/src/errors.js";
 import type { LocalAccounts } from "./accounts.js";
 import type { Actor } from "../../api/src/auth.js";
 import type { PackageStore } from "./store.js";
+import { rendererAction } from "../../../packages/contracts/src/renderer.js";
+import {
+  disabledRenderer,
+  RendererFault,
+  type RendererControl,
+} from "./renderer.js";
 export async function localServer(
   accounts: LocalAccounts,
   packages: PackageStore,
@@ -25,6 +31,7 @@ export async function localServer(
   webRoot?: string,
   tls?: ServerOptions,
   canonicalHost = false,
+  renderer: RendererControl = disabledRenderer,
 ) {
   const app = Fastify({
     bodyLimit: 16384,
@@ -162,6 +169,65 @@ export async function localServer(
     liveActivationSupported: false,
     mailDeliveryEnabled: false,
   }));
+  const rendererAdmin = (req: {
+    actor: Actor;
+    cookies: { sn_local_session?: string };
+  }) => {
+    const current = accounts.actor(req.cookies.sn_local_session);
+    if (!current || current.id !== req.actor.id)
+      throw new HttpError(401, "SESSION", "Bitte lokal anmelden.");
+    if (!current.admin)
+      throw new HttpError(
+        403,
+        "FORBIDDEN",
+        "Systemadministration für die Rendererdiagnose erforderlich.",
+      );
+  };
+  const rendererError = (e: unknown): never => {
+    if (e instanceof RendererFault)
+      throw new HttpError(
+        e.status,
+        "RENDERER",
+        e.status === 409
+          ? "Diagnosekonflikt: aktuellen Zustand prüfen und bewusst neu auslösen."
+          : "Rendererdiagnose nicht bestätigt; Paket, Prozess und Status prüfen.",
+      );
+    throw e;
+  };
+  app.get("/api/local/renderer", async (req) => {
+    rendererAdmin(req);
+    const report = await renderer.status();
+    rendererAdmin(req);
+    return report;
+  });
+  app.post("/api/local/renderer/test", async (req) => {
+    rendererAdmin(req);
+    const action = rendererAction.parse(req.body);
+    try {
+      const state = await renderer.command(action, () => rendererAdmin(req));
+      rendererAdmin(req);
+      return state;
+    } catch (e) {
+      return rendererError(e);
+    }
+  });
+  app.get<{ Params: { channel: string } }>(
+    "/api/local/renderer/frames/:channel",
+    async (req, reply) => {
+      rendererAdmin(req);
+      if (req.params.channel !== "preview" && req.params.channel !== "program")
+        throw new HttpError(404, "CHANNEL", "Diagnosebild nicht verfügbar.");
+      try {
+        const bytes = await renderer.frame(req.params.channel, () =>
+          rendererAdmin(req),
+        );
+        rendererAdmin(req);
+        return reply.type("image/png").send(bytes);
+      } catch (e) {
+        return rendererError(e);
+      }
+    },
+  );
   app.get("/api/local/packages", async (req) =>
     packages.list().filter((p) => {
       try {

@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "../../web/src/style.css";
 import "./style.css";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
+import { RendererPanel } from "./renderer.js";
 type Me = {
   id: string;
   displayName: string;
@@ -285,6 +286,7 @@ function App() {
                 <button onClick={() => setCodes([])}>Codes gesichert</button>
               </section>
             )}
+            {me.admin && <RendererPanel api={api} />}
             <section>
               <h2>Vorbereitete Pakete</h2>
               {!packages.length && (
