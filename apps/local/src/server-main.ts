@@ -72,6 +72,22 @@ async function main() {
     return;
   }
   const v = await loadVault(root);
+  if (mode === "import-package") {
+    const archive = await inputPath(process.argv[3]);
+    await secureDirectory(packageRoot);
+    const packages = new PackageStore(packageRoot);
+    try {
+      const result = await packages.importArchive(archive);
+      console.log(
+        "Inhaltspaket geprüft und importiert: " +
+          result.id +
+          " · keine Liveaktivierung.",
+      );
+    } finally {
+      packages.close();
+    }
+    return;
+  }
   if (mode === "network-check") {
     console.log(
       JSON.stringify(

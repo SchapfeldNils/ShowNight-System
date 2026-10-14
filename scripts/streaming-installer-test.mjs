@@ -109,6 +109,15 @@ try {
     join(folder, "Streaming-Start.cmd").toLowerCase(),
   );
   const env = { ...process.env, LOCALAPPDATA: profile };
+  const importerShortcut = powershell(
+    "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\Inhaltspaket importieren.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",
+    { TEST_GROUP: group },
+  ).trim();
+  assert.equal(
+    importerShortcut.toLowerCase(),
+    join(folder, "Server-Paket-Importieren.cmd").toLowerCase(),
+  );
+  await access(importerShortcut);
   assert.equal(
     await spawnExit(runtime, [join(folder, "main.js"), "init"], env),
     0,

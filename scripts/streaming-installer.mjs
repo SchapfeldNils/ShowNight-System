@@ -60,6 +60,7 @@ await writeFile(
     "",
     "Nach der Installation über das Startmenü:",
     "1. Lokalen Server einmal einrichten. Bestehende Einrichtung nicht erneut initialisieren.",
+    "   Danach .snpkg-Dateien über Inhaltspaket importieren im Startmenü laden.",
     "2. Serverschlüssel und für diesen Rechner ausgestellten Anmeldestand importieren.",
     "   Ablauf und Voraussetzungen stehen in Anleitung.md im Programmordner.",
     "3. Lokales HTTPS-Zertifikat wie dort beschrieben prüfen und vertrauen.",
@@ -71,6 +72,7 @@ await writeFile(
       ? [
           "Passende kostenlose Microsoft Visual-C++-v14-x64-Laufzeit und Arial erforderlich.",
           "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+          "Medienauswahl und Grenzen: Paketmedien-Anleitung.md im Programmordner.",
         ]
       : []),
     "Einrichtung, Konten, Medienpakete und Schlüssel liegen getrennt unter",

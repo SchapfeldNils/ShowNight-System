@@ -12,6 +12,8 @@ Zwei ausdrücklich getrennte Buildstände: Der Workflow Streaming installer erze
 
 Nach Installation die nummerierten Startmenüeinträge benutzen: einmaligen lokalen Server einrichten, ausdrücklich Serverschlüssel und rechnergebundenen Anmeldestand importieren, anschließend ShowNight Streaming starten. Die eigentliche Server-/Konteneinrichtung und Zertifikatprüfung stehen in Anleitung.md im Programmordner beziehungsweise [S3-Lokalserver](s3-lokalserver.md). Eine vorhandene Einrichtung nicht neu initialisieren. Der Start öffnet das Server-Konsolenfenster; Browser an der ausgegebenen HTTPS-Adresse öffnen. Server im Konsolenfenster mit Strg+C regulär beenden.
 
+Ab S3-05 / 0.3.5: Inhaltspaket vor dem Anmeldestand über den zusätzlichen Startmenüeintrag „Inhaltspaket importieren“ laden. Server-Paket-Importieren.cmd verwendet denselben vorhandenen strikten Importer; kein separates S3-01-Werkzeug nötig. Die kurze Paketmedien-Anleitung.md im Rendererpaket beschreibt die Medienauswahl, Formate und Grenzen.
+
 Setup startet keine Medienausgabe, verändert weder Zertifikatvertrauen noch Firewall und richtet keinen Windows-Autostart ein. Konten, Schlüssel, Pakete und Einrichtung bleiben unter %LOCALAPPDATA%\ShowNight, getrennt von den Programmdateien. Für das Rendererpaket zusätzlich kostenlose passende Microsoft-Visual-C++-v14-x64-Laufzeit und Windows-Schrift Arial erforderlich; siehe [Renderer-Anleitung](s3-renderer.md). Eine automatische Onlinepaarung oder grafische vollständige Ersteinrichtung gehört noch nicht zum vorhandenen Ablauf.
 
 ## Update und Deinstallation

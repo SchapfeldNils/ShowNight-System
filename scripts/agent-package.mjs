@@ -129,6 +129,10 @@ if (server) {
       "docs/entwicklung/s3-renderer.md",
       join(out, "Renderer-Anleitung.md"),
     );
+    await copyFile(
+      "deploy/windows/Paketmedien-Anleitung.md",
+      join(out, "Paketmedien-Anleitung.md"),
+    );
   }
   // Bundle inputs identify every bundled package, including transitive packages.
   // Include each installed package's manifest and license/notice files.
@@ -183,6 +187,7 @@ for (const [file, mode] of server
   ? [
       ["Server-Einrichten.cmd", "init"],
       ["Server-LAN-Einrichten.cmd", "init-lan"],
+      ["Server-Paket-Importieren.cmd", "import-package"],
       ["Server-Netzwerk-Pruefen.cmd", "network-check"],
       ["Serverschluessel-Importieren.cmd", "trust"],
       ["Anmeldestand-Importieren.cmd", "import-auth"],

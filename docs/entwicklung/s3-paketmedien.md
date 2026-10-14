@@ -1,10 +1,12 @@
 # S3-05 · Paketmedien im nativen Renderer
 
-Stand: 14. Oktober 2026. Branch codex/s3-package-renderer, [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), auf PR #13 aufgebaut. Umsetzung und Prüfungen sind getrennt; nativer Nachweis für dieses Paket noch offen.
+Stand: 14. Oktober 2026. Branch codex/s3-package-renderer, [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), auf PR #13 aufgebaut. Umsetzung und tatsächlich ausgeführte Prüfungen sind getrennt; aktuelle Nachweise in status.md und PR #16.
 
 ## Nutzbarer Teilablauf
 
 Nach Einrichtung des lokalen Servers und ausdrücklichem Import eines passenden Anmeldestands/zugehöriger Inhaltspakete mit dem lokalen Admin und MFA anmelden. Setup/Start mit Renderer verwenden. Unter „Vorbereitete Inhaltspakete“ ein Paket ansehen. In „Medienprozess · Softwarediagnose“ ein Paketmedium wählen und „Paketmedium vorbereiten“ auslösen. „Diagnosebilder aktualisieren“ zeigt native Standbilder. Erst „Diagnosebild übernehmen“ übernimmt das Medium im getrennten Diagnoseprogramm.
+
+Das Setup enthält jetzt „Inhaltspaket importieren“ im Startmenü beziehungsweise Server-Paket-Importieren.cmd im Programmordner. Nach einmaliger Servereinrichtung die .snpkg-Datei ausdrücklich auswählen und vollständig prüfen/importieren, danach Serverschlüssel und passenden Anmeldestand importieren. Der direkte Befehl lautet node main.js import-package DATEI.snpkg und verwendet die vorhandene strikte PackageStore-Übernahme. Ein Import erzeugt keine Fachberechtigung/Liveaktivierung; Sichtbarkeit benötigt weiterhin den separat bestätigten Kontenstand. Paketmedien-Anleitung.md liegt im Rendererpaket bei. Ein zweites portables Importwerkzeug ist für diesen Ablauf nicht mehr nötig.
 
 Unterstützter erster Teilumfang: PNG bis 32 MiB, maximal 4096 × 4096 Pixel, und WebM mit VP8 bis 32 MiB und 1920 × 1080 Eingangspixeln. Video wird stumm auf die kleine Diagnosefläche skaliert. Kein allgemeiner MP4-/JPEG-/Audio-/Codecbeleg. Paketvideo endet auf seinem letzten Diagnoseframe, ohne automatischen Loop/Folgeeinsatz; dies ist ausschließlich Diagnoseverhalten und keine Produktentscheidung über konfigurierbare Videoendregeln. Synthetisches bisheriges Testvideo behält seinen gekennzeichneten Diagnoseloop.
 

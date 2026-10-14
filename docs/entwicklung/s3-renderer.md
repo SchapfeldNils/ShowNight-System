@@ -2,6 +2,8 @@
 
 Stand: 14. Oktober 2026, [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12), Branch codex/s3-renderer-foundation, abhängig von S3-03 / PR #11. Betreiber erlaubt die Softwareumsetzung ohne zweiten Client; umfangreiche LAN-/Hardwareprüfungen später. Kein Netcup-/DJ-Produktivupdate und keine Veranstaltungsfreigabe.
 
+Erweiterung S3-05 / Setup 0.3.5: Neben der nachfolgend beschriebenen synthetischen Grunddiagnose sind geprüfte Paketbilder (PNG) und Paketvideos (VP8-WebM) stumm darstellbar. Inhaltspaket über Startmenü → Inhaltspaket importieren laden, danach passenden Anmeldestand importieren, Server starten und Paket im Browser ansehen. In der Softwarediagnose das Paketmedium wählen/vorbereiten und ausdrücklich übernehmen. Details/Größen-/Formatgrenzen in der beigelegten Paketmedien-Anleitung.md beziehungsweise [aktuellen Paketanleitung](s3-paketmedien.md). Noch keine vollständigen Szenen oder Show-GO.
+
 ## Umfang und nutzbarer Ablauf
 
 Anwenderverteilung gemäß D018 als [Windows-Setup-Anwendung für den Streaming-Rechner](s3-streaming-installer.md). Der folgende ZIP-Ablauf bleibt für Entwicklung/Diagnose verfügbar; ein fehlgeschlagener nativer Build liefert kein fertiges Renderer-Installationspaket.

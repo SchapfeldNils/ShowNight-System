@@ -40,6 +40,7 @@ Source: "{#PayloadDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 [Icons]
 Name: "{group}\ShowNight Streaming starten"; Filename: "{app}\Streaming-Start.cmd"; WorkingDir: "{app}"
 Name: "{group}\1 - Lokalen Server einrichten"; Filename: "{app}\Server-Einrichten.cmd"; WorkingDir: "{app}"
+Name: "{group}\Inhaltspaket importieren"; Filename: "{app}\Server-Paket-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\2 - Serverschlüssel importieren"; Filename: "{app}\Serverschluessel-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\3 - Anmeldestand importieren"; Filename: "{app}\Anmeldestand-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\Netzwerk prüfen"; Filename: "{app}\Server-Netzwerk-Pruefen.cmd"; WorkingDir: "{app}"

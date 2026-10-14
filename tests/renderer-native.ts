@@ -25,7 +25,6 @@ import { localServer } from "../apps/local/src/server.js";
 import { rendererFixture } from "./renderer-fixture.js";
 import { powershell } from "../apps/agent/src/identity.js";
 import { loadVault } from "../apps/local/src/vault.js";
-import { PackageStore } from "../apps/local/src/store.js";
 import { packageHeader } from "../packages/transfer/src/archive.js";
 import { encryptSnapshot, trustFor } from "../packages/transfer/src/offline.js";
 import { totp } from "../apps/api/src/security.js";
@@ -542,16 +541,9 @@ if (process.env.RENDERER_TEST_PORTABLE === "true")
         trustPath,
         JSON.stringify(trustFor(trustKey, f.snapshot.serverOrigin)),
       );
-      const packagesRoot = join(profile, "ShowNight/local-packages"),
-        archive = join(isolated, "input.snpkg");
-      await mkdir(packagesRoot, { recursive: true });
+      const archive = join(isolated, "input.snpkg");
       await writeFile(archive, packageHeader(f.manifest).bytes);
-      const packages = new PackageStore(packagesRoot);
-      try {
-        await packages.importArchive(archive);
-      } finally {
-        packages.close();
-      }
+      await cli("import-package", archive);
       await writeFile(
         authPath,
         JSON.stringify(encryptSnapshot(f.snapshot, v.target, trustKey)),
