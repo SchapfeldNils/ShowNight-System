@@ -1,5 +1,13 @@
 # Entwicklungsstatus
 
+## DEV-KI-02: Codex-Anbindung und lesender GitHub-Eingang
+
+14. Oktober 2026, ausdrücklicher Betreiberauftrag zur Nutzung der lokalen Prüfergebnisse durch Codex. Projekt-AGENTS.md ergänzt und auf dem Zielrechner projektbezogener Block in vorhandenen Codex-Benutzeranweisungen installiert; vorheriger Inhalt erhalten und gesichert. Aktuelle Anweisungsinjektion enthält den neuen Block bereits. Neue Codex-Läufe lesen passende Hinweise vor Arbeitspaket/Abschluss, prüfen sie am aktuellen Code und führen private Entscheidungen mit Hinweis-ID/Blob/Nachweis. Kein automatischer Patch, keine Änderung von Produktrechten/Architektur/Ausfallregeln oder GitHub-Freigaben. [Nutzung und Grenzen](lokale-ki-dauerbetrieb.md).
+
+Installierte lesende Helfer: `Get-ShowNightLocalFindings.ps1` begrenzt/filtert die Ausgabe (Standard acht), vergleicht HEAD-Blob, blendet erledigte Hinweise aus und erhält aufgeschobene Hinweise. Auf diesem Rechner tatsächlich zwei passende Renderer-Hinweise mit stabilen IDs und gleichem Blob abgerufen; kein relevanter Hinweis zu den neuen Integrationswerkzeugen, Entwicklung deshalb fortgesetzt. Synthetischer Git-/Codex-Profiltest bestanden: Filter/Limit, Deduplizierung, Deferred-Erhaltung, veränderte Quelle sowie idempotente Ergänzung ohne Verlust bestehender Benutzeranweisungen. Neue PowerShell-Dateien geparst, Windows-CI-Prüfschritt ergänzt.
+
+`Get-ShowNightGitHubInbox.ps1` hat über vorhandenen authentifizierten GitHub-CLI-Zugang elf offene PRs und zehn offene Issues von `SchapfeldNils/ShowNight-System` gelesen; privater Schnappschuss mit PR-Head-SHA/Issue-Stand unter `qa\state\github-inbox.json`. **Noch kein automatischer Modellreview dieser GitHub-Einträge:** die Eingangsliste gibt Codex die Grundlage für gezielte autorisierte lokale Prüfung. Keine Posts, Schließungen, Merges, Deployments oder selbst gehosteten Actions-Runner eingerichtet. Der bestehende 120er-GPU-Prüfdienst/WhatsApp-Versand ist unverändert. GitHub-CLI wird als vorhandene kostenlose Voraussetzung wiederverwendet; keine neue Produktionsabhängigkeit.
+
 ## DEV-KI-02: lesende lokale KI im Dauerbetrieb mit WhatsApp-Rueckmeldung
 
 14. Oktober 2026, Betreiberauftrag zu kontinuierlicher lokaler Unterstuetzung und Rueckmeldung nach jedem Auftrag. Eigener isolierter Branch `codex/local-ai-continuous-review` auf DEV-KI-01 / `f63ae95`, Werkzeugbasis `bd3bdda`, [Entwurfs-PR #19](https://github.com/SchapfeldNils/ShowNight-System/pull/19); kein Merge und keine Aenderung der parallelen Renderer-/Paketentwicklung. [Betrieb, private Verknuepfung, Start-/Pause-/Stopbefehle und Grenzen](lokale-ki-dauerbetrieb.md).

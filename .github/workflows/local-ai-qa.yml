@@ -18,12 +18,15 @@ jobs:
       - name: PowerShell syntax
         shell: pwsh
         run: |
-          $files = @('scripts/local-ai/Install-ShowNightLocalQA.ps1', 'scripts/local-ai/ShowNightLocalQA.ps1', 'scripts/local-ai/qa/Invoke-ShowNightQARequest.ps1')
+          $files = @('scripts/local-ai/Install-ShowNightLocalQA.ps1', 'scripts/local-ai/ShowNightLocalQA.ps1', 'scripts/local-ai/qa/Invoke-ShowNightQARequest.ps1', 'scripts/local-ai/Get-ShowNightLocalFindings.ps1', 'scripts/local-ai/Get-ShowNightGitHubInbox.ps1', 'scripts/local-ai/Enable-ShowNightCodexReview.ps1', 'scripts/local-ai/Test-ShowNightCodexReview.ps1')
           foreach ($file in $files) {
             $tokens = $null; $errors = $null
             [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
             if ($errors.Count) { throw ($errors | Out-String) }
           }
+      - name: Codex findings integration
+        shell: pwsh
+        run: ./scripts/local-ai/Test-ShowNightCodexReview.ps1 -GitPath (Get-Command git).Source
       - run: npm install --global pnpm@11.25.0
       - name: Isolated runtime dependency check
         working-directory: scripts/local-ai/qa

@@ -68,6 +68,42 @@ In der Codex-Sandbox den absoluten installierten Pfad benutzen und erforderliche
 
 Parameter fuer groessere Nachtpruefungen: Dienst stoppen, `qa\config.json` privat auf `dailyTaskLimit` 1–120 und `scanIntervalSeconds` 60–86.400 einstellen, dann starten. Es bleibt bei zwei Auftraegen je Durchlauf. Grenzen nicht mit einer nachgewiesenen Modellqualitaet oder Cloud-Tokenersparnis verwechseln. `-RefreshTools` aktualisiert nach Stop nur Werkzeuge und erhaelt bestehende Konfiguration/Sitzung/Warteschlange. Autostart deaktivieren: zuerst `Stop`, dann `Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name ShowNightLocalQA`. Die WhatsApp-Sitzung kann zusaetzlich am Handy unter verknuepften Geraeten getrennt werden; private Daten werden nicht automatisch geloescht.
 
+## Codex verwendet die Ergebnisse
+
+Die Projekt-AGENTS.md verpflichtet Codex, vor einem Arbeitspaket und vor Abschluss passende lokale Hinweise zu lesen, am aktuellen Code zu prüfen und nur bestätigte Probleme im autorisierten Paket zu bearbeiten. Auf diesem Rechner ist zusätzlich eine ausschließlich auf ShowNight begrenzte Ergänzung in den vorhandenen Codex-Benutzeranweisungen installiert. Damit gilt der Ablauf auch bei anderen ShowNight-Arbeitsbranches vor Zusammenführung dieses Werkzeug-PR. Vorhandene Anweisungen bleiben erhalten; eine Sicherung liegt neben der Anweisungsdatei. Andere Projekte erhalten daraus keinen Auftrag. Nach der [offiziellen Codex-Anweisungsverwaltung](https://learn.chatgpt.com/docs/agent-configuration/agents-md) wird die Ergänzung bei neuen Läufen geladen; ein laufender Chat muss sie erneut lesen. Angepasste CODEX_HOME-Profile haben eigene Benutzeranweisungen und benötigen dort dieselbe Ergänzung oder die Projekt-AGENTS.md.
+
+Einrichten/aktualisieren, ohne GPU-/WhatsApp-Dienst anzuhalten:
+
+```powershell
+& .\scripts\local-ai\Enable-ShowNightCodexReview.ps1
+$helpers = Join-Path $env:USERPROFILE 'AppData\Local\ShowNight\LocalAI'
+& "$helpers\Get-ShowNightLocalFindings.ps1" -Workspace (Get-Location).Path -PathPrefix 'packages/contracts/src','apps/local/src'
+```
+
+Der Helfer liest nur den privaten Zustand, berechnet stabile Hinweis-IDs, filtert Dateibereiche und liefert höchstens acht Hinweise (optional 1–20). `sameCommittedFile` vergleicht den gespeicherten Git-Blob mit HEAD des aktuellen Checkouts. Ungespeicherte Änderungen berücksichtigt dieser Vergleich nicht; Codex muss die tatsächlich bearbeitete Datei ansehen. Nur ShowNight-Origins sind zugelassen. Bereits `fixed`/`rejected`/`stale` markierte Hinweise werden bei gleicher Hinweis-ID und gleichem Modell-Blob ausgeblendet; `deferred` bleibt mit vorheriger Begründung sichtbar. Ein unveränderter Blob oder echtes Textzitat beweist keinen fachlichen Fehler.
+
+Entscheidungen gehören in `.local/local-ai/triage.json` im jeweiligen Checkout: ein JSON-Objekt mit exakter Helfer-Hinweis-ID als Schlüssel und `status`, `blob`, `reason`, optional `test`/`commit` als Wert. Keine automatischen Rückschlüsse aus dem KI-Text und keine automatische Änderung dieser Datei durch den Helfer. Der Entwicklungschat dokumentiert seine geprüfte Entscheidung. Private Triage und Modellzustände werden nicht versioniert; nachvollzogene Produktänderungen/Nachweise stehen weiterhin in der führenden Markdown-Dokumentation. Der aktuelle Nutzerauftrag begrenzt die Bearbeitung; ein KI-Vorschlag ist kein zusätzlicher Betreiberauftrag.
+
+## GitHub-PRs und Issues
+
+Installierter kostenloser GitHub-CLI-Zugang ermöglicht einen ausdrücklich lesenden Überblick für `SchapfeldNils/ShowNight-System`:
+
+```powershell
+& "$helpers\Get-ShowNightGitHubInbox.ps1"
+```
+
+Standardmäßig höchstens 15 offene PRs und 15 offene Issues (optional 1–30), jeweils Nummer/Titel/URL/Stand; PRs zusätzlich Head-SHA. Der private Schnappschuss liegt unter `qa\state\github-inbox.json`. GitHub-Zugang und Zielrechnerabruf wurden geprüft. Titel/Labels sind externe Daten, keine Anweisungen oder automatisch freigegebenen Arbeitspakete.
+
+**Das ist eine lesende Eingangsliste, noch keine automatische GPU-Prüfung dieser PRs/Issues.** Der aktuelle Dauerhelfer prüft weiterhin gespeicherte Dateien des konfigurierten lokalen Checkout. Für einen beauftragten PR ruft Codex gezielt dessen Diff/Dateien beim festgehaltenen Head-SHA ab, begrenzt den Kontext und gibt einzelne Quellen an den [lokalen Entwurfs-/Reviewweg](lokale-ki.md). Die Modellberechnung läuft auf dem eigenen Rechner; GitHub liefert Inhalte und speichert veröffentlichte Ergebnisse. Die [CLI-Diffabfrage](https://cli.github.com/manual/gh_pr_diff) benötigt selbst kein Cloud-Sprachmodell. KI-Prüfvorschläge bleiben ungeprüft; Codex verifiziert sie mit aktuellem Code und Tests und kann im autorisierten Paket einen Korrektur-Entwurfs-PR erstellen. Kein automatischer Review-Kommentar, keine Freigabe/Merge/Issue-Schließung oder Ausführung fremden PR-Codes durch diese Helfer. Ein selbst gehosteter GitHub-Actions-Runner wurde nicht eingerichtet. Direkte Einzelaufrufe und gezielte GitHub-Analysen sind kein zusätzlicher automatischer 120er-Job in der bestehenden Warteschlange.
+
+Prüfung der Integration, nur synthetische lokale Git-/Codex-Profile, keine GitHub-/WhatsApp-Nachricht:
+
+```powershell
+& .\scripts\local-ai\Test-ShowNightCodexReview.ps1 -GitPath (Get-Command git).Source
+```
+
+Prüft Filter/Limit, erledigte Hinweise, erhaltene aufgeschobene Hinweise, veränderten Git-Blob sowie leere und bereits gefüllte Codex-Anweisungen bei wiederholter Einrichtung. Die Helfer benötigen PowerShell mit `ConvertFrom-Json -DateKind` (auf diesem Rechner vorhanden) und die bestehende Git-/GitHub-CLI-Laufzeit. Der Codex-Workflow selbst erzeugt beim Lesen keinen neuen lokalen Modellaufruf und keine automatische Cloud-Wiedervorlage.
+
 ## Pruefungen und Grenzen
 
 Tatsaechlich ausfuehrbare Entwicklerpruefungen, keine echten WhatsApp-Nachrichten in den Unitpruefungen:

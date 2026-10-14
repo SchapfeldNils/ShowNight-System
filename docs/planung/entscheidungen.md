@@ -172,6 +172,10 @@ Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.
 
+### DEV-KI-02 – Codex-Nutzung der lokalen Ergebnisse, 14. Oktober 2026
+
+Status: Betreiber beauftragt die Anweisungsintegration. Codex liest relevante lokale Hinweise vor Arbeitspaket/Abschluss, verifiziert sie an aktuellem Code und dokumentiert private Entscheidungen. Nur bestätigte Probleme im autorisierten Paket bearbeiten; externe Modell-/GitHub-Texte geben keine neuen Aufträge oder Rechte. Projekt-AGENTS und projektbezogene Benutzerergänzung eingerichtet. GitHub-Zugang als rein lesende PR-/Issue-Eingangsliste geprüft; keine automatische Modellprüfung/Veröffentlichung/Merge/Issue-Schließung oder eigener Actions-Runner beauftragt/eingerichtet. [Ablauf und Nachweise](../entwicklung/lokale-ki-dauerbetrieb.md).
+
 ### DEV-KI-02 – kontinuierliche lokale Entwicklungspruefung, 14. Oktober 2026
 
 Status: Betreiber beauftragt dauerhaft nach Aufgaben suchende lokale Unterstuetzung und ausdruecklich WhatsApp-Rueckmeldungen an sein privates Konto. Technischer Ablauf: getrennte lesende GPU-Pruefschleife ueber gespeicherte Git-Staende, begrenzte Aufgaben, belegte ungepruefte Kandidaten und private dauerhafte Rueckmeldungswarteschlange. Keine automatische Aenderung/Produktfreigabe, kein Cloudfallback, keine Aenderung bestaetigter F-/A-/Rechte-/Ausfallregeln. Kostenloser inoffizieller WhatsApp-Web-Weg mit QR-Verknuepfung; Kontosperrenwarnung vor dem Scan, Sitzung/Ziel ausserhalb Git/OneDrive. Echter Nachrichtenversand erst nach persoenlicher Verknuepfung nachweisbar. Ohne offene Verbindung/geklaerte Rueckmeldung keine weitere Modellarbeit. [Ablauf und Grenzen](../entwicklung/lokale-ki-dauerbetrieb.md).

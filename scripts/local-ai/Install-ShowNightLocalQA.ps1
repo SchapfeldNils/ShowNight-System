@@ -32,6 +32,7 @@ foreach ($name in @('core.mjs','dashboard.mjs','notifications.mjs','worker.mjs',
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "qa\$name") -Destination (Join-Path $qaRoot $name) -Force
 }
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ShowNightLocalQA.ps1') -Destination $control -Force
+foreach($name in @('Get-ShowNightLocalFindings.ps1','Get-ShowNightGitHubInbox.ps1')){Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $root $name) -Force}
 New-Item -ItemType Directory -Path (Join-Path $qaRoot 'patches') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'qa\patches\whatsapp-web.js@1.34.7.patch') -Destination (Join-Path $qaRoot 'patches\whatsapp-web.js@1.34.7.patch') -Force
 foreach ($name in @('no-archive-extraction','no-ftp')) {
