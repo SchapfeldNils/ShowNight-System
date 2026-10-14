@@ -80,6 +80,18 @@ export async function visibleEvents(db: Queryable, user: Actor) {
   ).rows;
   return rows.map((e) => eventDto(e, user));
 }
+async function requireTeamScope(c: Queryable, actor: Actor, teamId: string) {
+  if (actor.admin) return;
+  const outside = await c.query(
+    `SELECT 1 FROM event_teams et WHERE et.team_id=$1 AND NOT EXISTS
+    (SELECT 1 FROM grants g WHERE g.event_id=et.event_id AND g.user_id=$2 AND g.role='leitung')
+    UNION ALL SELECT 1 FROM show_teams st JOIN shows s ON s.id=st.show_id
+    WHERE st.team_id=$1 AND ((s.event_id IS NULL AND s.created_by<>$2) OR
+    (s.event_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM grants g WHERE g.event_id=s.event_id AND g.user_id=$2 AND g.role='leitung'))) LIMIT 1`,
+    [teamId, actor.id],
+  );
+  if (outside.rowCount) forbidden();
+}
 export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
   app.get("/api/v1/events", (req) => visibleEvents(db, req.actor));
   app.post("/api/v1/events", async (req) => {
@@ -148,7 +160,7 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
     await eventAccess(db, req.actor, eventId, true);
     return (
       await db.query(
-        'SELECT g.user_id AS "userId",u.display_name AS "displayName",u.login,g.role FROM grants g JOIN users u ON u.id=g.user_id WHERE g.event_id=$1',
+        'SELECT g.user_id AS "userId",u.display_name AS "displayName",u.login,g.role,u.password_hash IS NULL AS "pendingInvitation" FROM grants g JOIN users u ON u.id=g.user_id WHERE g.event_id=$1',
         [eventId],
       )
     ).rows;
@@ -223,6 +235,45 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
       message: "Einmaliger Einrichtungslink. Keine E-Mail versendet.",
     };
   });
+  app.post("/api/v1/events/:id/users/:userId/invitation", async (req) => {
+    const p = z.object({ id, userId: id }).parse(req.params);
+    const invitation = token();
+    await transaction(db, async (c) => {
+      await eventAccess(c, req.actor, p.id, true);
+      const user = (
+        await c.query(
+          "SELECT id,password_hash,enabled FROM users WHERE id=$1 FOR UPDATE",
+          [p.userId],
+        )
+      ).rows[0];
+      if (
+        !user ||
+        !(
+          await c.query(
+            "SELECT 1 FROM grants WHERE event_id=$1 AND user_id=$2",
+            [p.id, p.userId],
+          )
+        ).rowCount
+      )
+        throw new HttpError(404, "NOT_FOUND", "Konto nicht gefunden.");
+      if (user.password_hash || !user.enabled)
+        throw new HttpError(
+          409,
+          "ACCOUNT_ALREADY_SETUP",
+          "Konto ist bereits eingerichtet oder gesperrt.",
+        );
+      await c.query("DELETE FROM invitations WHERE user_id=$1", [p.userId]);
+      await c.query(
+        "INSERT INTO invitations(token_hash,user_id,expires_at) VALUES($1,$2,now()+interval '24 hours')",
+        [hash(invitation), p.userId],
+      );
+    });
+    return {
+      id: p.userId,
+      invitationUrl: cfg.PUBLIC_BASE_URL + "/#einladung=" + invitation,
+      delivery: "manual",
+    };
+  });
   app.get("/api/v1/teams", async (req) => {
     return (
       await db.query(
@@ -293,42 +344,78 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
         forbidden();
       if (
         !req.actor.admin &&
-        (!(
-          await c.query("SELECT 1 FROM teams WHERE id=$1 AND created_by=$2", [
-            p.teamId,
-            req.actor.id,
-          ])
-        ).rowCount ||
-          !(
-            await c.query(
-              "SELECT 1 FROM grants WHERE event_id=$1 AND user_id=$2",
-              [p.id, input.userId],
-            )
-          ).rowCount)
-      )
-        forbidden();
-      // Membership is global: every linked event/private show must be within
-      // the creator's administration scope before this mutation can grant access.
-      if (
-        !req.actor.admin &&
-        (
+        !(
           await c.query(
-            `SELECT 1 FROM event_teams et WHERE et.team_id=$1 AND NOT EXISTS
-       (SELECT 1 FROM grants g WHERE g.event_id=et.event_id AND g.user_id=$2 AND g.role='leitung')
-       UNION ALL SELECT 1 FROM show_teams st JOIN shows s ON s.id=st.show_id
-       WHERE st.team_id=$1 AND ((s.event_id IS NULL AND s.created_by<>$2) OR
-       (s.event_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM grants g WHERE g.event_id=s.event_id AND g.user_id=$2 AND g.role='leitung')))
-       LIMIT 1`,
-            [p.teamId, req.actor.id],
+            "SELECT 1 FROM grants WHERE event_id=$1 AND user_id=$2",
+            [p.id, input.userId],
           )
         ).rowCount
       )
         forbidden();
+      await requireTeamScope(c, req.actor, p.teamId);
       await c.query(
         "INSERT INTO team_members(team_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
         [p.teamId, input.userId],
       );
       return { added: true };
+    });
+  });
+  app.delete(
+    "/api/v1/events/:id/teams/:teamId/members/:userId",
+    async (req) => {
+      const p = z.object({ id, teamId: id, userId: id }).parse(req.params);
+      return transaction(db, async (c) => {
+        await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [
+          p.teamId,
+        ]);
+        await eventAccess(c, req.actor, p.id, true);
+        if (
+          !(
+            await c.query(
+              "SELECT 1 FROM event_teams WHERE event_id=$1 AND team_id=$2",
+              [p.id, p.teamId],
+            )
+          ).rowCount
+        )
+          forbidden();
+        await requireTeamScope(c, req.actor, p.teamId);
+        await c.query(
+          "DELETE FROM team_members WHERE team_id=$1 AND user_id=$2",
+          [p.teamId, p.userId],
+        );
+        return { revoked: true };
+      });
+    },
+  );
+  app.delete("/api/v1/events/:id/teams/:teamId", async (req) => {
+    const p = z.object({ id, teamId: id }).parse(req.params);
+    return transaction(db, async (c) => {
+      await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [p.teamId]);
+      await eventAccess(c, req.actor, p.id, true);
+      await c.query(
+        "DELETE FROM show_teams st USING shows s WHERE st.show_id=s.id AND s.event_id=$1 AND st.team_id=$2",
+        [p.id, p.teamId],
+      );
+      await c.query(
+        "DELETE FROM event_teams WHERE event_id=$1 AND team_id=$2",
+        [p.id, p.teamId],
+      );
+      return { revoked: true };
+    });
+  });
+  app.delete("/api/v1/shows/:id/teams/:teamId", async (req) => {
+    const p = z.object({ id, teamId: id }).parse(req.params);
+    return transaction(db, async (c) => {
+      await c.query("SELECT id FROM teams WHERE id=$1 FOR UPDATE", [p.teamId]);
+      const show = await showAccess(c, req.actor, p.id, true);
+      if (show.event_id) await eventAccess(c, req.actor, show.event_id, true);
+      else if (!req.actor.admin && show.created_by !== req.actor.id)
+        forbidden();
+      await c.query("DELETE FROM show_teams WHERE show_id=$1 AND team_id=$2", [
+        p.id,
+        p.teamId,
+      ]);
+      return { revoked: true };
     });
   });
   app.get("/api/v1/shows", async (req) => {

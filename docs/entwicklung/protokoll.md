@@ -8,6 +8,18 @@ Lokale Voraussetzungen erneut geprüft: vorhandenes Profil und passende Zertifik
 
 Betreiber meldet „Verbindung fehlgeschlagen“ nach Installation auf diesem DJ-Rechner. Windows-Uninstallregistrierung und Startmenüziele gelesen, dadurch benutzerdefinierten Installationsordner gefunden. Server/Node/Renderer tatsächlich vorhanden; installierte main.js gegen ZIP aus geprüftem 0.3.6-Artefakt per SHA256 bestätigt. Keine Geheimnisse ausgelesen. Fehlendes Serverprofil und fehlender Listener auf 3443 festgestellt. Einmalige Einrichtung über installiertes main.js init erfolgreich, anschließend network-check bestanden: localhost/127.0.0.1 korrekt zugeordnet und Zertifikathost passend. Keine bestehenden Profile überschrieben, keine Rootstore-/Firewalländerung. Geschützte Schlüssel/Recoverydatei ausschließlich lokal erzeugt, nicht veröffentlicht. SQLite ausschließlich lesend auf Snapshot-Vorhandensein und Benutzeranzahl geprüft: kein importierter Anmeldestand, null Benutzer. Öffentliche Online-Readiness liefert ready/Schema 2; kompatibler Export und vollständige Importkette fehlen weiterhin. Kein Serverlistener/keine Geräteausgabe/kein Mailversand gestartet und kein Netcup-Update durchgeführt. [Issue #20](https://github.com/SchapfeldNils/ShowNight-System/issues/20), [strukturierter Nachweis](nachweise/2026-10-14-erstinstallation.json). Allgemeine Starterfehler und fehlende Führung der Ersteinrichtung als offene Softwareverbesserung erfasst; Diagnose ist keine erledigte Erstinbetriebnahme.
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
+
+
+
+
+
 ## 14. Oktober 2026 · S3-06 Abschlussnachweis
 
 1c983fc vollständig geprüft: S1 checks 38608548898 Windows/AMD64/ARM64, Native renderer 38608549592 und Server-Installer 38608548812 erfolgreich. 14 Units, Szenensuite 5/5, Paketregression 9/9, Kernintegration 13/13, Windows-Agenten 8/8 und Offline/DPAPI/HTTPS 10/10 bestanden. Echter Browser mit geladener Bildebene, konkurrierendem Fenster, Mobilansicht und abgebrochener Speicherung ohne Wiederholung sowie bewusster Wiederherstellung bestanden. Lokale und heruntergeladene CI-Desktop-/Mobilbilder visuell geprüft. Echte native Regression 5/5, portable Suite 6/6 und Setup mit Installation/Startmenü/Updatesperre/Update/datenerhaltender Deinstallation bestanden. Container-/Worker-/Sicherungs-/Restoreprüfungen grün.

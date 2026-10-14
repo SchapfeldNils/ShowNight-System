@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type WebSocketRoute } from "@playwright/test";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -19,6 +19,17 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   page,
   context,
 }) => {
+  test.setTimeout(90000);
+  const statusSockets: WebSocketRoute[] = [];
+  await page.routeWebSocket("**/api/v1/status/ws", (socket) => {
+    statusSockets.push(socket);
+    if (statusSockets.length === 1) {
+      socket.close({
+        code: 1011,
+        reason: "Synthetischer anfänglicher Verbindungsfehler",
+      });
+    } else socket.connectToServer();
+  });
   const credentials = JSON.parse(
     await readFile(".local/browser-credentials.json", "utf8"),
   );
@@ -40,6 +51,27 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   await expect(
     page.getByRole("heading", { name: "Übersicht", exact: true }),
   ).toBeVisible();
+  const disconnected = page.getByText(/Statusverbindung unterbrochen/);
+  await expect.poll(() => statusSockets.length).toBe(2);
+  await expect(disconnected).toHaveCount(0);
+  statusSockets[1].close({ code: 1011, reason: "Synthetischer Serverausfall" });
+  await expect(disconnected).toBeVisible();
+  const identity = await (await context.request.get("/api/v1/me")).json();
+  const newEvent = await context.request.post("/api/v1/events", {
+    headers: {
+      origin: "http://localhost:3000",
+      "x-csrf-token": identity.csrfToken,
+    },
+    data: { name: "Stand nach Wiederverbindung" },
+  });
+  expect(newEvent.ok()).toBe(true);
+  await expect(
+    page.getByLabel("Veranstaltung wechseln").locator("option", {
+      hasText: "Stand nach Wiederverbindung",
+    }),
+  ).toHaveCount(1);
+  await expect.poll(() => statusSockets.length).toBe(3);
+  await expect(disconnected).toHaveCount(0);
   await page.getByLabel("Name der Veranstaltung").fill("Browser Musterabend");
   await page
     .getByRole("button", { name: "Veranstaltung anlegen", exact: true })
@@ -420,6 +452,10 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     .selectOption({ label: "Browser Musterabend" });
   await page.getByRole("button", { name: "Shows", exact: true }).click();
   await page
+    .locator("section.card")
+    .filter({
+      has: page.getByRole("heading", { name: "Shows in dieser Veranstaltung" }),
+    })
     .getByRole("button", { name: "Arbeitsfläche öffnen" })
     .first()
     .click();
@@ -445,11 +481,11 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     .getByRole("button", { name: "Paarungscode erstellen", exact: true })
     .click();
   const code = await page.locator(".callout code").innerText();
-  const identity = await pair("http://127.0.0.1:3000", code);
+  const agentIdentity = await pair("http://127.0.0.1:3000", code);
   // UI contract test; the actual HTTP probe is covered separately.
   let pluginAvailable = true;
   const agent = startAgent(
-    identity,
+    agentIdentity,
     await mkdtemp(join(tmpdir(), "shownight-browser-agent-")),
     undefined,
     async () =>
@@ -517,5 +553,19 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   } finally {
     agent.stop();
   }
+  // Session revocation closes the live socket and must stop automatic retries.
+  const logout = await context.request.post("/api/v1/auth/logout", {
+    headers: {
+      origin: "http://localhost:3000",
+      "x-csrf-token": identity.csrfToken,
+    },
+  });
+  expect(logout.ok()).toBe(true);
+  await expect(page.getByLabel("Benutzername", { exact: true })).toBeVisible({
+    timeout: 12000,
+  });
+  const connectionsAfterLogout = statusSockets.length;
+  await page.waitForTimeout(2200);
+  expect(statusSockets.length).toBe(connectionsAfterLogout);
   expect(errors).toEqual([]);
 });

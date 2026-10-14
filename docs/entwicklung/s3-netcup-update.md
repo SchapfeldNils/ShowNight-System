@@ -10,6 +10,8 @@ Die dafür vorgesehenen Online-Exportwege sind im produktiven S2-Stand noch nich
 
 ## Konkreter Updateentwurf
 
+Nachtrag zur PR-Bug-Nachprüfung: Der folgende Entwurf und seine tatsächlichen Zielnachweise sind ausdrücklich an die historische Runtime `1c983fc` mit Schema 4 gebunden. Die inzwischen korrigierte PR-Basis enthält zusätzlich Migration 005 sowie Rechte-/Medien-/Mail-/Wiederverbindungsfixes; sie ist nicht durch diesen alten VM-Probelauf freigegeben. Für ein Update auf diese neue Runtime müssen Image, Schema 5, isolierter Restore und Rückkehr erneut konkret geprüft und der private Updateentwurf angepasst werden. Alte und neue Worker dürfen nicht parallel laufen; [Migrations-/Updategrenzen](pr-bug-abnahme.md) beachten. Historische Hashes und Ergebnisfelder unten bleiben unverändert als Nachweis ihres tatsächlich geprüften Stands.
+
 Ziel ist das ARM64-Image `shownight:1c983fc01c98916fc782422f19e67567821bdaaa-arm64` aus dem erfolgreichen [S1-Prüflauf 38608548898](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38608548898), Artefakt `11916663556`. Dieser Stand entspricht der für Setup 0.3.6 geprüften Runtime und enthält Migrationen 003/004. Er erweitert die Online-Datenbank von Schema 2 auf 4. Der Streaming-Rechner rendert später lokal; Netcup übernimmt keine Bühnenausgabe.
 
 Das heruntergeladene GitHub-Artefakt wurde gegen SHA256 `9a3fe173db4a938a9e9f5cf1aee9bdc80d6d5d8a063e7fceb3f02c6b6eba6b0b` geprüft. Linux/ARM64, Imagekonfiguration und sämtliche RootFS-Layer nach Import auf der bestätigten VM mit dem CI-Archiv verglichen. Bestehendes Produktivimage: `shownight:a8b062ff0c945e920834e6c0887e15cf29662219-arm64`.
