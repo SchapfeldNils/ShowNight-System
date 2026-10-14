@@ -2,6 +2,8 @@
 
 Streaming-Rechner: [Windows-Setup-Anwendung, Installation und Grenzen](docs/entwicklung/s3-streaming-installer.md). Server-Vorabpaket und Renderer-Diagnosepaket getrennt; tatsächlichen Build-/Prüfstand beachten.
 
+Setup mit nativer Renderer-Grundlage erfolgreich gebaut und geprüft: [Nachweise](docs/entwicklung/nachweise/s3-renderer.json). Softwarediagnose mit synthetischen Assets; tatsächliche HDMI-/Ton-/Streaming-/Showfunktion bleibt offen.
+
 S3-04 auf codex/s3-renderer-foundation: [native Windows-Renderer-Grundlage](docs/entwicklung/s3-renderer.md), [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12). Separater C++-/GStreamer-/Skia-Prozess, lokaler Steuerkanal und getrennte synthetische Diagnosebilder. Native Windows-Build-/Prüfnachweise werden am PR geführt; kein Hardwarebeleg und kein Produktivupdate. Die folgenden Absätze dokumentieren vorherige Teilstände.
 
 S3-03-Review: [Entwurfs-PR #11](https://github.com/SchapfeldNils/ShowNight-System/pull/11), Runtime `44d19c6`, [aktuelle Windows-/AMD64-/ARM64-Prüfungen und Artefakte](https://github.com/SchapfeldNils/ShowNight-System/pull/11/checks). Kein Merge und kein Produktivupdate.

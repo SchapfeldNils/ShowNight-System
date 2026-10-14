@@ -2,6 +2,8 @@
 
 Stand: 14. Oktober 2026. Betreiberanforderung: Das Anwenderpaket muss eine Windows-Installationsanwendung sein. Umsetzung auf Branch codex/s3-renderer-foundation, [PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12).
 
+Aktueller Paketstand: Setup mit nativer Renderer-Grundlage tatsächlich gebaut und geprüft, [Lauf 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652), [Nachweis/Prüfsumme](nachweise/s3-renderer.json). Lokal bereitgestellte ShowNight-Streaming-Setup-x64.exe enthält jetzt den Renderer; reine Softwarediagnose mit synthetischen Medien. Das folgende Server-Vorabpaket bleibt ein historischer/separater Buildstand. Noch keine vollständige Streaming-/Show-/Gerätefreigabe.
+
 ## Paket und Einrichtung
 
 ShowNight-Streaming-Setup-x64.exe installiert für den aktuellen Windows-Benutzer unter %LOCALAPPDATA%\Programs\ShowNight\Streaming. Der deutsche Assistent legt Startmenüeinträge und auf Wunsch eine Desktopverknüpfung an. Der lokale HTTPS-Server, seine Weboberfläche und Node 24.19.0 sind gebündelt. Kein npm, Compiler oder SDK beim Anwender erforderlich.

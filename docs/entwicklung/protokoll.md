@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 · Abschluss des nativen Softwarebuilds nachgeprüft
+
+GitHub-Lauf 38588768652 zur Runtime d101808 ist inzwischen vollständig erfolgreich. Offizieller SDK-Download mit bestätigtem Gesamt-SHA256, tatsächlicher Skia-/MSVC-Build, native Tests 4/4, portabler HTTPS-/DPAPI-/Rendererablauf 5/5 und Renderer-Setup mit Installations-/Update-/Deinstallationsprüfung bestanden. Keine weitere Runtimeänderung nötig.
+
+Artefakte 11908530393 (Paket/Setup) und 11908375752 (native PNGs/Versions-/SDK-Nachweise) über GitHub heruntergeladen; Archiv-, Portable- und Setup-SHA256 lokal bestätigt. Drei tatsächlich gerenderte PNGs visuell geprüft: sicherer Hintergrund, Grafik und decodiertes Video mit Grafik, jeweils sichtbarer Softwarediagnosehinweis. Lokal bereitgestellte Setup-EXE enthält jetzt den Renderer und ersetzt am bisherigen dist-Pfad die Server-Vorabversion. [Nachweis](nachweise/s3-renderer.json). Reale Ausgabe und vollständige Showfunktion bleiben offen; keine Installation auf dem DJ-Rechner, kein Merge/Produktivupdate.
+
 ## 14. Oktober 2026 · Installationsanwendung für Streaming-Rechner
 
 Tatsächlicher Nachweis nach Korrektur des Windows-8.3-Pfadvergleichs: Runtime d101808, Streaming installer 38588768992 vollständig erfolgreich. Inno Setup 6.7.1; reale Installation, Startmenü, Laufzeit, DPAPI-Ersteinrichtung, aktive Updatesperre, Update und Deinstallation mit identisch erhaltenem verschlüsseltem Profil und Wiederherstellungsschlüssel. GitHub-Artefakt 11906353949 heruntergeladen, Archiv- und Setup-SHA256 lokal bestätigt. Setup liegt unter dist/streaming-installer; ausschließlich Server-Vorabpaket ohne Renderer. [Maschinenlesbarer Nachweis](nachweise/s3-streaming-installer.json). Keine Installation auf dem DJ-Rechner.
