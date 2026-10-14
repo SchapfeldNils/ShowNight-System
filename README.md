@@ -1,5 +1,7 @@
 # ShowNight-System
 
+15. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](docs/entwicklung/netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; Linux-/CI-Nachweis folgt. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
+
 S3-06: [Szenenentwürfe, Sperren und Paketübertragung](docs/entwicklung/s3-szenenentwuerfe.md) als Software umgesetzt und geprüft, [PR #18](https://github.com/SchapfeldNils/ShowNight-System/pull/18). Setup 0.3.6 mit lesender Szenenansicht und bestehender nativer Einzelmedien-Diagnose bereitgestellt; [Nachweise/Prüfsummen](docs/entwicklung/nachweise/s3-szenenentwuerfe.json). Native Szenenkomposition, vollständiger Editor und Showbetrieb bleiben offen. Kein Merge oder Produktivupdate. Die folgenden Absätze beschreiben frühere Teilstände.
 
 S3-05: [Paketmedien in der nativen Softwarediagnose](docs/entwicklung/s3-paketmedien.md) implementiert und als Software geprüft. Setup 0.3.5 mit direktem Paketimport; [Nachweise und Prüfsummen](docs/entwicklung/nachweise/s3-paketmedien.json), [PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Vollständige Szenen, Show-GO und Geräteausgabe bleiben offen. Die folgenden Absätze dokumentieren frühere Teilstände.

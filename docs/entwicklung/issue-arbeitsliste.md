@@ -1,5 +1,7 @@
 # Offene GitHub-Issues – bearbeitbarer Stand
 
+15. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; Linux-/CI-Nachweis folgt. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
+
 14. Oktober 2026. Betreiberauftrag: alle offenen Issues stückweise lösen. GitHub-Suche lieferte zehn Issues. Diese Liste beschreibt tatsächliche Teilstände und nächste Schritte; sie schließt keine Issues und bestätigt keinen Merge oder Gerätebetrieb.
 
 | Issue                                                                             | Nachgewiesener Softwarestand                                                                                                                                | Nächster offener Schritt                                                                                                                                               |

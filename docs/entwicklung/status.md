@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Netcup-Priorität: Sicherungshärtung, 15. Oktober 2026
+
+Issue #3: atomare Archivveröffentlichung und Kennwortdateiprüfung vor Wartung in Arbeit, eigener Folgebranch auf PR #22. Implementierung, passende Fehlerfalltests und unabhängiger Review vor Abschluss. Kein produktiver Sicherungsjob oder Update. [Arbeitsstand/Grenzen](netcup-backup-haertung.md). Ältere Absätze unten sind historische Teilstände.
+
 ## Issue #3: portable verschlüsselte Sicherung vorbereitet
 
 Abschlussnachweis: PR #22, Runtime `37c1d10`, [S1 checks 38626408226](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38626408226) Windows/AMD64/ARM64 vollständig erfolgreich, einschließlich neuer Negativprüfungen, tatsächlichem Linux-Wartungsrunner, verschlüsselter Sicherung/Entschlüsselung und isoliertem PostgreSQL-/Medienrestore. [Server-Installer 38626408257](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38626408257) ebenfalls erfolgreich. [Strukturierter Nachweis](nachweise/backup-vault.json). Reiner Dokumentationsabschluss; kein produktiver Sicherungsjob oder Merge. Die folgende Angabe zur noch ausstehenden CI ist historisch.
