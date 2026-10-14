@@ -89,7 +89,7 @@ try {
   }
   await lock.writeFile(JSON.stringify({ pid: process.pid, startedAt: status.startedAt })); await lock.sync();
   state = await readState(stateFile);
-  if (!Number.isInteger(config.dailyTaskLimit) || config.dailyTaskLimit < 1 || config.dailyTaskLimit > 100) throw new Error('Ungueltiges Tageslimit.');
+  if (!Number.isInteger(config.dailyTaskLimit) || config.dailyTaskLimit < 1 || config.dailyTaskLimit > 120) throw new Error('Ungueltiges Tageslimit.');
   if (!Number.isInteger(config.scanIntervalSeconds) || config.scanIntervalSeconds < 60 || config.scanIntervalSeconds > 86400) throw new Error('Ungueltiges Suchintervall.');
   messenger = new WhatsAppFeedback(config); await messenger.start();
   // A stable setup report is the first actual WhatsApp message after QR linking.

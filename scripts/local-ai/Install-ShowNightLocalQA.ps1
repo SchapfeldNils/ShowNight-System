@@ -6,7 +6,7 @@ param(
     [Parameter(Mandatory)][string]$GitPath,
     [Parameter(Mandatory)][string]$PackageManagerPath,
     [Parameter(Mandatory)][string]$ChromePath,
-    [ValidateRange(1,100)][int]$DailyTaskLimit = 24,
+    [ValidateRange(1,120)][int]$DailyTaskLimit = 120,
     [switch]$AutoStart,
     [switch]$RefreshTools
 )
