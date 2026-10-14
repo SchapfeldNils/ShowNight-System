@@ -4,6 +4,8 @@ Stand: 14. Oktober 2026, [Issue #12](https://github.com/SchapfeldNils/ShowNight-
 
 ## Umfang und nutzbarer Ablauf
 
+Anwenderverteilung gemäß D018 als [Windows-Setup-Anwendung für den Streaming-Rechner](s3-streaming-installer.md). Der folgende ZIP-Ablauf bleibt für Entwicklung/Diagnose verfügbar; ein fehlgeschlagener nativer Build liefert kein fertiges Renderer-Installationspaket.
+
 Der Prototyp ist ein separater C++20-Prozess mit GStreamer und Skia. Er verarbeitet ausschließlich mitgelieferte synthetische Diagnoseassets. Skia rendert eine 640 × 360-Szene mit Bild, Text und Form beziehungsweise einem tatsächlich decodierten lokalen VP8/WebM-Video. Video endet in appsink, die Grafik in einer CPU-Rasterfläche. Der Prototyp erstellt keine Bildschirm-, Kamera-, Audio- oder Netzwerk-URI-Sinks. Jede Bilddatei ist sichtbar mit „SOFTWAREDIAGNOSE – KEINE BILDSCHIRM-/TONAUSGABE“ gekennzeichnet.
 
 1. Das geprüfte ZIP shownight-server-renderer-windows-x64.zip aus dem Renderer-PR entpacken. Voraussetzungen: Windows x64, eigener Windows-Benutzer, Windows-Schrift Arial und eine passende Microsoft Visual-C++-v14-x64-Laufzeit. Node 24.19.0 und native Renderer-/GStreamer-Dateien sind enthalten. Compiler, npm oder separates GStreamer-SDK sind beim Anwender nicht nötig. Falls die VC-Laufzeit fehlt, über den [offiziellen Microsoft-Download](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) einrichten; sie muss mindestens zum verwendeten Buildtoolstand passen. Das ZIP installiert sie nicht selbst.

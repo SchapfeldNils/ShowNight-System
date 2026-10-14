@@ -1,6 +1,26 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
+
+
+
+## 14. Oktober 2026 · Abschluss des nativen Softwarebuilds nachgeprüft
+
+GitHub-Lauf 38588768652 zur Runtime d101808 ist inzwischen vollständig erfolgreich. Offizieller SDK-Download mit bestätigtem Gesamt-SHA256, tatsächlicher Skia-/MSVC-Build, native Tests 4/4, portabler HTTPS-/DPAPI-/Rendererablauf 5/5 und Renderer-Setup mit Installations-/Update-/Deinstallationsprüfung bestanden. Keine weitere Runtimeänderung nötig.
+
+Artefakte 11908530393 (Paket/Setup) und 11908375752 (native PNGs/Versions-/SDK-Nachweise) über GitHub heruntergeladen; Archiv-, Portable- und Setup-SHA256 lokal bestätigt. Drei tatsächlich gerenderte PNGs visuell geprüft: sicherer Hintergrund, Grafik und decodiertes Video mit Grafik, jeweils sichtbarer Softwarediagnosehinweis. Lokal bereitgestellte Setup-EXE enthält jetzt den Renderer und ersetzt am bisherigen dist-Pfad die Server-Vorabversion. [Nachweis](nachweise/s3-renderer.json). Reale Ausgabe und vollständige Showfunktion bleiben offen; keine Installation auf dem DJ-Rechner, kein Merge/Produktivupdate.
+
 ## 14. Oktober 2026 · Installationsanwendung für Streaming-Rechner
+
+Tatsächlicher Nachweis nach Korrektur des Windows-8.3-Pfadvergleichs: Runtime d101808, Streaming installer 38588768992 vollständig erfolgreich. Inno Setup 6.7.1; reale Installation, Startmenü, Laufzeit, DPAPI-Ersteinrichtung, aktive Updatesperre, Update und Deinstallation mit identisch erhaltenem verschlüsseltem Profil und Wiederherstellungsschlüssel. GitHub-Artefakt 11906353949 heruntergeladen, Archiv- und Setup-SHA256 lokal bestätigt. Setup liegt unter dist/streaming-installer; ausschließlich Server-Vorabpaket ohne Renderer. [Maschinenlesbarer Nachweis](nachweise/s3-streaming-installer.json). Keine Installation auf dem DJ-Rechner.
+
+S1 checks 38588768808 für denselben Runtimecommit auf Windows/AMD64/ARM64 vollständig erfolgreich, inklusive bestehender Container-/Backup-/Restoreprüfung. Lokale Typprüfung und elf Unitprüfungen erneut bestanden. Installer- und Regressionsnachweise ersetzen keinen nativen Renderer- oder Hardwarebeleg.
 
 Betreiber fordert ausdrücklich eine Windows-Installationsanwendung. Inno-Setup-Quellen und Buildskript ergänzt: pro Benutzer installierter Server mit eigener Node-Laufzeit, deutsche Einrichtungshinweise, Startmenü und Deinstallation mit erhaltenen externen Benutzerdaten. Rendererpaket wird erst nach erfolgreichem nativen Build erstellt; Server-Vorabpaket weist fehlenden Renderer aus. Automatische isolierte Windows-Prüfung von Installation, Startmenü, Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation ergänzt. Nachweis noch ausstehend; keine tatsächliche Installation auf dem DJ-/Streaming-Rechner.
 

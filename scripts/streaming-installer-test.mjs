@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile, access } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  writeFile,
+  access,
+  realpath,
+} from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -41,7 +48,9 @@ assert.equal(
   "False",
   "Kein vorhandenes ShowNight-Profil im Installertest überschreiben.",
 );
-const isolated = await mkdtemp(join(tmpdir(), "shownight-installer-"));
+const isolated = await realpath(
+  await mkdtemp(join(tmpdir(), "shownight-installer-")),
+);
 const folder = join(isolated, "Anwendung mit Leerzeichen");
 const profile = join(isolated, "profile");
 const group = "ShowNight Installer Test " + randomUUID();
@@ -106,6 +115,13 @@ try {
   );
   const target = join(profile, "ShowNight/local-server/server.sntarget");
   const original = await readFile(target);
+  const privateFiles = [
+    join(profile, "ShowNight/local-server/server.dpapi"),
+    join(profile, "ShowNight/secrets/local-server-recovery.env"),
+  ];
+  const privateBefore = await Promise.all(
+    privateFiles.map((path) => readFile(path)),
+  );
   blocker = spawn(runtime, ["-e", "setInterval(()=>{},1000)"], {
     windowsHide: true,
     stdio: "ignore",
@@ -121,6 +137,11 @@ try {
   await stopped;
   blocker = null;
   assert.equal(await install("upgrade"), 0);
+  assert.deepEqual(
+    await Promise.all(privateFiles.map((path) => readFile(path))),
+    privateBefore,
+    "Update erhält DPAPI-Identität und Wiederherstellungsschlüssel.",
+  );
   assert.deepEqual(
     await readFile(target),
     original,
@@ -138,6 +159,11 @@ try {
   installed = false;
   await new Promise((r) => setTimeout(r, 1000));
   await assert.rejects(access(runtime));
+  assert.deepEqual(
+    await Promise.all(privateFiles.map((path) => readFile(path))),
+    privateBefore,
+    "Deinstallation erhält DPAPI-Identität und Wiederherstellungsschlüssel.",
+  );
   assert.deepEqual(
     await readFile(target),
     original,

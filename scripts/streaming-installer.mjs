@@ -1,4 +1,12 @@
-import { cp, mkdir, readFile, writeFile, access } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  readFile,
+  writeFile,
+  access,
+  rm,
+  realpath,
+} from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -15,6 +23,20 @@ const out = resolve("dist/streaming-installer");
 await access(join(source, "node.exe"));
 await access(join(source, "main.js"));
 if (renderer) await access(join(source, "renderer/integrity.json"));
+const stagingRoot = resolve(".local/streaming-installer");
+await mkdir(stagingRoot, { recursive: true });
+// Resolve the existing target before recursive deletion; never follow a redirected stage.
+const stagingParent = await realpath(stagingRoot);
+const previous = await realpath(stage).catch((e) => {
+  if (e.code === "ENOENT") return null;
+  throw e;
+});
+if (
+  previous &&
+  previous !== join(stagingParent, renderer ? "renderer" : "server")
+)
+  throw new Error("Umgeleitetes Installer-Staging wird nicht entfernt.");
+await rm(stage, { recursive: true, force: true });
 await mkdir(stage, { recursive: true });
 await mkdir(out, { recursive: true });
 await cp(source, stage, { recursive: true });
