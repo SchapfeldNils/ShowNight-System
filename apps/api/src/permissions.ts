@@ -1,6 +1,6 @@
 import type { Actor } from "./auth.js";
 import type { Queryable } from "./db.js";
-import { missing, forbidden } from "./errors.js";
+import { missing, forbidden, HttpError } from "./errors.js";
 export async function eventAccess(
   db: Queryable,
   user: Actor,
@@ -15,6 +15,12 @@ export async function eventAccess(
   );
   const e = r.rows[0];
   if (!e || (!user.admin && !e.lead && !e.member)) missing();
+  if ((user.admin || e.lead) && !user.mfaVerified)
+    throw new HttpError(
+      401,
+      "MFA_REQUIRED",
+      "Zusätzliche Bestätigung erforderlich.",
+    );
   if (edit && !user.admin && !e.lead) forbidden();
   return e;
 }

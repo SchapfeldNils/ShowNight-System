@@ -121,3 +121,8 @@
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.
+
+
+## PR-Bug-Korrekturen – technische Umsetzung, 14. Oktober 2026
+
+Status: ausdrücklich beauftragte Fehlerbehebung, keine neue Fachentscheidung. Bestehende gleichberechtigte Leitungsrechte, MFA-Pflicht und Rechtewiderruf werden durchgesetzt; Einladungsrecovery setzt keine eingerichteten Kennwörter zurück. Mailversandart dauerhaft gespeichert; neue Migration 5 vermeidet Kollision mit bestehender Szenenmigration 4. Alle offenen PRs erhalten Nachprüfung ihrer aktuellen Softwarestände; unbelegte Hardware-/Dauerbetriebs-/Zustellfälle bleiben offen. Kein autonomer PR-Merge oder Produktivupdate. [Nachweise](../entwicklung/pr-bug-abnahme.md).

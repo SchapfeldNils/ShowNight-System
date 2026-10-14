@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
 ## 10. Oktober 2026 – Lesediagnose produktiv aktualisiert und geprüft
 
 [CI 38006960819](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38006960819) für Runtime `a8b062f` vollständig grün auf Windows und nativen AMD64-/ARM64-Runnern. Geprüfte CI-Archive heruntergeladen; Hashes, Architektur, Config und alle RootFS-Layer am Ziel verglichen. Frisches Wartungsbackup bei gestoppter eigener App/Worker, externe SHA256-Prüfung und isolierter Schema-2-Restore: alle 21 Tabellen und Medienstand identisch, keine Medien im Backup. Recovery danach gestoppt. Private Konfiguration zusätzlich DPAPI/CurrentUser mit identischem Roundtrip gesichert; unabhängiges Backup-/Schlüsselziel bleibt offen.

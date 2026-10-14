@@ -19,6 +19,7 @@ type Me = {
 };
 type Team = { id: string; name: string; userIds: string[] };
 type Grant = {
+  pendingInvitation?: boolean;
   userId: string;
   displayName: string;
   login: string;
@@ -73,6 +74,7 @@ function App() {
     [page, setPage] = useState("Übersicht"),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
+    [statusConnected, setStatusConnected] = useState(false),
     [loading, setLoading] = useState(false);
   const [login, setLogin] = useState(""),
     [password, setPassword] = useState(""),
@@ -172,18 +174,74 @@ function App() {
   }, [me, eventId, page]);
   useEffect(() => {
     if (!me) return;
-    const ws = new WebSocket(
-      `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/api/v1/status/ws`,
-    );
-    ws.onmessage = (e) => {
+    let stopped = false;
+    let ws: WebSocket | undefined;
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    let delay = 1000;
+    const endSession = () => {
+      if (stopped) return;
+      stopped = true;
+      csrf = "";
+      setMe(null);
+      setEventId("");
+    };
+    const reconnect = () => {
+      if (stopped) return;
+      setStatusConnected(false);
+      retry = setTimeout(async () => {
+        // A failed handshake may hide an expired session behind code 1006.
+        try {
+          await api("/me");
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 401) {
+            endSession();
+            return;
+          }
+        }
+        if (!stopped) connect();
+      }, delay);
+      delay = Math.min(delay * 2, 15000);
+    };
+    const connect = () => {
+      if (stopped) return;
       try {
-        const snapshot = JSON.parse(e.data);
-        if (snapshot.type === "snapshot") setEvents(snapshot.events);
+        const socket = new WebSocket(
+          `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/api/v1/status/ws`,
+        );
+        ws = socket;
+        socket.onmessage = (e) => {
+          if (stopped || ws !== socket) return;
+          try {
+            const snapshot = JSON.parse(e.data);
+            if (
+              snapshot.type === "snapshot" &&
+              Array.isArray(snapshot.events)
+            ) {
+              setEvents(snapshot.events);
+              setStatusConnected(true);
+              delay = 1000;
+            }
+          } catch {
+            /* ignore malformed transport */
+          }
+        };
+        socket.onclose = (e) => {
+          if (stopped || ws !== socket) return;
+          if (e.code === 1008) endSession();
+          else reconnect();
+        };
+        socket.onerror = () => socket.close();
       } catch {
-        /* ignore malformed transport */
+        reconnect();
       }
     };
-    return () => ws.close();
+    setStatusConnected(false);
+    connect();
+    return () => {
+      stopped = true;
+      clearTimeout(retry);
+      ws?.close();
+    };
   }, [me?.id]);
   async function run(action: () => Promise<unknown>) {
     setError("");
@@ -480,6 +538,12 @@ function App() {
         {notice && (
           <p className="success" role="status">
             {notice}
+          </p>
+        )}
+        {!statusConnected && (
+          <p className="banner" role="status">
+            Statusverbindung unterbrochen – Wiederverbindung läuft. Angezeigte
+            Veranstaltungsstände können veraltet sein.
           </p>
         )}
         {page === "Übersicht" && (
@@ -976,6 +1040,50 @@ function App() {
                       <strong>{t.name}</strong>
                       <p>{t.userIds.length} Mitglieder</p>
                       {active.canEdit && (
+                        <>
+                          {t.userIds.map((userId) => (
+                            <p key={userId}>
+                              {grants.find((g) => g.userId === userId)
+                                ?.displayName ?? userId}{" "}
+                              <button
+                                className="secondary"
+                                onClick={() =>
+                                  void run(async () => {
+                                    await api(
+                                      "/events/" +
+                                        eventId +
+                                        "/teams/" +
+                                        t.id +
+                                        "/members/" +
+                                        userId,
+                                      "DELETE",
+                                    );
+                                    await refresh();
+                                  })
+                                }
+                              >
+                                Mitglied entfernen
+                              </button>
+                            </p>
+                          ))}
+                          <button
+                            className="secondary"
+                            title="Entfernt das Team und seine Showzuordnungen nur aus dieser Veranstaltung."
+                            onClick={() =>
+                              void run(async () => {
+                                await api(
+                                  "/events/" + eventId + "/teams/" + t.id,
+                                  "DELETE",
+                                );
+                                await refresh();
+                              })
+                            }
+                          >
+                            Teamzuordnung entfernen
+                          </button>
+                        </>
+                      )}
+                      {active.canEdit && (
                         <select
                           aria-label={"Mitglied zu " + t.name + " hinzufügen"}
                           value=""
@@ -1080,7 +1188,29 @@ function App() {
                           {grants.map((g) => (
                             <tr key={g.userId + g.role}>
                               <td>{g.displayName}</td>
-                              <td>{g.role}</td>
+                              <td>
+                                {g.role}
+                                {g.pendingInvitation && (
+                                  <button
+                                    className="secondary"
+                                    onClick={() =>
+                                      void run(async () => {
+                                        const result = await api(
+                                          "/events/" +
+                                            eventId +
+                                            "/users/" +
+                                            g.userId +
+                                            "/invitation",
+                                          "POST",
+                                        );
+                                        setInvitation(result.invitationUrl);
+                                      })
+                                    }
+                                  >
+                                    Einrichtungslink erneuern
+                                  </button>
+                                )}
+                              </td>
                               <td>
                                 <button
                                   className="secondary"
@@ -1534,6 +1664,27 @@ function ShowEditor({
                 </select>
               </label>
               <button className="secondary">Showteam zuordnen</button>
+              {s.teamIds.map((teamId) => (
+                <button
+                  key={teamId}
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    void api("/shows/" + s.id + "/teams/" + teamId, "DELETE")
+                      .then(async () => {
+                        setS({
+                          ...s,
+                          teamIds: s.teamIds.filter((id) => id !== teamId),
+                        });
+                        await onUploaded();
+                      })
+                      .catch((e) => setError(e.message));
+                  }}
+                >
+                  Showteam {teams.find((t) => t.id === teamId)?.name ?? teamId}{" "}
+                  entfernen
+                </button>
+              ))}
             </form>
           )}
         </>
