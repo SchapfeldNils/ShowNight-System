@@ -111,7 +111,9 @@ export async function nativeSceneProof(
     logicalHeight: 180,
     background: "#102030",
     layers: [
-      rectangle(10, 10, 60, 40, "#ff0000"),
+      rectangle(10, 10, 60, 40, "#ff0000", {
+        id: "D45E8C7A-A701-42A4-BBF4-9263CFE424CC",
+      }),
       rectangle(30, 20, 40, 40, "#0000ff", { opacity: 0.5 }),
       rectangle(10, 10, 60, 40, "#00ff00", { visible: false }),
       rectangle(-10, 70, 30, 20, "#00ffff"),
