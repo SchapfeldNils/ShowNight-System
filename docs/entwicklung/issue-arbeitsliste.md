@@ -16,3 +16,22 @@
 | [#20](https://github.com/SchapfeldNils/ShowNight-System/issues/20) Erststart      | PR #21 jetzt mit konkreter Starterkorrektur, lesendem Status, lokal 18/18 Units plus 10/10 Offlineintegration; GitHub-Installerlauf 38625375071 erfolgreich | Übrige aktuelle CI prüfen, Setup bereitstellen; echter Onlineexport/Import/lokaler Start braucht gesonderten vorbereiteten Produktionsupdateweg                        |
 
 Softwareänderungen je eigenem Branch/PR, keine eigenständigen Merges, keine pauschale Umdeklarierung praktischer Abnahmen. Unabhängige Hardware-/Betriebsvoraussetzungen blockieren ihre Nachweise, nicht weitere vorbereitbare Softwarearbeit (D017). Die Liste erweitert nicht die einzelnen Issues auf sämtliche noch offenen F01–F50-Module.
+
+## Aktuelle vorhandene PR-Köpfe lesend geprüft
+
+14. Oktober 2026, 21:47 MESZ: alle folgenden PRs weiterhin ungemergt und laut GitHub ohne Mergekonflikt. Die aufgeführten Prüfungen waren vollständig erfolgreich; das ist kein neu durchgeführtes fachliches Review oder eine Freigabe.
+
+| PR  | Head    | Erfolgreiche S1-Prüfung                                                                   | Weitere erfolgreiche Prüfungen            |
+| --- | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------- |
+| #2  | ffefe65 | [38619509706](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38619509706) | –                                         |
+| #5  | 1209c4a | [38620309245](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620309245) | –                                         |
+| #7  | 7584902 | [38620567893](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620567893) | –                                         |
+| #9  | 81e2e7a | [38620840287](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620840287) | –                                         |
+| #11 | 80a1370 | [38621008051](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38621008051) | –                                         |
+| #13 | 2e94727 | [38621254261](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38621254261) | Native 38621254253, Installer 38621254440 |
+| #16 | a74a04e | [38622059854](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38622059854) | Native 38622059894, Installer 38622059844 |
+| #18 | 4d5e5b2 | [38622819910](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38622819910) | Native 38622819906, Installer 38622819928 |
+
+Zusätzliche normale Windows-DNS-/HTTPS-Prüfung: öffentliche Systemdomain über IPv4/IPv6 aufgelöst, Readiness ohne Prozess-IP-Vorgabe und mit vollständiger TLS-Prüfung 200/Schema 4. Kein Server-/DNS-/Hostswechsel durch diese Arbeit. Echter Agentstart/WSS-Nachweis bleibt offen. Frühere Angaben zu Schema 2 beschreiben historische Teilstände. Die Herkunft des aktuellen produktiven Images wurde in dieser Nachprüfung nicht erhoben.
+
+Issue #20: vollständige CI und lokal hashgeprüftes Setup 0.3.7 jetzt in [Erststartnachweis](s3-erster-start.md) dokumentiert. Die frühere Tabellenzeile mit noch ausstehender CI beschreibt den Arbeitsbeginn.
