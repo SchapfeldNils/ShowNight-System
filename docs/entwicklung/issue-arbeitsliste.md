@@ -1,5 +1,7 @@
 # Offene GitHub-Issues – bearbeitbarer Stand
 
+15. Oktober 2026: [Netcup-Releasekandidat und isolierte Updateprüfung](netcup-release-preflight.md) zu Issue #36 in Arbeit. Vollständige Basis PR #35 plus Worker-Korrektur PR #34; realer Netcup-Bestand lesend bestätigt (ARM64, Schema 4, Mail aus). Noch kein Update/Merge und kein neuer CI-Abschluss für diesen Kandidaten. Frühere Hinweise zur fehlenden Workerintegration unten sind durch diese bewusste Integration im neuen Branch überholt; frühere Nachweise gelten weiterhin nur für ihre exakten Runtimecommits.
+
 15. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; S1-CI 38648600570 vollständig erfolgreich auf Windows/AMD64/ARM64 einschließlich echtem verschlüsseltem Containerrestore. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
 
 14. Oktober 2026. Betreiberauftrag: alle offenen Issues stückweise lösen. GitHub-Suche lieferte zehn Issues. Diese Liste beschreibt tatsächliche Teilstände und nächste Schritte; sie schließt keine Issues und bestätigt keinen Merge oder Gerätebetrieb.

@@ -19,6 +19,7 @@
     "build": "node scripts/build.mjs",
     "test": "tsx --test tests/*.test.ts",
     "test:backup": "node --test tests/backup-vault.test.mjs tests/backup-runner.test.mjs",
+    "test:worker-claims": "tsx --test tests/worker-claims-integration.ts",
     "test:integration": "tsx --test tests/integration.ts",
     "test:browser": "playwright test",
     "local:setup": "tsx scripts/local.ts setup",
