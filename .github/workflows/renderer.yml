@@ -43,6 +43,7 @@ jobs:
           path: |
             test-results/renderer/
             .local/renderer-build/gst-install.log
+            .local/renderer-build/gst.sha256sum
             dist/renderer-windows/versions.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:

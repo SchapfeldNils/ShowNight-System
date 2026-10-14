@@ -6,6 +6,8 @@ import {
   cp,
   readdir,
   lstat,
+  rename,
+  unlink,
 } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -35,6 +37,38 @@ async function download(url, path, expected) {
     bytes = await readFile(path);
   } catch {}
   if (!bytes || (expected && hash(bytes) !== expected)) {
+    console.log("Download prüfen: " + url);
+    if (expected && url.endsWith(".exe")) {
+      const temporary = path + ".download";
+      try {
+        command("curl.exe", [
+          "--http1.1",
+          "--location",
+          "--fail",
+          "--retry",
+          "5",
+          "--retry-all-errors",
+          "--retry-delay",
+          "3",
+          "--connect-timeout",
+          "30",
+          "--max-time",
+          "600",
+          "--output",
+          temporary,
+          url,
+        ]);
+        const archive = await readFile(temporary);
+        if (hash(archive) !== expected)
+          throw new Error("SDK-SHA256 stimmt nicht.");
+        await rename(temporary, path);
+        return archive;
+      } finally {
+        await unlink(temporary).catch((e) => {
+          if (e.code !== "ENOENT") throw e;
+        });
+      }
+    }
     for (let attempt = 0; attempt < 3; ++attempt) {
       try {
         const r = await fetch(url, { signal: AbortSignal.timeout(180000) });
@@ -80,6 +114,7 @@ const gstHashBytes = await download(
 );
 const gstHash = gstHashBytes.toString("utf8").match(/^[a-f0-9]{64}(?=\s)/)?.[0];
 if (!gstHash) throw new Error("Offizielle GStreamer-Prüfsumme fehlt.");
+console.log("Offizieller GStreamer-SDK-SHA256: " + gstHash);
 const installer = join(work, gstName);
 await download(gstUrl, installer, gstHash);
 const gst = join(work, "gst");

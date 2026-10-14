@@ -196,9 +196,13 @@ export async function localServer(
   };
   app.get("/api/local/renderer", async (req) => {
     rendererAdmin(req);
-    const report = await renderer.status();
-    rendererAdmin(req);
-    return report;
+    try {
+      const report = await renderer.status();
+      rendererAdmin(req);
+      return report;
+    } catch (e) {
+      return rendererError(e);
+    }
   });
   app.post("/api/local/renderer/test", async (req) => {
     rendererAdmin(req);

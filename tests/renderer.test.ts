@@ -25,8 +25,28 @@ test("Renderervertrag: kein Pfad, Gerät, URI oder physische Ausgabe in Diagnose
     false,
   );
   assert.equal(rendererAction.safeParse({ ...c, action: "go" }).success, false);
+  const state = {
+    protocolVersion: 1,
+    epoch: randomUUID(),
+    revision: 0,
+    mode: "software-diagnostics",
+    width: 640,
+    height: 360,
+    physicalOutputEnabled: false,
+    audioOutputEnabled: false,
+    preview: null,
+    program: null,
+    mediaError: false,
+    gstreamerVersion: "1.28.8",
+    skiaRevision: "f9b0d17912fad78861ad343797db3f33084c19cc",
+  };
+  assert.equal(rendererState.safeParse(state).success, true);
   assert.equal(
-    rendererState.safeParse({ physicalOutputEnabled: true }).success,
+    rendererState.safeParse({ ...state, physicalOutputEnabled: true }).success,
+    false,
+  );
+  assert.equal(
+    rendererState.safeParse({ ...state, audioOutputEnabled: true }).success,
     false,
   );
 });

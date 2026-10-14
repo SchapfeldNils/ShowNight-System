@@ -251,15 +251,22 @@ export class RendererClient implements RendererControl {
     await this.connect();
     guard(); // Recheck authorization after queueing and connecting, before dispatch.
     const requestId = randomUUID();
-    const reply = rendererReply.parse(
-      await this.exchange({
-        protocolVersion: 1,
-        epoch: this.epoch,
-        requestId,
-        type,
-        ...extra,
-      }),
-    );
+    let reply: ReturnType<typeof rendererReply.parse>;
+    try {
+      reply = rendererReply.parse(
+        await this.exchange({
+          protocolVersion: 1,
+          epoch: this.epoch,
+          requestId,
+          type,
+          ...extra,
+        }),
+      );
+    } catch (e) {
+      this.disconnect();
+      if (e instanceof RendererFault) throw e;
+      throw new RendererFault(503, "PROTOCOL");
+    }
     if (
       reply.epoch !== this.epoch ||
       reply.state.epoch !== this.epoch ||

@@ -2,6 +2,8 @@
 
 ## S3-04: native Renderer-Grundlage
 
+[Entwurfs-PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [aktueller CI-Prüfstand](https://github.com/SchapfeldNils/ShowNight-System/pull/13/checks). Erster nativer Lauf 38525323695 scheiterte am SDK-Download, obwohl die offizielle Prüfsumme aus CI erreichbar war; robuste Übertragung ergänzt. Keine native Erfolgsaussage vor tatsächlichem Abschluss. Lokale Vertragstests und Ziel-C++-Nachweis getrennt führen.
+
 14. Oktober 2026, Betreiberauftrag zur Umsetzung ohne zweiten Client, umfangreiche Hardwaretests später. Branch codex/s3-renderer-foundation, [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12), auf S3-03 aufgebaut. C++-/GStreamer-/Skia-Prozess und geschützter lokaler Pipe-Kanal, getrennte Vorschau-/Programmdiagnose, begrenzte Revisions-/Receiptprüfung, aktuelle Admin-/MFA-/Origin-/CSRF-Prüfung, PNG-Frameauslieferung und deutsche Diagnoseoberfläche implementiert. Sicherer leerer Start, keine physische Bild-/Ton-/Geräteausgabe. [Ablauf, Build und Grenzen](s3-renderer.md).
 
 Lokal auf Windows x64: Typprüfung, elf Unit-/Vertragstests und Web-/Node-Build bestanden. Kein C++-Compiler/GStreamer-SDK auf dem DJ-Rechner; nativer Build und tatsächliche C++-/Video-/Skia-/portable HTTPS-Prüfung erfolgen separat in GitHub Actions. Aktueller lokaler Download des offiziellen GStreamer-SHA256-Endpunkts liefert HTTP 503; Zielbuild noch nicht als bestanden behaupten. Tatsächliche Ergebnisse werden am PR ergänzt.
