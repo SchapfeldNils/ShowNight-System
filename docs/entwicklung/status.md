@@ -2,7 +2,7 @@
 
 ## Netcup-Priorität: Issue #31 Medienworker
 
-15. Oktober 2026, `codex/netcup-media-worker-claims`, auf gemergtem S1/main `cd71423`: veraltete Medienworker-Ergebnisse gegen neue Übernahmen absichern (F12/F28, Teil S1-07/A04). Implementierung und echte PostgreSQL-Regression in Arbeit, unabhängiger Review folgt. Kein Produktiv-/lokales Update und kein Merge. Dieser S1-Branch mit Migrationen 001/005 ist kein unmittelbarer Updatekandidat für den bestehenden vollständigen Schema-4-Server. [Ablauf, Prüfstand und Grenzen](netcup-worker-claims.md), [Netcup-Arbeitsliste](issue-arbeitsliste.md). Ältere Absätze unten beschreiben historische Teilstände.
+15. Oktober 2026, `codex/netcup-media-worker-claims`, auf gemergtem S1/main `cd71423`: veraltete Medienworker-Ergebnisse gegen neue Übernahmen absichern (F12/F28, Teil S1-07/A04). Implementiert und unabhängig geprüft, keine bestätigten Reviewbefunde. Lokal Typprüfung/Build, Units 3/3, Kernintegration 14/14 und echte PostgreSQL-Claimregression 11/11 bestanden. Vollständige S1-CI auf AMD64/ARM64 erfolgreich (Run 38647319730, Runtime dd28868). [PR #34](https://github.com/SchapfeldNils/ShowNight-System/pull/34), [maschinenlesbarer Nachweis](nachweise/netcup-worker-claims.json). Kein Produktiv-/lokales Update und kein Merge. Dieser S1-Branch mit Migrationen 001/005 ist kein unmittelbarer Updatekandidat für den bestehenden vollständigen Schema-4-Server. [Ablauf, Prüfstand und Grenzen](netcup-worker-claims.md), [Netcup-Arbeitsliste](issue-arbeitsliste.md). Ältere Absätze unten beschreiben historische Teilstände.
 
 ## PR-Bug-Abnahme – 14. Oktober 2026
 

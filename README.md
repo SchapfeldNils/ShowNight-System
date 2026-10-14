@@ -1,6 +1,6 @@
 # ShowNight-System
 
-Netcup-Priorität, 15. Oktober 2026: [Worker-Claimkorrektur](docs/entwicklung/netcup-worker-claims.md), Issue #31, in Arbeit auf dem gemergten S1/main. Alte Worker dürfen Ergebnisse neuer Übernahmen nicht überschreiben. [Aktuelle Server-Arbeitsliste](docs/entwicklung/issue-arbeitsliste.md). Kein Produktiv-/lokales Update. Dieser isolierte S1-Branch ist kein unmittelbarer Updatekandidat für den bestehenden vollständigen Schema-4-Betrieb; historische S1-Absätze unten entsprechend einordnen.
+Netcup-Priorität, 15. Oktober 2026: [Worker-Claimkorrektur](docs/entwicklung/netcup-worker-claims.md), Issue #31, implementiert und geprüft auf dem gemergten S1/main. Alte Worker dürfen Ergebnisse neuer Übernahmen nicht überschreiben. [Aktuelle Server-Arbeitsliste](docs/entwicklung/issue-arbeitsliste.md). Kein Produktiv-/lokales Update. Dieser isolierte S1-Branch ist kein unmittelbarer Updatekandidat für den bestehenden vollständigen Schema-4-Betrieb; historische S1-Absätze unten entsprechend einordnen.
 
 Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Veranstaltungsformen.
 
