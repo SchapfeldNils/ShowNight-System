@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 · Installationsanwendung für Streaming-Rechner
+
+Betreiber fordert ausdrücklich eine Windows-Installationsanwendung. Inno-Setup-Quellen und Buildskript ergänzt: pro Benutzer installierter Server mit eigener Node-Laufzeit, deutsche Einrichtungshinweise, Startmenü und Deinstallation mit erhaltenen externen Benutzerdaten. Rendererpaket wird erst nach erfolgreichem nativen Build erstellt; Server-Vorabpaket weist fehlenden Renderer aus. Automatische isolierte Windows-Prüfung von Installation, Startmenü, Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation ergänzt. Nachweis noch ausstehend; keine tatsächliche Installation auf dem DJ-/Streaming-Rechner.
+
+CI zum bisherigen Stand 85230ad: S1 checks 38527091254 Windows/AMD64/ARM64 bestanden. Native renderer 38527091273 scheiterte vor Kompilierung am SDK-Teilabruf; offizieller Gesamt-SHA256 bestätigt, kein unsicherer Downloadweg. Wiederholungen/Diagnose erweitert. Issue #12 / Entwurfs-PR #13 bleiben offen.
+
 ## 14. Oktober 2026 – S3-04: Renderer ohne zweiten Client entwickeln
 
 Zweiter nativer Lauf 38525838177 bestätigte den offiziellen SDK-SHA256 e4c41ee6ee9c6c32a45d198463ec08d79bac3bd5fa58adc93d13fe4a08abc9d9, brach aber auch mit curl vor Installerbytes ab (541.543.793 Byte fehlend). SDK-Hash nun im Repository gepinnt; begrenzte verifizierte HTTP-Teilbereiche ergänzen, sofern der offizielle Server Range unterstützt. Gesamthash bleibt zwingend. Keine unverifizierte Quelle oder ausgeschaltete TLS-Prüfung als Ersatz. Native Kompilation weiterhin offen.

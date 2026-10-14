@@ -75,7 +75,7 @@ async function download(url, path, expected) {
                     end = Math.min(size, start + step) - 1;
                   position = end + 1;
                   let completed = false;
-                  for (let attempt = 0; attempt < 5 && !completed; ++attempt) {
+                  for (let attempt = 0; attempt < 20 && !completed; ++attempt) {
                     try {
                       const r = await fetch(
                         url +
@@ -98,7 +98,16 @@ async function download(url, path, expected) {
                         r.headers.get("content-range") !==
                           "bytes " + start + "-" + end + "/" + size
                       )
-                        throw new Error("SDK-Teilbereich nicht bestätigt.");
+                        throw new Error(
+                          "SDK-Teilbereich " +
+                            start +
+                            "-" +
+                            end +
+                            ": HTTP " +
+                            r.status +
+                            ", Range " +
+                            r.headers.get("content-range"),
+                        );
                       const data = Buffer.from(await r.arrayBuffer());
                       if (data.length !== end - start + 1)
                         throw new Error("SDK-Teilbereich unvollständig.");
@@ -108,9 +117,19 @@ async function download(url, path, expected) {
                           await file.write(data, n, data.length - n, start + n)
                         ).bytesWritten;
                       completed = true;
+                      if (start % (32 * step) === 0)
+                        console.log(
+                          "SDK-Teilabruf bestätigt: " + start + "/" + size,
+                        );
                     } catch (e) {
-                      if (attempt === 4) throw e;
-                      await pause(1000);
+                      if (attempt === 19) throw e;
+                      console.log(
+                        "SDK-Teilabruf wiederholen: " +
+                          start +
+                          ", Versuch " +
+                          (attempt + 1),
+                      );
+                      await pause(Math.min(10000, 1000 * (attempt + 1)));
                     }
                   }
                 }

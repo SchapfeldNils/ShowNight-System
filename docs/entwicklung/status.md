@@ -1,5 +1,11 @@
 # Entwicklungsstatus
 
+## Streaming-Rechner: Setup-Anwendung
+
+14. Oktober 2026 ausdrücklich beauftragt. Deutscher Windows-x64-Installer, gebündelte Server-/Node-Laufzeit, Startmenüeinträge, optionale Desktopverknüpfung und datenerhaltende Deinstallation implementiert. Echte Installerprüfung in isolierter Windows-CI vorbereitet, noch kein bestandener Nachweis. [Installation, Build und Grenzen](s3-streaming-installer.md). Server-Vorabpaket und späteres Rendererpaket sind im Installer eindeutig gekennzeichnet. Umfangreiche Betreiber-/Gerätetests bleiben offen.
+
+S1 checks für Renderer-Commit 85230ad auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38527091254](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38527091254)). Der native Lauf 38527091273 scheiterte nach bestätigter offizieller SHA256 weiterhin an zeitweise nicht bestätigten SDK-Teilabrufen. Abrufprotokollierung und begrenzte Wiederholungen erweitert. Kein nativer Build-/Renderer-Erfolg behauptet.
+
 ## S3-04: native Renderer-Grundlage
 
 [Entwurfs-PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [aktueller CI-Prüfstand](https://github.com/SchapfeldNils/ShowNight-System/pull/13/checks). Erster nativer Lauf 38525323695 scheiterte am SDK-Download, obwohl die offizielle Prüfsumme aus CI erreichbar war; robuste Übertragung ergänzt. Keine native Erfolgsaussage vor tatsächlichem Abschluss. Lokale Vertragstests und Ziel-C++-Nachweis getrennt führen.

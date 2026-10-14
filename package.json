@@ -33,7 +33,9 @@
     "server:local": "tsx apps/local/src/server-main.ts",
     "renderer:build": "node scripts/renderer-build.mjs",
     "renderer:package": "node scripts/agent-package.mjs server-renderer",
-    "test:renderer": "tsx --test tests/renderer-native.ts"
+    "test:renderer": "tsx --test tests/renderer-native.ts",
+    "streaming:installer": "node scripts/streaming-installer.mjs",
+    "test:installer": "node scripts/streaming-installer-test.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
