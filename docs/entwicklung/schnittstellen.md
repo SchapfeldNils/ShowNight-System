@@ -3,6 +3,8 @@
 Stand: 9. Oktober 2026. Grundlage D003–D013, Architektur und Datenmodell.
 Status: implementierbarer technischer Startentwurf. Fachliche Schutzregeln sind verbindlich; Route-/Feldnamen können begründet angepasst werden. Codex erzeugt daraus versionierte Code-Schemas, OpenAPI und Protokolltests.
 
+S1 besitzt jetzt einen implementierten Teilvertrag: [s1-api.md](s1-api.md). Gemeinsame Zod-Schemas in `packages/contracts/src/index.ts`, Kern-OpenAPI unter authentifiziertem `/api/v1/openapi.json`. Direkter begrenzter Multipartupload und ersetzbare Vorbereitungs-WebSocket-Snapshots sind technische S1-Vereinfachungen. Die unten beschriebenen Live-/Agent-/Aktivierungsverträge sind noch Ziel für S2–S4; sie werden online nicht als funktionierende Ausgänge angeboten. Prüfergebnisse: [status.md](status.md).
+
 ## Systeme und Aufgaben
 | Verbindung | Transport | Aufgabe |
 | --- | --- | --- |
