@@ -26,6 +26,11 @@ import { authRoutes, actor } from "./auth.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
 import { packageRoutes } from "./packages.js";
+import { agentRoutes } from "./agents.js";
+import {
+  pairingInput,
+  diagnosticInput,
+} from "../../../packages/contracts/src/agent.js";
 import { HttpError, forbidden } from "./errors.js";
 export async function createApp(db: DB, cfg: Config, logging = false) {
   const app = Fastify({
@@ -72,6 +77,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   contentRoutes(app, db, cfg);
   mediaRoutes(app, db, cfg);
   packageRoutes(app, db, cfg);
+  agentRoutes(app, db);
   app.setErrorHandler((e, req, reply) => {
     let status = 500,
       code = "INTERNAL",
@@ -274,6 +280,8 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       "/shows": ["post", showCreate],
       "/shows/{id}": ["patch", showPatch],
       "/events/{id}/show-copies": ["post", showCopy],
+      "/devices/pairings": ["post", pairingInput],
+      "/devices/{id}/diagnostics": ["post", diagnosticInput],
     };
     const paths = Object.fromEntries(
       Object.entries(specs).map(([path, [method, schema]]) => [

@@ -1,5 +1,7 @@
 # Schnittstellen und Zustandsprotokoll – Entwicklungsstart
 
+S2-Prototyp verwendet die tatsächlich implementierten Version-1-Verträge in `packages/contracts/src/agent.ts`. Geräteverwaltung unter `/api/v1/devices` mit bestehenden Admin-/MFA-/CSRF-Regeln, gesonderte native Einmalpaarung `/api/agent/v1/pair`, Bearer-WSS `/api/agent/v1/ws`. Online-Allowlist ausschließlich Diagnose/No-op, keine unten geplanten Liveaktionen. HELLO/WELCOME, 5-Sekunden-Heartbeat, 15-Sekunden-Liveness, Verbindungs-Epoch, Widerruf und dauerhaft deduplizierte Dispatch-ID: [Agentanleitung](s2-agent.md). Ab Agent 0.2.1 optionale aktuelle Fähigkeiten im Heartbeat und begrenzte lokale VirtualDJ-Lesediagnose; Server ergänzt Empfangszeit/Freshness, keine SQL-Migration. [Konkreter Vertrag](s2-virtualdj-diagnose.md). S2 ist noch kein Nachweis der folgenden lokalen Live- und Hardwareverträge.
+
 Stand: 9. Oktober 2026. Grundlage D003–D013, Architektur und Datenmodell.
 Status: implementierbarer technischer Startentwurf. Fachliche Schutzregeln sind verbindlich; Route-/Feldnamen können begründet angepasst werden. Codex erzeugt daraus versionierte Code-Schemas, OpenAPI und Protokolltests.
 

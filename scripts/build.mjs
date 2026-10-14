@@ -2,6 +2,12 @@ import { build } from "esbuild";
 import { build as viteBuild } from "vite";
 import { mkdir, copyFile, readdir, unlink } from "node:fs/promises";
 await mkdir("dist/api", { recursive: true });
+// Remove only previously generated SQL files in this fixed build directory.
+for (const file of await readdir("dist/api"))
+  if (/^\d{3}_[a-z_]+\.sql$/.test(file)) await unlink("dist/api/" + file);
+for (const file of await readdir("apps/api/migrations"))
+  if (/^\d{3}_[a-z_]+\.sql$/.test(file))
+    await copyFile("apps/api/migrations/" + file, "dist/api/" + file);
 await build({
   entryPoints: [
     "apps/api/src/main.ts",
@@ -15,10 +21,15 @@ await build({
   packages: "external",
   format: "esm",
 });
-// Remove only previously generated SQL files in this fixed build directory.
-for (const file of await readdir("dist/api"))
-  if (/^\d{3}_[a-z_]+\.sql$/.test(file)) await unlink("dist/api/" + file);
-for (const file of await readdir("apps/api/migrations"))
-  if (/^\d{3}_[a-z_]+\.sql$/.test(file))
-    await copyFile("apps/api/migrations/" + file, "dist/api/" + file);
+await build({
+  entryPoints: ["apps/agent/src/main.ts"],
+  outfile: "dist/agent/main.js",
+  platform: "node",
+  target: "node24",
+  bundle: true,
+  format: "esm",
+  banner: {
+    js: 'import {createRequire} from "node:module"; const require=createRequire(import.meta.url);',
+  },
+});
 await viteBuild({ configFile: "apps/web/vite.config.ts" });

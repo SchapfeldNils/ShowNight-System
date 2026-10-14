@@ -17,6 +17,18 @@ export async function fixture(port = 55433) {
   const dir = resolve(".local/tests/" + randomBytes(8).toString("hex"));
   await mkdir(dir, { recursive: true });
   const dbPassword = randomBytes(24).toString("hex");
+  let databaseLog = "";
+  const require = createRequire(import.meta.url);
+  const binaries = await import(
+    pathToFileURL(
+      join(dirname(require.resolve("embedded-postgres")), "binary.js"),
+    ).href
+  );
+  const bin = (await binaries.default()) as {
+    postgres: string;
+    pg_ctl: string;
+    initdb: string;
+  };
   const pg = new EmbeddedPostgres({
     databaseDir: join(dir, "postgres"),
     user: "shownight",
@@ -25,11 +37,76 @@ export async function fixture(port = 55433) {
     persistent: true,
     authMethod: "scram-sha-256",
     postgresFlags: ["-h", "127.0.0.1"],
-    onLog: () => {},
-    onError: () => {},
+    onLog: (message) => {
+      databaseLog = (databaseLog + String(message)).slice(-4000);
+    },
+    onError: (error) => {
+      databaseLog = (databaseLog + String(error)).slice(-4000);
+    },
   });
-  await pg.initialise();
-  await pg.start();
+  // pg_ctl uses PostgreSQL's restricted-token launcher on Windows, including elevated CI accounts.
+  // Directly spawning postgres.exe under an elevated runner is rejected by PostgreSQL itself.
+  const postgresLog = join(dir, "postgres-server.log");
+  if (process.platform === "win32") {
+    pg.createDatabase = async (name) => {
+      if (!/^[a-zA-Z0-9_]+$/.test(name))
+        throw new Error("Ungültiger Testdatenbankname.");
+      const setup = database(
+        `postgres://shownight:${dbPassword}@127.0.0.1:${port}/postgres`,
+      );
+      try {
+        await setup.query('CREATE DATABASE "' + name + '"');
+      } finally {
+        await setup.end();
+      }
+    };
+    pg.start = async () => {
+      await promisify(execFile)(
+        bin.pg_ctl,
+        [
+          "-D",
+          join(dir, "postgres"),
+          "-l",
+          postgresLog,
+          "-o",
+          `-p ${port} -h 127.0.0.1`,
+          "-w",
+          "-t",
+          "15",
+          "start",
+        ],
+        { windowsHide: true, timeout: 20000 },
+      );
+    };
+    pg.stop = async () => {
+      try {
+        await promisify(execFile)(
+          bin.pg_ctl,
+          ["-D", join(dir, "postgres"), "status"],
+          { windowsHide: true, timeout: 5000 },
+        );
+      } catch (e) {
+        if ((e as { code: number }).code === 3) return;
+        throw e;
+      }
+      await promisify(execFile)(
+        bin.pg_ctl,
+        ["-D", join(dir, "postgres"), "-m", "fast", "-w", "-t", "15", "stop"],
+        { windowsHide: true, timeout: 20000 },
+      );
+    };
+  }
+  try {
+    await pg.initialise();
+    await pg.start();
+  } catch {
+    if (process.platform === "win32")
+      databaseLog += await readFile(postgresLog, "utf8").catch(() => "");
+    throw new Error(
+      "Synthetische PostgreSQL-Testinstanz startet nicht: " +
+        databaseLog.replaceAll(dbPassword, "[REDACTED]"),
+    );
+  }
   await pg.createDatabase("shownight_test");
   const cfg = config({
     DATABASE_URL: `postgres://shownight:${dbPassword}@127.0.0.1:${port}/shownight_test`,
@@ -66,17 +143,6 @@ export async function fixture(port = 55433) {
     { windowsHide: true, timeout: 30000 },
   );
   const videoBytes = await readFile(video);
-  const require = createRequire(import.meta.url);
-  const binaries = await import(
-    pathToFileURL(
-      join(dirname(require.resolve("embedded-postgres")), "binary.js"),
-    ).href
-  );
-  const bin = (await binaries.default()) as {
-    postgres: string;
-    pg_ctl: string;
-    initdb: string;
-  };
   return {
     pg,
     db,
