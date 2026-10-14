@@ -1,10 +1,16 @@
 # Entwicklungsstatus
 
-## In Arbeit: S3-06 Szenenentwürfe
+## Aktuell: S3-06 Szenenentwürfe als Software geprüft
 
-14. Oktober 2026, codex/s3-scene-drafts, [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), auf PR #16 aufgebaut. Szenentabelle/Migration 004, Text-/Rechteck-/Bildebenen, exklusive sitzungsgebundene Lease, automatische Entwurfsspeicherung, lokale Wiederherstellung, Einsatzzuordnung, unabhängige Kopie und Manifest-v2-Übertragung implementiert. Lokal Typprüfung/Build und 14 Unitprüfungen bestanden; eigene PostgreSQL-/SQLite-Szenensuite 5/5 und bisherige Paketsuite 9/9 bestanden. Erweiterte Rechte-/Browser-/Windows-CI-/Setupnachweise folgen gesondert. Kein Merge, kein Produktivupdate. [Bedienung und offene Grenzen](s3-szenenentwuerfe.md).
+14. Oktober 2026, codex/s3-scene-drafts, [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), [Entwurfs-PR #18](https://github.com/SchapfeldNils/ShowNight-System/pull/18), auf PR #16 aufgebaut. Szenentabelle/Migration 004, Text-/Rechteck-/Bildebenen, exklusive sitzungsgebundene Lease, automatische Entwurfsspeicherung, bewusste lokale Wiederherstellung, Einsatzzuordnung, unabhängige Kopie und Manifest-v2-Übertragung implementiert. [Bedienung und offene Grenzen](s3-szenenentwuerfe.md).
 
-## Aktuell: S3-05 Paketmedien als Software geprüft
+Abschließend geprüfter Commit 1c983fc: [S1 checks 38608548898](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38608548898) Windows/AMD64/ARM64 vollständig grün. 14 Units, Szenensuite 5/5, Paketsuite 9/9, Kernintegration 13/13, Windows-Agentensuite 8/8 und Offline-/DPAPI-/HTTPS-Suite 10/10 bestanden. Tatsächlicher Browserablauf mit geladenem Bild, konkurrierendem Fenster, Mobilansicht, unterbrochener Speicherung ohne Replay und bewusster Wiederherstellung bestanden; lokale und heruntergeladene CI-Desktop-/Mobilbilder visuell geprüft. Vorhandene Migrationen aus Schema 1/2 bis 4 mit Datenerhalt und Wiederholbarkeit geprüft. Container/Worker/Sicherung/isolierter Restore ebenfalls bestanden.
+
+[Native renderer 38608549592](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38608549592) vollständig grün: echter MSVC-/GStreamer-/Skia-Build, native Regression 5/5, portable Suite 6/6 und Setup-Lebenszyklus. [Server-Installer 38608548812](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38608548812) ebenfalls grün. Setup 0.3.6 mit Renderer heruntergeladen, alle Archiv-/Paket-/Setuphashes bestätigt und aktualisierte Anwenderanleitung im ZIP geprüft. Lokal dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe, 30.040.730 Bytes, SHA256 69bfefe23f81bd34208356bc853a7fbd61b330a334a1ad7a19f93bbef253a492, rendererIncluded=true, unsigniert. [Strukturierter Nachweis](nachweise/s3-szenenentwuerfe.json). Abschließender Nachweiscommit ändert nur Dokumentation und verwendet CI-Skip; geprüfter Code bleibt 1c983fc.
+
+Softwarebaustein für gespeicherte Szenenentwürfe; kein vollständiger Editor und keine native Szenenkomposition. Persönliche Regievorschau, Liveaktivierung, Show-GO, HDMI/Ton/WebRTC und reale Geräte-/Veranstaltungsabnahme bleiben offen. Kein Merge, keine Installation auf dem DJ-Rechner und kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
+
+## Historisch: S3-05 Paketmedien als Software geprüft
 
 14. Oktober 2026, Branch codex/s3-package-renderer, [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), [Entwurfs-PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16), abhängig von PR #13. Strikte Paketmedienaktion, aktuelle Paket-/Admin-/MFA-/CSRF-Prüfung, hashgeprüfte private Kopie, native Windows-Dateisperre und PNG-/VP8-Diagnose implementiert. Deutsche Auswahl, sichtbares Diagnoseende, direkter Paketimport im gebündelten CLI/Startmenü und kurze Anwenderanleitung. [Ablauf und Grenzen](s3-paketmedien.md).
 
