@@ -160,11 +160,14 @@ $timer.Add_Tick({
 })
 $refresh.Add_Click({ Read-Status })
 $start.Add_Click({
-    $mode = if ($Renderer) { 'run-renderer' } else { 'run' }
-    # Explicit user action: leave a visible console for regular shutdown.
-    Start-Process -FilePath $runtime -ArgumentList @(('"' + $entry + '"'),$mode) -WorkingDirectory $PSScriptRoot -WindowStyle Normal
-    $state.Text = 'Serverstart angefordert. Status nach einigen Sekunden aktualisieren.'
-    $start.Enabled = $false
+    $starter = if ($Renderer) { 'Server-Mit-Renderer-Start.cmd' } else { 'Server-Start.cmd' }
+    # Explicit action: the existing starter preserves failures with pause and
+    # leaves a visible console for regular shutdown with Ctrl+C.
+    try {
+        Start-Process -FilePath (Join-Path $PSScriptRoot $starter) -WorkingDirectory $PSScriptRoot -WindowStyle Normal
+        $state.Text = 'Serverstart angefordert. Status nach einigen Sekunden aktualisieren.'
+        $start.Enabled = $false
+    } catch { $state.Text = 'Startwerkzeug nicht verfügbar. Vollständige Installation und Anleitung prüfen.' }
 })
 $open.Add_Click({
     $uri = $null
