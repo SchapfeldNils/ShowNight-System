@@ -26,8 +26,23 @@ jobs:
           @('PATH','INCLUDE','LIB','LIBPATH','VCToolsInstallDir','VCToolsVersion','WindowsSdkDir','WindowsSDKVersion','UniversalCRTSdkDir','UCRTVersion') | ForEach-Object { $value = [Environment]::GetEnvironmentVariable($_); if ($value) { "$_=$value" >> $env:GITHUB_ENV } }
       - run: pnpm typecheck
       - run: pnpm build
+      - name: Restore verified SDK download
+        id: sdk-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .local/renderer-build/gstreamer-1.0-msvc-x86_64-1.28.8.exe
+            .local/renderer-build/gst.sha256sum
+          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v1
       - name: Build native renderer from pinned sources
         run: pnpm renderer:build
+      - name: Preserve verified SDK download
+        if: always() && steps.sdk-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .local/renderer-build/gstreamer-1.0-msvc-x86_64-1.28.8.exe
+          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v1
       - name: Test real native process without display or audio output
         run: pnpm test:renderer
       - run: pnpm renderer:package

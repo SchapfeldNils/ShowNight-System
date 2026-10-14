@@ -2,6 +2,8 @@
 
 Stand: 14. Oktober 2026. Betreiberanforderung: Das Anwenderpaket muss eine Windows-Installationsanwendung sein. Umsetzung auf Branch codex/s3-renderer-foundation, [PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12).
 
+Aktueller Paketstand: Setup mit nativer Renderer-Grundlage tatsächlich gebaut und geprüft, [Lauf 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652), [Nachweis/Prüfsumme](nachweise/s3-renderer.json). Lokal bereitgestellte ShowNight-Streaming-Setup-x64.exe enthält jetzt den Renderer; reine Softwarediagnose mit synthetischen Medien. Das folgende Server-Vorabpaket bleibt ein historischer/separater Buildstand. Noch keine vollständige Streaming-/Show-/Gerätefreigabe.
+
 ## Paket und Einrichtung
 
 ShowNight-Streaming-Setup-x64.exe installiert für den aktuellen Windows-Benutzer unter %LOCALAPPDATA%\Programs\ShowNight\Streaming. Der deutsche Assistent legt Startmenüeinträge und auf Wunsch eine Desktopverknüpfung an. Der lokale HTTPS-Server, seine Weboberfläche und Node 24.19.0 sind gebündelt. Kein npm, Compiler oder SDK beim Anwender erforderlich.
@@ -23,5 +25,7 @@ Windows → Installierte Apps → ShowNight Streaming oder Startmenü → Deinst
 Buildrechner Windows x64 mit Inno Setup 6: pnpm build, pnpm server:package, pnpm streaming:installer. Für das Rendererpaket vorher den nativen Renderer bauen, prüfen und mit pnpm renderer:package bündeln; anschließend pnpm streaming:installer --renderer. Ergebnis: dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe, SHA256 und build-info.json.
 
 pnpm test:installer läuft ausschließlich mit CI=true auf einem isolierten Windows-Runner. Er prüft echte stille Installation in einen temporären Ordner mit Leerzeichen, gebündelte Node-Laufzeit, Startmenüziel, tatsächliche lokale DPAPI-Ersteinrichtung in einem getrennten synthetischen Profil, Updatesperre bei laufender eigener EXE, Update und Deinstallation mit erhaltenen Einrichtungsdaten. Ein vorhandener AppId-Registryeintrag verhindert den Test. Protokolle und Ergebnis stehen im Actions-Artefakt. Dies ersetzt weder einen interaktiven Betreibertest noch Streaming-/LAN-/Hardwareabnahme. Aktuellen tatsächlichen Prüfstand in status.md beachten.
+
+Server-Vorabpaket für Runtime d101808 tatsächlich bestanden: [Actions-Lauf 38588768992](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768992), Inno Setup 6.7.1, [Nachweis und Prüfsummen](nachweise/s3-streaming-installer.json). Artefakt shownight-streaming-setup-server-preview enthält die Setup-EXE; Aufbewahrung 14 Tage. Lokal liegt die geprüfte Datei unter dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe. Noch ohne Renderer, Herausgebersignatur oder Veranstaltungsfreigabe.
 
 Installerwerkzeug: Inno Setup 6, kostenlos nach [Inno Setup License](https://github.com/jrsoftware/issrc/blob/main/license.txt). Compiler nur im Build, keine Zusatzkosten/Compilerinstallation beim Anwender. Der offizielle [GitHub-Windows-Runner](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md) enthält Inno Setup; dessen tatsächlich verwendeter Versionsstand wird im Buildlog ausgegeben. Paketbibliothekslizenzen bleiben im Programmordner enthalten.

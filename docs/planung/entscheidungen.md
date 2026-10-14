@@ -1,5 +1,13 @@
 # Entscheidungsprotokoll
 
+## D018 – Installationsanwendung für den Streaming-Rechner
+
+- Status: bestätigt durch ausdrücklichen Betreiberauftrag; Umsetzung/Nachweise getrennt
+- Datum: 14. Oktober 2026
+- Vorgabe: Das Anwenderpaket für den Streaming-Rechner wird als Windows-Installationsanwendung bereitgestellt.
+- Umsetzung: kostenlose Inno-Setup-EXE mit Server, eigener Node-Laufzeit und nach erfolgreichem nativen Build dem Renderer; deutsche Hinweise, Startmenü, datenerhaltende Deinstallation. Server-Vorabpaket ohne Renderer ausdrücklich gekennzeichnet.
+- Grenzen: Kein vorweggenommener HDMI-/Streaming-/Hardwarebeleg. Bestehende Fachrechte, Livefreigabe und Ausfallregeln bleiben verbindlich. [Ablauf und tatsächliche Grenzen](../entwicklung/s3-streaming-installer.md).
+
 ## D001 – Dokumentationsstand 2.0
 
 - Status: bestätigt als Ausgangsstand der bisherigen Planung
@@ -167,3 +175,8 @@ Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente 
 ### DEV-KI-02 – kontinuierliche lokale Entwicklungspruefung, 14. Oktober 2026
 
 Status: Betreiber beauftragt dauerhaft nach Aufgaben suchende lokale Unterstuetzung und ausdruecklich WhatsApp-Rueckmeldungen an sein privates Konto. Technischer Ablauf: getrennte lesende GPU-Pruefschleife ueber gespeicherte Git-Staende, begrenzte Aufgaben, belegte ungepruefte Kandidaten und private dauerhafte Rueckmeldungswarteschlange. Keine automatische Aenderung/Produktfreigabe, kein Cloudfallback, keine Aenderung bestaetigter F-/A-/Rechte-/Ausfallregeln. Kostenloser inoffizieller WhatsApp-Web-Weg mit QR-Verknuepfung; Kontosperrenwarnung vor dem Scan, Sitzung/Ziel ausserhalb Git/OneDrive. Echter Nachrichtenversand erst nach persoenlicher Verknuepfung nachweisbar. Ohne offene Verbindung/geklaerte Rueckmeldung keine weitere Modellarbeit. [Ablauf und Grenzen](../entwicklung/lokale-ki-dauerbetrieb.md).
+
+
+## PR-Bug-Korrekturen – technische Umsetzung, 14. Oktober 2026
+
+Status: ausdrücklich beauftragte Fehlerbehebung, keine neue Fachentscheidung. Bestehende gleichberechtigte Leitungsrechte, MFA-Pflicht und Rechtewiderruf werden durchgesetzt; Einladungsrecovery setzt keine eingerichteten Kennwörter zurück. Mailversandart dauerhaft gespeichert; neue Migration 5 vermeidet Kollision mit bestehender Szenenmigration 4. Alle offenen PRs erhalten Nachprüfung ihrer aktuellen Softwarestände; unbelegte Hardware-/Dauerbetriebs-/Zustellfälle bleiben offen. Kein autonomer PR-Merge oder Produktivupdate. [Nachweise](../entwicklung/pr-bug-abnahme.md).
