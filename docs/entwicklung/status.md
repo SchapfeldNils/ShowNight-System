@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Netcup-Priorität: Issue #31 Medienworker
+
+15. Oktober 2026, `codex/netcup-media-worker-claims`, auf gemergtem S1/main `cd71423`: veraltete Medienworker-Ergebnisse gegen neue Übernahmen absichern (F12/F28, Teil S1-07/A04). Implementierung und echte PostgreSQL-Regression in Arbeit, unabhängiger Review folgt. Kein Produktiv-/lokales Update und kein Merge. Dieser S1-Branch mit Migrationen 001/005 ist kein unmittelbarer Updatekandidat für den bestehenden vollständigen Schema-4-Server. [Ablauf, Prüfstand und Grenzen](netcup-worker-claims.md), [Netcup-Arbeitsliste](issue-arbeitsliste.md). Ältere Absätze unten beschreiben historische Teilstände.
+
 ## PR-Bug-Abnahme – 14. Oktober 2026
 
 Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).

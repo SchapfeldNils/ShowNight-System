@@ -23,7 +23,8 @@
     "local:setup": "tsx scripts/local.ts setup",
     "local:db": "tsx scripts/local.ts db",
     "licenses:inventory": "node scripts/licenses.mjs",
-    "test:review": "tsx --test tests/review-bugs-integration.ts"
+    "test:review": "tsx --test tests/review-bugs-integration.ts",
+    "test:worker-claims": "tsx --test tests/worker-claims-integration.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
