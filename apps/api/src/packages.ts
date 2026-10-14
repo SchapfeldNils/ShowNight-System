@@ -6,12 +6,21 @@ import {
   manifest,
   type Manifest,
 } from "../../../packages/contracts/src/index.js";
-import { transaction, type DB } from "./db.js";
+import { transaction, type DB, type Queryable } from "./db.js";
 import { eventAccess } from "./permissions.js";
 import { blobPath, fileHash } from "./media.js";
 import { HttpError, missing } from "./errors.js";
 import type { Config } from "./config.js";
-export async function checkManifest(db: DB, cfg: Config, m: Manifest) {
+import { Readable } from "node:stream";
+import { mediaAccess } from "./permissions.js";
+import { transferManifest } from "../../../packages/contracts/src/transfer.js";
+import { sceneDto } from "./scenes.js";
+import { sceneMediaIds } from "../../../packages/contracts/src/scene.js";
+import {
+  packageHeader,
+  packageBytes,
+} from "../../../packages/transfer/src/archive.js";
+export async function checkManifest(db: Queryable, cfg: Config, m: Manifest) {
   const errors = [...m.errors];
   for (const file of m.media) {
     const row = (
@@ -51,11 +60,18 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
             [eventId],
           )
         ).rows;
-        const requiredMedia = new Set<string>(
-          shows.flatMap((s) =>
+        const scenes = (
+          await c.query(
+            "SELECT sc.* FROM scenes sc JOIN shows s ON s.id=sc.show_id WHERE s.event_id=$1 ORDER BY sc.created_at,sc.id",
+            [eventId],
+          )
+        ).rows.map(sceneDto);
+        const requiredMedia = new Set<string>([
+          ...shows.flatMap((s) =>
             s.cues.flatMap((cue: { mediaIds: string[] }) => cue.mediaIds),
           ),
-        );
+          ...scenes.flatMap((scene) => sceneMediaIds(scene.definition)),
+        ]);
         const media = (
           await c.query(
             "SELECT * FROM media WHERE event_id=$1 OR id IN (SELECT sm.media_id FROM show_media sm JOIN shows s ON s.id=sm.show_id WHERE s.event_id=$1)",
@@ -66,13 +82,20 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
           .filter((m) => m.status !== "ready")
           .map((m) => `Datei ${m.name}: ${m.status}.`);
         const mediaIds = new Set(media.map((m) => m.id));
+        for (const scene of scenes)
+          for (const mediaId of sceneMediaIds(scene.definition))
+            if (!mediaIds.has(mediaId))
+              errors.push(
+                `Szene ${scene.definition.name}: Medienreferenz fehlt.`,
+              );
         for (const s of shows)
           for (const cue of s.cues)
             for (const mediaId of cue.mediaIds)
               if (!mediaIds.has(mediaId))
                 errors.push(`Einsatz ${cue.name}: Medienreferenz fehlt.`);
         const m = manifest.parse({
-          schemaVersion: 1,
+          schemaVersion: scenes.length ? 2 : 1,
+          ...(scenes.length ? { scenes } : {}),
           id: randomUUID(),
           eventId,
           createdAt: new Date().toISOString(),
@@ -144,5 +167,57 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
       "ONLINE_PREPARATION_ONLY",
       "Online werden Pakete vorbereitet. Liveaktivierung folgt am lokalen Server in S3/S4.",
     );
+  });
+  app.get("/api/v1/packages/:id/download", async (req, reply) => {
+    const p = (
+      await db.query("SELECT * FROM packages WHERE id=$1", [
+        id.parse((req.params as any).id),
+      ])
+    ).rows[0];
+    if (!p) missing();
+    await eventAccess(db, req.actor, p.event_id);
+    const checked = await checkManifest(db, cfg, manifest.parse(p.manifest));
+    if (checked.status !== "valid")
+      throw new HttpError(
+        409,
+        "PACKAGE_INVALID",
+        "Paket nicht vollständig. Bitte Manifest erneut prüfen.",
+      );
+    const parsed = transferManifest.safeParse(checked);
+    if (!parsed.success)
+      throw new HttpError(
+        409,
+        "PACKAGE_UNSUPPORTED",
+        "Dieses Paket überschreitet die Grenzen der lokalen Vorbereitungsablage.",
+      );
+    const paths = new Map<string, string>();
+    for (const f of parsed.data.media) {
+      // Every embedded file requires the same access as its ordinary download.
+      const row = await mediaAccess(db, req.actor, f.id);
+      paths.set(f.id, blobPath(cfg, row.blob_key));
+    }
+    let header;
+    try {
+      header = packageHeader(parsed.data);
+    } catch {
+      throw new HttpError(
+        413,
+        "PACKAGE_LIMIT",
+        "Paketmanifest überschreitet das Übertragungslimit.",
+      );
+    }
+    return reply
+      .type("application/octet-stream")
+      .header("Cache-Control", "no-store")
+      .header(
+        "Content-Disposition",
+        `attachment; filename="shownight-${parsed.data.id}.snpkg"`,
+      )
+      .header(
+        "Content-Length",
+        header.bytes.length +
+          parsed.data.media.reduce((n, f) => n + f.sizeBytes, 0),
+      )
+      .send(Readable.from(packageBytes(parsed.data, (id) => paths.get(id)!)));
   });
 }

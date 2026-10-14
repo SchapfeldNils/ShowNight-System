@@ -17,15 +17,32 @@ import {
   showPatch,
   showCopy,
   loginInput,
+  passwordChangeInput,
+  accountEmailInput,
+  accountTokenInput,
+  passwordResetRequestInput,
+  passwordResetInput,
   mfaInput,
   inviteInput,
 } from "../../../packages/contracts/src/index.js";
 import type { Config } from "./config.js";
 import { migrationVersions, type DB } from "./db.js";
 import { authRoutes, actor } from "./auth.js";
+import { accountRoutes } from "./account.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
 import { packageRoutes } from "./packages.js";
+import { agentRoutes } from "./agents.js";
+import { offlineRoutes } from "./offline.js";
+import { sceneRoutes } from "./scenes.js";
+import {
+  sceneCreate,
+  scenePatch,
+} from "../../../packages/contracts/src/scene.js";
+import {
+  pairingInput,
+  diagnosticInput,
+} from "../../../packages/contracts/src/agent.js";
 import { HttpError, forbidden } from "./errors.js";
 export async function createApp(db: DB, cfg: Config, logging = false) {
   const app = Fastify({
@@ -69,9 +86,13 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   });
   await app.register(websocket, { options: { maxPayload: 4096 } });
   authRoutes(app, db, cfg);
+  accountRoutes(app, db, cfg);
   contentRoutes(app, db, cfg);
+  sceneRoutes(app, db);
   mediaRoutes(app, db, cfg);
   packageRoutes(app, db, cfg);
+  agentRoutes(app, db);
+  offlineRoutes(app, db, cfg);
   app.setErrorHandler((e, req, reply) => {
     let status = 500,
       code = "INTERNAL",
@@ -267,13 +288,22 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   app.get("/api/v1/openapi.json", async () => {
     const specs: Record<string, [string, z.ZodType]> = {
       "/auth/login": ["post", loginInput],
+      "/account/password": ["post", passwordChangeInput],
+      "/account/email": ["post", accountEmailInput],
+      "/auth/email/confirm": ["post", accountTokenInput],
+      "/auth/password/request": ["post", passwordResetRequestInput],
+      "/auth/password/reset": ["post", passwordResetInput],
       "/auth/mfa/verify": ["post", mfaInput],
       "/auth/invitation": ["post", inviteInput],
       "/events": ["post", eventCreate],
       "/events/{id}": ["patch", eventPatch],
       "/shows": ["post", showCreate],
       "/shows/{id}": ["patch", showPatch],
+      "/shows/{id}/scenes": ["post", sceneCreate],
+      "/scenes/{id}": ["patch", scenePatch],
       "/events/{id}/show-copies": ["post", showCopy],
+      "/devices/pairings": ["post", pairingInput],
+      "/devices/{id}/diagnostics": ["post", diagnosticInput],
     };
     const paths = Object.fromEntries(
       Object.entries(specs).map(([path, [method, schema]]) => [

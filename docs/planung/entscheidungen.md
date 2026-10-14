@@ -1,18 +1,29 @@
 # Entscheidungsprotokoll
 
+## D018 – Installationsanwendung für den Streaming-Rechner
+
+- Status: bestätigt durch ausdrücklichen Betreiberauftrag; Umsetzung/Nachweise getrennt
+- Datum: 14. Oktober 2026
+- Vorgabe: Das Anwenderpaket für den Streaming-Rechner wird als Windows-Installationsanwendung bereitgestellt.
+- Umsetzung: kostenlose Inno-Setup-EXE mit Server, eigener Node-Laufzeit und nach erfolgreichem nativen Build dem Renderer; deutsche Hinweise, Startmenü, datenerhaltende Deinstallation. Server-Vorabpaket ohne Renderer ausdrücklich gekennzeichnet.
+- Grenzen: Kein vorweggenommener HDMI-/Streaming-/Hardwarebeleg. Bestehende Fachrechte, Livefreigabe und Ausfallregeln bleiben verbindlich. [Ablauf und tatsächliche Grenzen](../entwicklung/s3-streaming-installer.md).
+
 ## D001 – Dokumentationsstand 2.0
+
 - Status: bestätigt als Ausgangsstand der bisherigen Planung
 - Datum: 9. Oktober 2026
 - Inhalt: Gesamtkonzept, Spezifikation und Architektur wurden zusammengeführt. Sie beschreiben Anforderungen und offene Nachweise, keine fertige Software.
 - Grundlagen: [Gesamtkonzept](../gesamtkonzept.md), [Anforderungen](../anforderungen.md), [Architektur](../architektur.md).
 
 ## D002 – Planung in GitHub
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Auftrag: aktuelle Dokumentation im Repository ShowNight-System ablegen und anschließend die Planung dort dokumentieren.
 - Umsetzung: Markdown als bearbeitbarer Dokumentationsstand; Word als datierter Export. Offene Fragen werden getrennt von bestätigten Entscheidungen geführt.
 
 ## D003 – Entwicklungsübergabe
+
 - Status: bestätigt; ursprüngliche Startreihenfolge durch D013 präzisiert
 - Datum: 9. Oktober 2026
 - Antwort: alle zehn Optionen A bestätigt.
@@ -21,6 +32,7 @@
 - Offene Bedienfragen zur Veranstaltung bleiben davon unberührt.
 
 ## D004 – Veranstaltung anlegen
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A, 2A, 3A, 4A, 5A, 6A, 7C, 8A, 9A, 10A.
@@ -28,6 +40,7 @@
 - Ergebnis: Name als einzige erste Pflichtangabe, Vorlagen und anpassbare Module, persönliche Übersicht, feste Seitenleiste und dauerhaft erreichbarer Veranstaltungswechsel.
 
 ## D005 – Show anlegen und vorbereiten
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -35,6 +48,7 @@
 - Ergebnis: direkte Arbeitsfläche, aufklappbare Abschnitte, frei einfügbare Einsätze, Vorlagen, Einsatzhinweise, zugewiesene Platzhalter und Team-Prüfübersicht.
 
 ## D006 – Bedienung des Szeneneditors
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -42,6 +56,7 @@
 - Ergebnis: eingebetteter Editor, direkte Werkzeuge, kontextbezogene Eigenschaften, automatische Entwurfsspeicherung, eigene Wiedergabeprüfung und sichtbare Medienfehler.
 
 ## D007 – Bedienung der Live-Regie
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -49,6 +64,7 @@
 - Ergebnis: Vorschauauswahl getrennt von GO, eigener Direktbefehl, einmalige Übergangswahl, Übernahmesperre während des Übergangs, direkte zusätzliche Ansichten und sichtbare Eingriffe/Fehler.
 
 ## D008 – Daten, Versionen und Zusammenarbeit
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -56,6 +72,7 @@
 - Ergebnis: Veranstaltungskopien, bewusste Vorlagenupdates, Löschschutz, Papierkorb, explizite Textkonflikte, Wiederherstellungsentwürfe und nachvollziehbare Versionierung.
 
 ## D009 – Liveaktivierung vorbereiteter Datenstände
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -63,6 +80,7 @@
 - Ergebnis: geprüfte vollständige Aktivierung, laufende Ausgabe bleibt, veraltete Vorbereitung wird markiert, bewusste GO-Zielbestätigung bei Löschung/Verschiebung, atomare Rückkehr.
 
 ## D010 – Szenen, Einsätze, Aktionen und Durchläufe
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -71,6 +89,7 @@
 - Ergebnis: wiederverwendbare Szenen, Einstellungen je Einsatz, reine Aktionseinsätze, versionierte Bausteine und getrennte Durchläufe.
 
 ## D011 – Persönliche Vorschau und gemeinsamer Showablauf
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A.
@@ -78,6 +97,7 @@
 - Ergebnis: persönliche Vorschau, gemeinsames GO-Ziel, explizite Vorbereitung, erste gültige konkurrierende Änderung, gemeinsamer Vorhörkanal je Notebook.
 
 ## D012 – Durchläufe starten, wechseln und beenden
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Antworten: 1A bis 10A (Groß-/Kleinschreibung ohne Bedeutung).
@@ -85,6 +105,7 @@
 - Ergebnis: bewusster Start ohne ersten GO, isolierte Simulationsprobe, expliziter Showwechsel, vorbereitete Wechsel-/Abschlussaktionen und erhaltene Durchlaufhistorie.
 
 ## D013 – Agiler Start: Netcup-Server vor Windows-Agenten
+
 - Status: bestätigt durch ausdrücklichen Auftrag
 - Datum: 9. Oktober 2026
 - Auftrag: drei technische Übergabedokumente vorbereiten und Startprompt erstellen; Entwicklung mit Netcup-Server beginnen, danach Agent für die Rechner.
@@ -94,6 +115,7 @@
 - Technische Schemas/Bezeichner sind abgeleitete Implementierungsvorschläge, keine zusätzlich bestätigten Produktregeln.
 
 ## D014 – Systemdomain und Mailanbieter
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Systemdomain: eventmanagement.jungschuetzen-flueren.de.
@@ -102,6 +124,7 @@
 - Nicht bestätigt: bereits erfolgte DNS-/Postfachanlage, Testdomain, öffentliche Shopadresse oder erfolgreiche Zustellung.
 
 ## D015 – Vorhandenen Nginx verwenden
+
 - Status: vorhandener Nginx durch Benutzer bestätigt
 - Datum: 9. Oktober 2026
 - Folge: Bestehenden Reverse Proxy integrieren; keinen zusätzlichen Proxy als Voraussetzung aufbauen.
@@ -109,6 +132,7 @@
 - Containeraufteilung Anwendung/PostgreSQL/Worker bleibt technischer Startvorschlag; kein Fachmodul-Microservice-Zwang.
 
 ## D016 – Nginx-Container auf derselben VM und Portainer
+
 - Status: bestätigt
 - Datum: 9. Oktober 2026
 - Umgebung: Nginx als Docker-Container auf derselben Netcup-VM, Portainer vorhanden.
@@ -117,7 +141,37 @@
 - Offen: tatsächliches Proxy-Produkt/Image, Container-/Netzwerkname, Portainer-Deploymentmodus und neue Domainroute.
 - Anleitung: [Deployment](../entwicklung/deployment.md).
 
-## Weitere Entscheidungen
+## D017 – Softwarearbeiten fortsetzen, Funktionstests später nachholen
+
+- Status: bestätigt durch ausdrücklichen Betreiberauftrag
+- Datum: 10. Oktober 2026
+- Auftrag: „weitermachen mit den Themen, die wir schon bearbeiten können“; Funktionstests können nachgeholt werden.
+- Folge: Vorbereitbare Softwarepakete weiterentwickeln, ohne auf derzeit fehlende Geräte oder weitere Testrechner zu warten. Technische Build-/Integrationsprüfungen begleiten die Implementierung; spätere Bedien-/Geräte-/Hardwarefunktionstests bleiben ausdrücklich offen.
+- D013-Reihenfolge und vollständiger F01–F50-/A01–A30-Umfang bleiben bestehen. Keine Veranstaltungsfreigabe und keine als fertig bezeichnete reale Ausgabe ohne Nachweis. Die frühere pauschale Entwicklungssperre vor Gerätenachweisen aus den Arbeitspaketen wird durch diesen Auftrag präzisiert.
+- Erster weiterer Baustein: S3-01 Inhaltspakete mit lokaler SQLite-Ablage. Kein neues Rechte-/Ausfallmodell, keine Liveaktivierung und keine Ablösung des geplanten Windows-Renderers durch Browserausgabe.
+- Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
+
+## Weitere Entscheidungen nach D017
+
+### Native Szenenkomposition – technische Konkretisierung, 14. Oktober 2026
+
+Status: Umsetzungsteil des fortgesetzten Betreiberauftrags, keine neue Fachentscheidung. Bestehende Szenendefinition und Manifest v2 werden im vorhandenen nativen Prozess als stumme 640×360-Softwarediagnose komponiert. Gehashter privater Snapshot bis 1 MiB statt erweiterter IPC-Nachricht, explizite WIC-PNG-/JPEG-Decoder und begrenzte Bildbudgets. Globale Admin-Diagnose bleibt von persönlichen Vorschauen, Liveaktivierung, Show-GO und Geräteausgabe getrennt. Keine Rechte-/Ausfalländerung; [Bedienung und Grenzen](../entwicklung/s3-native-szenen.md).
+
+### S3-06 – technische Konkretisierung, 14. Oktober 2026
+
+Status: Umsetzungsteil des fortgesetzten Betreiberauftrags, keine neue Fachentscheidung. Erste Szenenentwürfe speichern Text/Rechteck/Bild getrennt von Livezuständen. Exklusive Lease je Szene/Sitzung (90 Sekunden, Heartbeat 20 Sekunden), eigene Revision, ausdrückliche lokale Entwurfswiederherstellung und versionierte Paketübertragung konkretisieren D006/D008/D010. Browser-SVG ist nur Entwurfsdarstellung; Konva und nativer Renderer bleiben Ziel. Keine geänderte Regie-, Rechte-, Aktivierungs- oder Ausfallregel. [Vertrag/Grenzen](../entwicklung/s3-szenenentwuerfe.md).
+
+### S3-04 – technischer Umsetzungsteil, 14. Oktober 2026
+
+Status: Betreiber beauftragt Renderer-Grundlage trotz fehlendem Testclient; umfangreiche Funktionstests später. Architektur bleibt C++/GStreamer/Skia. Erstes Paket verwendet einen isolierten stummen Offscreen-Diagnoseweg und lokale Prozessanbindung; Full HD/Direct3D11/HDMI/WebRTC/Ton/Regie-/Ausfallabnahme bleiben Ziele mit offenen Nachweisen. Keine bestätigten Fachrechte oder Ersatzregeln durch einen Prototyp ändern. [Anleitung](../entwicklung/s3-renderer.md), [Status](../entwicklung/status.md).
+
+### S3-03 – technische Umsetzung, 10. Oktober 2026
+
+Status: technische Konkretisierung des beauftragten lokalen Servers nach D017, keine neue Fachentscheidung. Opt-in LAN-Neueinrichtung mit bestimmter privater IPv4-Adresse und passendem HTTPS-IP-Zertifikat; Loopback bleibt Standard. Clientvertrauen/Firewall werden gezielt manuell eingerichtet. Keine zusätzlichen Fachrechte, Regieübernahme, Wildcard, Liveautoritätsumschaltung oder Änderungen am vorgesehenen Ausfallverhalten. Bestehende Profilumstellung und echte Mehrgeräte-/Hardwareabnahme bleiben offen. [Anleitung](../entwicklung/s3-lan.md), [Nachweise](../entwicklung/status.md).
+
+### S3-02 – technische Umsetzung, 10. Oktober 2026
+
+Status: Umsetzung im ausdrücklich beauftragten Arbeitspaket; keine neue Fachentscheidung. F30 verlangt vorbereitete interne Konten, MFA für Admin/Leitung, lokale Sperren, persönliche Offlineeinrichtung und gesonderte administrative Recovery. S3-02 konkretisiert dies mit einem separat signierten und zielverschlüsselten Kontenstand, CurrentUser-DPAPI und Loopback-HTTPS. Gemeinsame Quellidentitäten und vorhandene Veranstaltungsrollen bleiben erhalten. Lokale Änderungen werden vorgemerkt; Onlineabgleich und LAN bleiben offen. [Anleitung](../entwicklung/s3-lokalserver.md), [Status](../entwicklung/status.md).
 Neue Empfehlungen bleiben offen bis zur Bestätigung.
 
 Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente und gegebenenfalls ersetzte Entscheidung festhalten.
@@ -126,3 +180,11 @@ Für neue Einträge: Kennung, Datum, Status, Entscheidung, betroffene Dokumente 
 ## PR-Bug-Korrekturen – technische Umsetzung, 14. Oktober 2026
 
 Status: ausdrücklich beauftragte Fehlerbehebung, keine neue Fachentscheidung. Bestehende gleichberechtigte Leitungsrechte, MFA-Pflicht und Rechtewiderruf werden durchgesetzt; Einladungsrecovery setzt keine eingerichteten Kennwörter zurück. Mailversandart dauerhaft gespeichert; neue Migration 5 vermeidet Kollision mit bestehender Szenenmigration 4. Alle offenen PRs erhalten Nachprüfung ihrer aktuellen Softwarestände; unbelegte Hardware-/Dauerbetriebs-/Zustellfälle bleiben offen. Kein autonomer PR-Merge oder Produktivupdate. [Nachweise](../entwicklung/pr-bug-abnahme.md).
+
+## S3-08 – lokale Übersicht, technische Umsetzung, 14. Oktober 2026
+
+Status: ausdrücklich beauftragt, keine neue Fachentscheidung. Bestehende lokale Weboberfläche um MFA-geschützte Systemübersicht ergänzen, vorgeschalteter kleiner Windows-PowerShell-/Forms-Launcher für vorhandene Startbefehle und Datenpfade. Read-only DisplayConfig/CoreAudio-Inventar ist keine Ausgabezuordnung oder Hardwarefreigabe. Kein neues Desktopframework, keine geänderten Rechte/Regie-/Ausfallregeln. Fehlende Kameras/Streams/physische Ausgabe bleiben offen. [Ablauf und Nachweise](../entwicklung/s3-serveruebersicht.md).
+
+## Online-Kontowiederherstellung – 15. Oktober 2026
+
+Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit gestalteter Mail; auf Rückfrage erhält jedes Konto eine eigene bestätigte E-Mail-Adresse, auch bei reinem Benutzernamen. Bestätigung bleibt Voraussetzung für Wiederherstellung. MFA und Rollen bleiben erhalten. Geeignete Entwicklungsstände sollen zu einer sichtbaren Online-Version zusammengeführt/mergt werden; weitere lokale Fachentwicklung folgt danach. Ticketshop und Stage Timer bleiben offen und im Gesamtumfang. Keine Produktionsbereitstellung oder echte E-Mail durch die Softwareprüfungen.

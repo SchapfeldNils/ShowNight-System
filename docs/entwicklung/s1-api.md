@@ -1,5 +1,9 @@
 # Implementierter S1-Vertrag
 
+S3-06, 14. Oktober 2026: showbezogene Szenenentwürfe und exklusive Bearbeitungsleases mit vorhandenen Rechten, Additivmigration 004. GET/POST /shows/:id/scenes; POST/PATCH/DELETE /scenes/:id/lease; PATCH /scenes/:id. Manifest-v2 mit Szenen, v1 bleibt erhalten. Kein Produktivupdate; Online-VM weiterhin bestehender S2-Stand. [Konkreter Teilvertrag](s3-szenenentwuerfe.md).
+
+Ergänzung S3-02 vom 10. Oktober 2026: Admin/MFA kann GET /api/v1/offline/trust und POST /api/v1/offline/exports für getrennte, zielverschlüsselte Offline-Anmeldestände verwenden. Additive Entwicklungsmigration 003; produktiv bleibt Schema 2 bis zum gesonderten Update. [Vollständiger neuer Vertrag](s3-lokalserver.md). Die übrigen S1-Routen bleiben erhalten.
+
 Stand: 9. Oktober 2026. Führende Implementierung: `packages/contracts/src/index.ts`, `apps/api/src`. Der umfassendere [Schnittstellenentwurf](schnittstellen.md) bleibt das Ziel für spätere Pakete. Nur folgende Teilmenge ist jetzt implementiert.
 
 ## Reviewkorrekturen vom 14. Oktober 2026
@@ -32,7 +36,7 @@ Systemadmin ist in S1 ein breites Verwaltungsprofil; Eventleitung bleibt eventbe
 | POST `/events/:id/teams/:teamId/members` | Globale Mitgliedschaft nach Verwaltungsrecht; Konto und alle verknüpften Events/Privatshows müssen im Leitungsumfang sein |
 | GET/POST `/shows`; GET `/shows/:id` | Unabhängige Shows; mit `?eventId=` Veranstaltungskopien |
 | PATCH `/shows/:id` | expectedRevision, Name/Beschreibung/geordnete Einsätze; Medienbereich prüfen |
-| POST `/events/:id/show-copies` | sourceShowId/sourceRevision, neue Kopie und neue Cue-IDs, Herkunft pinnen |
+| POST `/events/:id/show-copies` | sourceShowId/sourceRevision, neue Showkennung, Cue-IDs innerhalb der Kopie erhalten, Herkunft pinnen |
 | POST `/shows/:id/teams` | Berechtigte Zuordnung zur ganzen Show; Leitung muss Event verwalten |
 | GET `/shows/:id/history` | Unveränderlicher Versionsverlauf im erlaubten Showbereich |
 
@@ -49,6 +53,8 @@ GET `/media?showId=` oder `?eventId=`, GET `/media/:id`, GET `/media/:id/content
 POST `/events/:id/packages` pinnt den vollständigen **S1-Vorbereitungsstand** in Repeatable Read. Manifest enthält Eventgrunddaten, Showtexte/Einsätze/Revisionen und Originaldateien mit Prüfsummen, Größe und geschützten Downloadpfaden. GET `/packages/:id/manifest` überprüft Originalbytes erneut. Fehlende/veränderte/unbereite Medien → invalid. Keine Zugangsdaten, Sessions oder MFA-Secrets exportieren. Fehlende Offlinekonten, Schriften, Renderer und Livezustand sind keine fertiggestellten S3-Funktionen. POST `/activations` weist Onlineaktivierung grundsätzlich mit 409 ab.
 
 ## Betrieb und Status
+
+Ergänzung S3-01: GET `/packages/:id/download` liefert das eingefrorene S1-Manifest mit seinen Originalmedien als `.snpkg`. Bestehende Sitzung/MFA sowie Event- und jede einzelne Dateiberechtigung erforderlich. Unvollständige/veränderte Medien → 409; nicht unterstützte Inhalte/Grenzen → 409, zu großes Manifest → 413. `Cache-Control: no-store`, feste Paketkennung als Downloadname, gestreamte Bytes mit exakter Länge. Kein Export von Identitäten/Cloud-Secrets, keine SQL-Migration und keine neue LIVE-Berechtigung. [Format, lokale Ablage und Grenzen](s3-paketablage.md). Diese Route gehört zum S3-Arbeitsbranch und ist noch nicht produktiv installiert.
 
 GET `/health/live`: Prozessstatus. GET `/health/ready`: DB erreichbar und genau Migrationsstand 1, andernfalls 503. App migriert beim Start nicht automatisch. CLI `migrate` serialisiert Einrichtung über Advisory Lock; weitere Migrationen müssen als neue Versionen ergänzt werden.
 

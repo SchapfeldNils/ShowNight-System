@@ -26,9 +26,16 @@ compose run --rm app node dist/api/cli.js demo
 compose up -d --wait app worker
 compose exec -T app node -e "fetch('http://127.0.0.1:3000/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 # Backup/restore through the exact documented shell scripts, into fresh volumes.
-sh deploy/backup.sh "$PWD/.local/container/stack.env" "$PWD/.local/container/backup"
-sed -e 's/shownight-ci$/shownight-restore/' -e 's/shownight-ci-database/shownight-restore-database/' -e 's/shownight-ci-media/shownight-restore-media/' .local/container/stack.env > .local/container/restore.env
-RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$PWD/.local/container/restore.env" "$PWD/.local/container/backup"
+backup_password=$(openssl rand -hex 32)
+mkdir .local/container/encrypted
+printf '%s' "$backup_password" > .local/container/backup-password
+sh deploy/backup-run.sh "$PWD/.local/container/stack.env" "$PWD/.local/container/encrypted" "$PWD/.local/container/backup-password"
+set -- .local/container/encrypted/shownight-*.snbackup
+[ "$#" -eq 1 ]
+printf '%s' "$backup_password" | node scripts/backup-vault.mjs open "$1" "$PWD/.local/container/recovered"
+unset backup_password
+sed -e 's/shownight-ci$/shownight-restore/' -e 's/shownight-ci-database/shownight-restore-database/' -e 's/shownight-ci-media/shownight-restore-media/' .local/container/recovered/stack.env > .local/container/restore.env
+RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$PWD/.local/container/restore.env" "$PWD/.local/container/recovered"
 docker compose --env-file .local/container/restore.env -f deploy/compose.yaml run --rm app node dist/api/cli.js migrate
 docker compose --env-file .local/container/restore.env -f deploy/compose.yaml run --rm app node --input-type=module -e "import pg from 'pg';import {createHash} from 'node:crypto';import{readFile}from'node:fs/promises';const db=new pg.Pool({connectionString:process.env.DATABASE_URL});const rows=await db.query('SELECT blob_key,sha256 FROM media');if(!rows.rowCount)throw Error('Medien fehlen');for(const m of rows.rows){const h=createHash('sha256').update(await readFile('/data/media/'+m.blob_key)).digest('hex');if(h!==m.sha256)throw Error('Hash falsch')}await db.end();"
 compose stop postgres

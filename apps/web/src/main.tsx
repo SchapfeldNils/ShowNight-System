@@ -9,8 +9,15 @@ import type {
 } from "../../../packages/contracts/src/index.js";
 import "./style.css";
 import { moduleKeys } from "../../../packages/contracts/src/index.js";
+import { Devices } from "./devices.js";
+import { OfflineExport } from "./offline.js";
+import { SceneDrafts } from "./scenes.js";
+import { Account } from "./account.js";
+import { Recovery } from "./recovery.js";
+import type { SceneRecord } from "../../../packages/contracts/src/scene.js";
 type Me = {
   id: string;
+  login: string;
   displayName: string;
   admin: boolean;
   csrfToken: string;
@@ -25,6 +32,9 @@ type Grant = {
   role: string;
 };
 let csrf = "";
+let sessionGeneration = 0;
+let activeUserId: string | null = null;
+const requests = new Set<AbortController>();
 class ApiError extends Error {
   constructor(
     public status: number,
@@ -38,22 +48,40 @@ async function api<T = any>(
   method = "GET",
   body?: unknown,
 ): Promise<T> {
-  const response = await fetch("/api/v1" + path, {
-    method,
-    credentials: "same-origin",
-    headers: {
-      ...(body instanceof FormData
+  const generation = sessionGeneration;
+  const controller = new AbortController();
+  const endsSession =
+    method === "POST" &&
+    ["/auth/logout", "/account/password", "/auth/password/reset"].includes(
+      path,
+    );
+  if (!endsSession) requests.add(controller);
+  try {
+    const response = await fetch("/api/v1" + path, {
+      signal: controller.signal,
+      method,
+      credentials: "same-origin",
+      headers: {
+        ...(body === undefined || body instanceof FormData
+          ? {}
+          : { "Content-Type": "application/json" }),
+        ...(method === "GET" ? {} : { "X-CSRF-Token": csrf }),
+      },
+      ...(body === undefined
         ? {}
-        : { "Content-Type": "application/json" }),
-      ...(method === "GET" ? {} : { "X-CSRF-Token": csrf }),
-    },
-    ...(body === undefined
-      ? {}
-      : { body: body instanceof FormData ? body : JSON.stringify(body) }),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new ApiError(response.status, data);
-  return data;
+        : { body: body instanceof FormData ? body : JSON.stringify(body) }),
+    });
+    const data = await response.json();
+    if (
+      generation !== sessionGeneration &&
+      !(endsSession && response.ok && activeUserId === null)
+    )
+      throw new Error("Sitzung beendet.");
+    if (!response.ok) throw new ApiError(response.status, data);
+    return data;
+  } finally {
+    requests.delete(controller);
+  }
 }
 function Field({
   label,
@@ -67,6 +95,41 @@ function Field({
   );
 }
 function App() {
+  const [recoveryRoute, setRecoveryRoute] = useState<{
+    mode: "request" | "reset" | "confirm";
+    token: string;
+  } | null>(() => {
+    if (location.hash.startsWith("#email-bestaetigen="))
+      return {
+        mode: "confirm",
+        token: location.hash.slice("#email-bestaetigen=".length),
+      };
+    if (location.hash.startsWith("#passwort-zuruecksetzen="))
+      return {
+        mode: "reset",
+        token: location.hash.slice("#passwort-zuruecksetzen=".length),
+      };
+    return null;
+  });
+  useEffect(() => {
+    if (recoveryRoute?.token)
+      history.replaceState(null, "", location.pathname + location.search);
+  }, [recoveryRoute?.token]);
+  useEffect(() => {
+    const navigate = () => {
+      for (const [prefix, mode] of [
+        ["#email-bestaetigen=", "confirm"],
+        ["#passwort-zuruecksetzen=", "reset"],
+      ] as const) {
+        if (location.hash.startsWith(prefix)) {
+          setRecoveryRoute({ mode, token: location.hash.slice(prefix.length) });
+          break;
+        }
+      }
+    };
+    window.addEventListener("hashchange", navigate);
+    return () => window.removeEventListener("hashchange", navigate);
+  }, []);
   const [me, setMe] = useState<Me | null>(null),
     [events, setEvents] = useState<EventRecord[]>([]),
     [eventId, setEventId] = useState(""),
@@ -109,10 +172,51 @@ function App() {
       current: any;
     } | null>(null);
   const active = events.find((e) => e.id === eventId);
+  function endSession(message = "Du bist abgemeldet.") {
+    sessionGeneration++;
+    for (const request of requests) request.abort();
+    requests.clear();
+    csrf = "";
+    activeUserId = null;
+    setMe(null);
+    setEvents([]);
+    setEventId("");
+    setPage("Übersicht");
+    setShows([]);
+    setLibrary([]);
+    setMedia([]);
+    setTeams([]);
+    setGrants([]);
+    setAllTeams([]);
+    setUsers([]);
+    setEditShow(null);
+    setEditEvent(null);
+    setPackageResult(null);
+    setDiag(null);
+    setJobs([]);
+    setConflict(null);
+    setInvitation("");
+    setInviteToken("");
+    setPassword("");
+    setChallenge(null);
+    setCode("");
+    setRecovery([]);
+    setStatusConnected(false);
+    setEventName("");
+    setShowName("");
+    setTeamName("");
+    setExistingTeam("");
+    setNewLogin("");
+    setNewDisplay("");
+    setError("");
+    setLoading(false);
+    setNotice(message);
+  }
   async function loadIdentity() {
     try {
       const u = await api<Me>("/me");
       csrf = u.csrfToken;
+      activeUserId = u.id;
       setMe(u);
       setEvents(await api("/events"));
     } catch (e) {
@@ -124,7 +228,10 @@ function App() {
     }
   }
   useEffect(() => {
-    void loadIdentity().catch((e) => setError(e.message));
+    const generation = sessionGeneration;
+    void loadIdentity().catch((e) => {
+      if (generation === sessionGeneration) setError(e.message);
+    });
   }, []);
   async function refresh() {
     const [e, l, t] = await Promise.all([
@@ -156,15 +263,20 @@ function App() {
     if (me?.admin) setUsers(await api("/users"));
   }
   useEffect(() => {
-    if (me) void refresh().catch((e) => setError(e.message));
+    const generation = sessionGeneration;
+    if (me)
+      void refresh().catch((e) => {
+        if (generation === sessionGeneration) setError(e.message);
+      });
     setEditShow(null);
     setEditEvent(null);
     setPackageResult(null);
   }, [eventId, me?.id]);
   useEffect(() => {
     if (!me) return;
+    const generation = sessionGeneration;
     const timer = setInterval(() => {
-      if (page === "Medien" && eventId)
+      if (generation === sessionGeneration && page === "Medien" && eventId)
         void api<MediaRecord[]>("/media?eventId=" + eventId)
           .then(setMedia)
           .catch(() => {});
@@ -173,19 +285,18 @@ function App() {
   }, [me, eventId, page]);
   useEffect(() => {
     if (!me) return;
+    const generation = sessionGeneration;
     let stopped = false;
     let ws: WebSocket | undefined;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let delay = 1000;
-    const endSession = () => {
+    const expireSession = () => {
       if (stopped) return;
       stopped = true;
-      csrf = "";
-      setMe(null);
-      setEventId("");
+      endSession("Deine Sitzung ist beendet. Bitte melde dich erneut an.");
     };
     const reconnect = () => {
-      if (stopped) return;
+      if (stopped || generation !== sessionGeneration) return;
       setStatusConnected(false);
       retry = setTimeout(async () => {
         // A failed handshake may hide an expired session behind code 1006.
@@ -193,7 +304,7 @@ function App() {
           await api("/me");
         } catch (e) {
           if (e instanceof ApiError && e.status === 401) {
-            endSession();
+            expireSession();
             return;
           }
         }
@@ -202,14 +313,15 @@ function App() {
       delay = Math.min(delay * 2, 15000);
     };
     const connect = () => {
-      if (stopped) return;
+      if (stopped || generation !== sessionGeneration) return;
       try {
         const socket = new WebSocket(
           `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/api/v1/status/ws`,
         );
         ws = socket;
         socket.onmessage = (e) => {
-          if (stopped || ws !== socket) return;
+          if (stopped || generation !== sessionGeneration || ws !== socket)
+            return;
           try {
             const snapshot = JSON.parse(e.data);
             if (
@@ -225,8 +337,9 @@ function App() {
           }
         };
         socket.onclose = (e) => {
-          if (stopped || ws !== socket) return;
-          if (e.code === 1008) endSession();
+          if (stopped || generation !== sessionGeneration || ws !== socket)
+            return;
+          if (e.code === 1008) expireSession();
           else reconnect();
         };
         socket.onerror = () => socket.close();
@@ -243,15 +356,17 @@ function App() {
     };
   }, [me?.id]);
   async function run(action: () => Promise<unknown>) {
+    const generation = sessionGeneration;
     setError("");
     setNotice("");
     setLoading(true);
     try {
       await action();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Aktion fehlgeschlagen.");
+      if (generation === sessionGeneration)
+        setError(e instanceof Error ? e.message : "Aktion fehlgeschlagen.");
     } finally {
-      setLoading(false);
+      if (generation === sessionGeneration) setLoading(false);
     }
   }
   async function save(path: string, mine: any) {
@@ -274,6 +389,30 @@ function App() {
       throw e;
     }
   }
+  if (recoveryRoute)
+    return (
+      <main className="login">
+        <div className="brand">
+          SHOW<span>NIGHT</span>
+        </div>
+        <Recovery
+          request={api}
+          mode={recoveryRoute.mode}
+          token={recoveryRoute.token}
+          done={(message) => {
+            if (recoveryRoute.mode === "reset" && message) endSession(message);
+            else {
+              setNotice(message);
+              setError("");
+              setChallenge(null);
+              setPassword("");
+              if (me) setPage("Mein Konto");
+            }
+            setRecoveryRoute(null);
+          }}
+        />
+      </main>
+    );
   if (!me)
     return (
       <main className="login">
@@ -290,6 +429,19 @@ function App() {
                 : "Willkommen"}
           </h1>
           <p>Onlinevorbereitung für Shows und Veranstaltungen.</p>
+          {!challenge && !inviteToken && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => {
+                setError("");
+                setNotice("");
+                setRecoveryRoute({ mode: "request", token: "" });
+              }}
+            >
+              Passwort vergessen?
+            </button>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -497,19 +649,6 @@ function App() {
         <div className="sidebar-bottom">
           <strong>{me.displayName}</strong>
           <small>{me.admin ? "Administration" : "Veranstaltungszugang"}</small>
-          <button
-            className="secondary"
-            onClick={() =>
-              void run(async () => {
-                await api("/auth/logout", "POST");
-                csrf = "";
-                setMe(null);
-                setEventId("");
-              })
-            }
-          >
-            Abmelden
-          </button>
         </div>
       </aside>
       <main>
@@ -520,7 +659,30 @@ function App() {
             </p>
             <h1>{page}</h1>
           </div>
-          <span className="badge">S1 · Onlinevorbereitung</span>
+          <div className="account-actions" aria-label="Kontoaktionen">
+            <button
+              className="secondary"
+              onClick={() => {
+                setPage("Mein Konto");
+                setError("");
+                setNotice("");
+              }}
+            >
+              Mein Konto
+            </button>
+            <button
+              className="secondary"
+              disabled={loading}
+              onClick={() =>
+                void run(async () => {
+                  await api("/auth/logout", "POST");
+                  endSession();
+                })
+              }
+            >
+              Abmelden
+            </button>
+          </div>
         </header>
         <div className="banner">
           {me.demo ? "DEMO · Synthetische Daten. " : ""}Gerätekanal simuliert ·
@@ -544,6 +706,22 @@ function App() {
             Statusverbindung unterbrochen – Wiederverbindung läuft. Angezeigte
             Veranstaltungsstände können veraltet sein.
           </p>
+        )}
+        {page === "Mein Konto" && (
+          <Account
+            request={api}
+            name={me.displayName}
+            login={me.login}
+            changePassword={async (currentPassword, newPassword) => {
+              await api("/account/password", "POST", {
+                currentPassword,
+                newPassword,
+              });
+              endSession(
+                "Passwort geändert. Bitte melde dich mit deinem neuen Passwort erneut an.",
+              );
+            }}
+          />
         )}
         {page === "Übersicht" && (
           <>
@@ -748,8 +926,10 @@ function App() {
                     <h2>Paketmanifest</h2>
                     <p>
                       Pinnt Event- und Showrevisionen sowie Medienprüfsummen.
-                      Vollständiger Offlineimport und Liveaktivierung folgen in
-                      S3/S4.
+                      Der Download enthält diesen Vorbereitungsstand und seine
+                      Medien. Lokaler Paketimport aktiviert keine Show;
+                      Offlinekonten werden getrennt vorbereitet. Livebetrieb
+                      folgt.
                     </p>
                     <button
                       disabled={loading}
@@ -783,6 +963,22 @@ function App() {
                         {packageResult.errors.map((e, i) => (
                           <p key={i}>{e}</p>
                         ))}
+                        {packageResult.status === "valid" && (
+                          <div>
+                            <a
+                              href={`/api/v1/packages/${packageResult.id}/download`}
+                              download
+                            >
+                              Paket mit Medien herunterladen
+                            </a>
+                            {me.admin && (
+                              <OfflineExport
+                                packageId={packageResult.id}
+                                csrf={me.csrfToken}
+                              />
+                            )}
+                          </div>
+                        )}
                         <details>
                           <summary>Gepinnte Inhalte anzeigen</summary>
                           <pre>{JSON.stringify(packageResult, null, 2)}</pre>
@@ -910,6 +1106,7 @@ function App() {
               <ShowEditor
                 key={editShow.id}
                 initial={editShow}
+                ownerId={me.id}
                 teams={teams}
                 onSave={(s) =>
                   run(() =>
@@ -1276,11 +1473,12 @@ function App() {
         )}
         {page === "Diagnose" && diag && (
           <>
+            <Devices api={api} run={run} />
             <section className="card">
-              <h2>Geräte · ausschließlich simuliert</h2>
+              <h2>S1-Diagnosebeispiele · ausschließlich simuliert</h2>
               <p>
-                Keine gepaarten Geräte, keine Bühnenbefehle. Reale Verbindungen
-                folgen in S2.
+                Diese Beispiele sind keine verbundenen Geräte und führen keine
+                Bühnenbefehle aus.
               </p>
               <div className="grid">
                 {diag.devices.map((d: any) => (
@@ -1432,6 +1630,7 @@ function ShowRow({ show, onEdit }: { show: ShowRecord; onEdit: () => void }) {
 }
 function ShowEditor({
   initial,
+  ownerId,
   teams,
   onSave,
   onAssign,
@@ -1440,6 +1639,7 @@ function ShowEditor({
   busy,
 }: {
   initial: ShowRecord;
+  ownerId: string;
   teams: Team[];
   onSave: (s: ShowRecord) => Promise<void>;
   onAssign: (teamId: string) => Promise<void>;
@@ -1451,6 +1651,8 @@ function ShowEditor({
     [media, setMedia] = useState<MediaRecord[]>([]),
     [team, setTeam] = useState(""),
     [error, setError] = useState("");
+  const [scenes, setScenes] = useState<SceneRecord[]>([]),
+    [sceneEditing, setSceneEditing] = useState(false);
   const scope = "showId=" + s.id;
   const load = async () => {
     try {
@@ -1461,6 +1663,8 @@ function ShowEditor({
   };
   useEffect(() => {
     void load();
+    const timer = setInterval(() => void load(), 3000);
+    return () => clearInterval(timer);
   }, [s.id]);
   function updateCue(index: number, values: Partial<Cue>) {
     setS({
@@ -1474,7 +1678,7 @@ function ShowEditor({
         <h2>
           {s.name} · {s.eventId ? "Eventkopie" : "Unabhängige Vorbereitung"}
         </h2>
-        <button className="secondary" onClick={onClose}>
+        <button className="secondary" disabled={sceneEditing} onClick={onClose}>
           Arbeitsfläche schließen
         </button>
       </div>
@@ -1495,6 +1699,22 @@ function ShowEditor({
         value={s.description}
         disabled={!s.canEdit}
         onChange={(e) => setS({ ...s, description: e.target.value })}
+      />
+      <SceneDrafts
+        showId={s.id}
+        ownerId={ownerId}
+        canEdit={s.canEdit}
+        media={media}
+        api={api}
+        onScenes={setScenes}
+        onEditing={setSceneEditing}
+        onSaved={(before, after) =>
+          setS((current) =>
+            current.revision === before
+              ? { ...current, revision: after }
+              : current,
+          )
+        }
       />
       <h3>Einsätze</h3>
       {s.cues.map((c, i) => (
@@ -1545,6 +1765,38 @@ function ShowEditor({
                 {media.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} · {m.status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Szene des Einsatzes
+              <select
+                value={c.sceneId ?? ""}
+                disabled={!s.canEdit || sceneEditing}
+                onChange={(e) => {
+                  const { sceneId: _old, ...rest } = c;
+                  setS({
+                    ...s,
+                    cues: s.cues.map((cue, index) =>
+                      index !== i
+                        ? cue
+                        : {
+                            ...rest,
+                            ...(e.target.value
+                              ? { sceneId: e.target.value }
+                              : {}),
+                          },
+                    ),
+                  });
+                }}
+              >
+                <option value="">Keine Bildaktion</option>
+                {scenes.map((scene) => (
+                  <option key={scene.id} value={scene.id}>
+                    {scene.definition.name} ·{" "}
+                    {s.cues.filter((cue) => cue.sceneId === scene.id).length}{" "}
+                    Verwendungen
                   </option>
                 ))}
               </select>
@@ -1626,7 +1878,10 @@ function ShowEditor({
           >
             Einsatz hinzufügen
           </button>
-          <button disabled={busy} onClick={() => void onSave(s)}>
+          <button
+            disabled={busy || sceneEditing}
+            onClick={() => void onSave(s)}
+          >
             Show speichern
           </button>
           <h3>Showmedien</h3>

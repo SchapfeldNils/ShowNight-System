@@ -1,6 +1,6 @@
 # S1-Zielabnahme auf Netcup
 
-Stand: 9. Oktober 2026, nach ausdrücklicher Betreiberfreigabe zur Ausführung des vorbereiteten Freischaltungsplans. S1 ist ein Entwicklungszwischenstand für Onlinevorbereitung, keine Veranstaltungs-/Hardwarefreigabe.
+Historischer S1-Zielnachweis vom 9. Oktober 2026, nach ausdrücklicher Betreiberfreigabe zur Ausführung des vorbereiteten Freischaltungsplans. **Aktueller Produktivstand seit 10. Oktober: S2/Schema 2, siehe [Update-/Agentnachweise](s2-netcup-update.md).** S1/S2 bleiben Entwicklungszwischenstände, keine Veranstaltungs-/Hardwarefreigabe. Folgende Tabelle dokumentiert den damals tatsächlich geprüften S1-Stand.
 
 ## Bereitgestellter Stand
 

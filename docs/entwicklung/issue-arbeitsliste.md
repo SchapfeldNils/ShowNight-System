@@ -1,0 +1,60 @@
+# Aktuelle Lieferliste – gemeinsame Online-Version
+
+15. Oktober 2026. Betreiber priorisiert einen sichtbaren Onlineablauf und autorisiert geeignete Merges. Keine weitere lokale Fachentwicklung vor diesem Lieferpunkt.
+
+| Lieferung | Tatsächlicher Stand | Nächster Nachweis |
+| --- | --- | --- |
+| Gemeinsamer Stand | PR30 + PR37 + aktuelles main auf eigenem Branch integriert | Gesamtprüfung, CI, ein neuer PR und geprüfter Merge |
+| Konto / Abmelden / Passwort | Implementierung plus erste echte Backendtests; alter Abmeldefehler reproduziert und korrigiert | Vollständiger Desktop-/Mobilbrowsernachweis |
+| E-Mail / Passwort vergessen | Eigene bestätigte Mail je Konto beauftragt, Backend und gestaltete Vorlage umgesetzt, SMTP-Verbindung ohne Versand bestätigt | Browser, Sicherheitsreview und echte Zustellung erst nach Freigabe |
+| Ticketshop F38–F43 | Offen, weiterhin Zielumfang | Eigenes sichtbares Fachpaket nach nutzbarer Onlinegrundlage |
+| Stage Timer F20 | Offen, weiterhin Zielumfang | Vorbereitung/Anzeige/Steuerung und spätere tatsächliche Bühnensicht getrennt abnehmen |
+| Lokaler Betrieb / Geräte | Vorhandene Codebausteine erhalten | Weiterentwicklung erst nach sichtbarer Online-Version; Hardwarebelege bleiben offen |
+
+[Zusammenführung](online-konsolidierung.md), [Bedienablauf](online-bedienablauf.md). Frühere Tabellen unten sind historische Einzelstände und ersetzen keinen aktuellen Liefernachweis.
+
+# Offene GitHub-Issues – bearbeitbarer Stand
+
+Neuer Szenenstand, 15. Oktober 2026: [Issue #29 / PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30) komponiert vorbereitete Text-/Rechteck-/PNG-/JPEG-Szenen nativ als stumme Softwarediagnose. Finale CI für `f807645` vollständig erfolgreich (Windows/AMD64/ARM64, native Pixel-/Browser-/Paketprüfungen und Installer). Setup 0.3.10 mit Renderer tatsächlich hash-/versionsgeprüft bereitgestellt, nicht installiert. Unabhängiger vollständiger Review sowie Nachprüfung der bestätigten UUID-Korrektur ohne verbleibende Befunde abgeschlossen. [Aktueller Nachweis und Grenzen](s3-native-szenen.md). Nächster Baustein: vorbereiteter Showablauf; reale Geräte-/Full-HD-/Audio-/Mehrclientabnahmen bleiben offen. Folgende Paketstände sind historische Momentaufnahmen.
+
+Neuer Korrekturstand, 14. Oktober 2026: [Issue #27 / PR #28](https://github.com/SchapfeldNils/ShowNight-System/pull/28) setzt Technikvergabe lokal auf Adminrechte; SQLite-/MFA-/HTTP- und Browserregressionen sowie unabhängiger Full-Diff-Review bestanden. CI vollständig erfolgreich; Setup 0.3.9 mit Renderer heruntergeladen und hashgeprüft, nicht installiert. [Aktueller Nachweis](s3-offline-kontenrechte.md). Die folgende Zehn-Issue-Liste und PR-Tabelle sind historische Momentaufnahmen. PR #25 bleibt ungemergte Ausgangsbasis; PR #23 hat aktuell einen Mergekonflikt, PR #19 ist geschlossen und ungemergt. Lokaler Betrieb bereits 0.3.8, durch dieses Paket unverändert.
+
+15. Oktober 2026: [Netcup-Releasekandidat und isolierte Updateprüfung](netcup-release-preflight.md) zu Issue #36 in Arbeit. Vollständige Basis PR #35 plus Worker-Korrektur PR #34; realer Netcup-Bestand lesend bestätigt (ARM64, Schema 4, Mail aus). Rehearsal-CI 38649908680 AMD64/ARM64 und vollständige S1-CI 38649908576 Windows/AMD64/ARM64 erfolgreich. Kein Update/Merge. Frühere Hinweise zur fehlenden Workerintegration unten sind durch diese bewusste Integration im neuen Branch überholt; frühere Nachweise gelten weiterhin nur für ihre exakten Runtimecommits.
+
+15. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; S1-CI 38648600570 vollständig erfolgreich auf Windows/AMD64/ARM64 einschließlich echtem verschlüsseltem Containerrestore. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
+
+14. Oktober 2026. Betreiberauftrag: alle offenen Issues stückweise lösen. GitHub-Suche lieferte zehn Issues. Diese Liste beschreibt tatsächliche Teilstände und nächste Schritte; sie schließt keine Issues und bestätigt keinen Merge oder Gerätebetrieb.
+
+| Issue                                                                             | Nachgewiesener Softwarestand                                                                                                                                | Nächster offener Schritt                                                                                                                                               |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#1](https://github.com/SchapfeldNils/ShowNight-System/issues/1) S1               | Vorhandener PR #2, dokumentierte Online-/VM-/Restoreprüfung                                                                                                 | Review/Merge durch Betreiber; verbleibende große Zieluploads/Last und vollständiger VM-Neustart gesondert nachweisen                                                   |
+| [#3](https://github.com/SchapfeldNils/ShowNight-System/issues/3) Sicherung        | PR #22 mit verschlüsselter portabler Konfiguration/DB/Medien; S1 checks 38626408226 vollständig grün samt echtem Containerrestore                           | Providerbackup konkret erheben, unabhängiges Sicherungs-/Kennwortziel festlegen, Zeitplan/Monitoring/Retention und echten Restore einrichten/nachweisen                |
+| [#4](https://github.com/SchapfeldNils/ShowNight-System/issues/4) S2               | Vorhandener PR #5; Agentgrundlage und dokumentierter realer lesender VirtualDJ-Nachweis                                                                     | Reale Steuerungs-/Daslight-/Controller-/FLX4-/Routingabnahmen, normaler Windows-DNS-Agentstart und Begrenzung Plugin-Erreichbarkeit; keine fiktiven Adapter als Lösung |
+| [#6](https://github.com/SchapfeldNils/ShowNight-System/issues/6) Paketablage      | PR #7 mit dokumentierter vollständiger Softwareprüfung                                                                                                      | Review/Merge; weitergehender S3/S4-Scope wird dadurch nicht als fertig erklärt                                                                                         |
+| [#8](https://github.com/SchapfeldNils/ShowNight-System/issues/8) Offlinekonten    | PR #9 mit dokumentierter Softwareprüfung; aktuelle Offline-Suite lokal erneut 10/10 bestanden                                                               | Review, tatsächliche Betreiberbereitstellung/Bedienung und spätere LAN-/Hardwareabnahme                                                                                |
+| [#10](https://github.com/SchapfeldNils/ShowNight-System/issues/10) LAN            | PR #11 mit dokumentierter Softwareprüfung                                                                                                                   | Review; mehrere echte Clients, Vertrauen/Firewall/Internettrennung, Profilwechsel/Zertifikatsrotation als Folgearbeit                                                  |
+| [#12](https://github.com/SchapfeldNils/ShowNight-System/issues/12) Renderer       | PR #13 mit nativem Software-/Setupnachweis                                                                                                                  | Review; echte HDMI-/Ton-/Mehrmonitor-/Last-/Synchronitätsprüfung am Aufbau                                                                                             |
+| [#15](https://github.com/SchapfeldNils/ShowNight-System/issues/15) Paketmedien    | PR #16, Softwarecheckliste erfüllt und dokumentiert                                                                                                         | Review/Merge; keine Geräte-/Showfreigabe aus stummer Diagnose ableiten                                                                                                 |
+| [#17](https://github.com/SchapfeldNils/ShowNight-System/issues/17) Szenenentwürfe | PR #18, Softwarecheckliste erfüllt; nachfolgende PR-Bugkorrekturen auf GitHub vorhanden                                                                     | Review/Merge; vollständiger Editor/native Szenen und Showbetrieb sind separate Folgepakete                                                                             |
+| [#20](https://github.com/SchapfeldNils/ShowNight-System/issues/20) Erststart      | PR #21 jetzt mit konkreter Starterkorrektur, lesendem Status, lokal 18/18 Units plus 10/10 Offlineintegration; GitHub-Installerlauf 38625375071 erfolgreich | Review, Betreiberinstallation/Export/Import und lokaler Start; Runtime c83aacc vollständig geprüft, Setup 0.3.7 lokal hashbestätigt                                    |
+
+Softwareänderungen je eigenem Branch/PR, keine eigenständigen Merges, keine pauschale Umdeklarierung praktischer Abnahmen. Unabhängige Hardware-/Betriebsvoraussetzungen blockieren ihre Nachweise, nicht weitere vorbereitbare Softwarearbeit (D017). Die Liste erweitert nicht die einzelnen Issues auf sämtliche noch offenen F01–F50-Module.
+
+## Aktuelle vorhandene PR-Köpfe lesend geprüft
+
+14. Oktober 2026, 21:47 MESZ: alle folgenden PRs weiterhin ungemergt und laut GitHub ohne Mergekonflikt. Die aufgeführten Prüfungen waren vollständig erfolgreich; das ist kein neu durchgeführtes fachliches Review oder eine Freigabe.
+
+| PR  | Head    | Erfolgreiche S1-Prüfung                                                                   | Weitere erfolgreiche Prüfungen            |
+| --- | ------- | ----------------------------------------------------------------------------------------- | ----------------------------------------- |
+| #2  | ffefe65 | [38619509706](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38619509706) | –                                         |
+| #5  | 1209c4a | [38620309245](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620309245) | –                                         |
+| #7  | 7584902 | [38620567893](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620567893) | –                                         |
+| #9  | 81e2e7a | [38620840287](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38620840287) | –                                         |
+| #11 | 80a1370 | [38621008051](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38621008051) | –                                         |
+| #13 | 2e94727 | [38621254261](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38621254261) | Native 38621254253, Installer 38621254440 |
+| #16 | a74a04e | [38622059854](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38622059854) | Native 38622059894, Installer 38622059844 |
+| #18 | 4d5e5b2 | [38622819910](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38622819910) | Native 38622819906, Installer 38622819928 |
+
+Zusätzliche normale Windows-DNS-/HTTPS-Prüfung: öffentliche Systemdomain über IPv4/IPv6 aufgelöst, Readiness ohne Prozess-IP-Vorgabe und mit vollständiger TLS-Prüfung 200/Schema 4. Kein Server-/DNS-/Hostswechsel durch diese Arbeit. Echter Agentstart/WSS-Nachweis bleibt offen. Frühere Angaben zu Schema 2 beschreiben historische Teilstände. Die Herkunft des aktuellen produktiven Images wurde in dieser Nachprüfung nicht erhoben.
+
+Issue #20: vollständige CI und lokal hashgeprüftes Setup 0.3.7 jetzt in [Erststartnachweis](s3-erster-start.md) dokumentiert.

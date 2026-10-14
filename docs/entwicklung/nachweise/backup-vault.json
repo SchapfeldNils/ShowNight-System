@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-14",
+  "issue": 3,
+  "pullRequest": 22,
+  "runtimeCommit": "37c1d1045e1eded09f19e3c91490f4702b0e748d",
+  "local": {
+    "platform": "Windows x64",
+    "typecheck": "passed",
+    "vaultTests": "3/3 passed",
+    "shellSyntax": "backup.sh, backup-run.sh, container-smoke.sh passed",
+    "dockerAvailable": false
+  },
+  "ci": {
+    "s1Checks": {
+      "runId": 38626408226,
+      "platforms": ["Windows x64", "Linux amd64", "Linux arm64"],
+      "result": "success"
+    },
+    "serverInstaller": {
+      "runId": 38626408257,
+      "result": "success"
+    },
+    "nativeRenderer": {
+      "runId": 38626408225,
+      "result": "success"
+    }
+  },
+  "provenInIsolatedCi": [
+    "Authenticated encrypted DB/media/config file recovery",
+    "Password/tamper/truncation rejection and existing output preservation",
+    "Linux stopped-service refusal and restart/error behavior",
+    "Real maintenance runner, PostgreSQL dump, encrypted archive and decryption",
+    "Restore to new DB/media volumes and actual restored media hash comparison",
+    "Readiness during database failure and recovery"
+  ],
+  "notProven": [
+    "Actual provider backup coverage and restore",
+    "Independent backup/password destination",
+    "Production timer, failure or missed-run monitoring",
+    "Retention or external delivery",
+    "Periodic production-data restore"
+  ],
+  "productionChanged": false,
+  "issueClosed": false
+}

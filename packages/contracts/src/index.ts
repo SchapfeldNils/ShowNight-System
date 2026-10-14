@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sceneRecord } from "./scene.js";
 export const id = z.uuid();
 export const name = z.string().trim().min(1).max(200);
 export const password = z.string().min(12).max(256);
@@ -32,6 +33,7 @@ export const cue = z.strictObject({
   notes: z.string().max(5000).default(""),
   enabled: z.boolean().default(true),
   mediaIds: z.array(id).max(30).default([]),
+  sceneId: id.optional(),
 });
 export const showCreate = z.strictObject({
   name,
@@ -63,6 +65,23 @@ export const loginInput = z.strictObject({
   login: z.string().max(120),
   password: z.string().max(256),
 });
+export const passwordChangeInput = z.strictObject({
+  currentPassword: z.string().min(1).max(256),
+  newPassword: password,
+});
+export const accountEmailInput = z.strictObject({
+  email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
+  currentPassword: z.string().min(1).max(256),
+});
+export const accountTokenInput = z.strictObject({
+  token: z.string().min(20).max(100),
+});
+export const passwordResetRequestInput = z.strictObject({
+  identifier: z.string().trim().toLowerCase().min(1).max(254),
+});
+export const passwordResetInput = accountTokenInput.extend({
+  newPassword: password,
+});
 export const mfaInput = z.strictObject({
   challenge: z.string().min(20).max(100),
   code: z.string().min(6).max(40),
@@ -78,43 +97,61 @@ export const mailInput = z.strictObject({
   text: z.string().min(1).max(20000),
 });
 export const mediaStatus = z.enum(["processing", "ready", "failed"]);
-export const manifest = z.strictObject({
-  schemaVersion: z.literal(1),
-  id,
-  eventId: id,
-  createdAt: z.iso.datetime(),
-  eventRevision: z.int().positive(),
-  event: z.object({
-    name: z.string(),
-    date: z.string().nullable(),
-    location: z.string(),
-    modules,
-  }),
-  shows: z.array(
-    z.object({
-      id,
+export const manifest = z
+  .strictObject({
+    schemaVersion: z.union([z.literal(1), z.literal(2)]),
+    id,
+    eventId: id,
+    createdAt: z.iso.datetime(),
+    eventRevision: z.int().positive(),
+    event: z.object({
       name: z.string(),
-      description: z.string(),
-      revision: z.int().positive(),
-      sourceShowId: id.nullable(),
-      sourceRevision: z.int().positive().nullable(),
-      cues: z.array(cue),
+      date: z.string().nullable(),
+      location: z.string(),
+      modules,
     }),
-  ),
-  media: z.array(
-    z.object({
-      id,
-      name: z.string(),
-      sha256: z.string().regex(/^[a-f0-9]{64}$/),
-      sizeBytes: z.number().positive(),
-      mime: z.string(),
-      downloadPath: z.string(),
-    }),
-  ),
-  status: z.enum(["valid", "invalid"]),
-  errors: z.array(z.string()),
-  liveActivationSupported: z.literal(false),
-});
+    shows: z.array(
+      z.object({
+        id,
+        name: z.string(),
+        description: z.string(),
+        revision: z.int().positive(),
+        sourceShowId: id.nullable(),
+        sourceRevision: z.int().positive().nullable(),
+        cues: z.array(cue),
+      }),
+    ),
+    media: z.array(
+      z.object({
+        id,
+        name: z.string(),
+        sha256: z.string().regex(/^[a-f0-9]{64}$/),
+        sizeBytes: z.number().positive(),
+        mime: z.string(),
+        downloadPath: z.string(),
+      }),
+    ),
+    status: z.enum(["valid", "invalid"]),
+    errors: z.array(z.string()),
+    liveActivationSupported: z.literal(false),
+    scenes: z.array(sceneRecord).max(2000).optional(),
+  })
+  .superRefine((m, ctx) => {
+    if (
+      m.schemaVersion === 1 &&
+      (m.scenes !== undefined ||
+        m.shows.some((s) => s.cues.some((c) => c.sceneId)))
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Szenen benötigen Paketversion 2.",
+      });
+    if (m.schemaVersion === 2 && !m.scenes?.length)
+      ctx.addIssue({
+        code: "custom",
+        message: "Paketversion 2 benötigt Szenen.",
+      });
+  });
 export type Cue = z.infer<typeof cue>;
 export type Manifest = z.infer<typeof manifest>;
 export const eventRecord = z.strictObject({

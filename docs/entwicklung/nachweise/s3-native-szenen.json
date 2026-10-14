@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-15",
+  "issue": 29,
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/30",
+  "branch": "codex/s3-native-scene-composition",
+  "baseCommit": "1ac77585b18e5749f6f140f2eccfbda2b74f17c6",
+  "runtimeCommit": "f807645eee6a4e199b9aa0027b7e90b7313cb55f",
+  "scope": "F07/F08/F09/F12/F17/F25/F28/F30; partial A02/A04/A06/A18",
+  "local": {
+    "platform": "Windows x64",
+    "node": "24.19.0",
+    "typecheck": "passed",
+    "build": "passed",
+    "units": {
+      "passed": 45,
+      "failed": 0
+    },
+    "sceneContractCasesIncluded": 2,
+    "sceneBackendCasesIncluded": 8,
+    "existingBrowser": {
+      "passed": 6,
+      "mode": "synthetic API/headless Edge"
+    },
+    "nativePixelHelperRoundtrip": "passed; test helper only, not a native proof",
+    "nativeExecution": "not_run locally; MSVC/native proof in CI required",
+    "checkedSourceCommit": "23e21c4fffd57204afd4e894bd9103962d78a06c",
+    "finalTypeScriptUnchanged": true
+  },
+  "independentReview": {
+    "status": "complete; P2 corrected and independently re-reviewed",
+    "reviewer": "non-implementing subagent windows_io_review",
+    "scope": "complete package diff",
+    "confirmedFindings": [
+      {
+        "priority": "P2",
+        "file": "apps/renderer/src/package_scene.h",
+        "scenario": "Valid uppercase layer UUID preserved by API/snapshot rejected by native lowercase identifier",
+        "resolution": "Local case-insensitive layer UUID validation; path identifiers unchanged; real native pixel fixture includes uppercase layer ID"
+      }
+    ],
+    "reviewedFinalCommit": "f807645eee6a4e199b9aa0027b7e90b7313cb55f",
+    "remainingConfirmedFindings": 0,
+    "independentlyRepeated": [
+      "12/12 scene/media/backend tests",
+      "typecheck",
+      "diff whitespace check",
+      "full initial CI read-only verification"
+    ],
+    "finalEvidenceFollowup": "Final Markdown/JSON/PNG evidence and all final CI independently confirmed; actual setup size/SHA256/ProductVersion and PNG hash independently verified; no remaining confirmed findings"
+  },
+  "ci": {
+    "s1": {
+      "status": "success",
+      "runId": 38644596793
+    },
+    "serverInstaller": {
+      "status": "success",
+      "runId": 38644596764
+    },
+    "nativeRenderer": {
+      "status": "success",
+      "runId": 38644596762,
+      "jobId": 116128566795,
+      "nativeTests": "6/6 including uppercase layer UUID through actual API/snapshot/pixel path",
+      "portableTests": "7/7",
+      "installerLifecycle": "passed"
+    }
+  },
+  "limits": [
+    "No operator installation, Netcup update or merge",
+    "Operated local installation remains 0.3.8",
+    "Software diagnostics only; no physical display/audio/mail output",
+    "No personal direction preview, live activation or show GO",
+    "No animation/video/camera scene layers, full editor/font parity or GPU/performance proof",
+    "No full acceptance of the listed F/A requirements",
+    "Operator-specified LocalAI helper missing; no LocalAI output claimed",
+    "PNG source alpha intermediate values not separately pixel-tested; layer opacity is tested"
+  ],
+  "next": "Connect a prepared show flow to the existing native foundation with ordered/deduplicated commands and equal direction clients",
+  "priorRuntimeProof": {
+    "commit": "23e21c4fffd57204afd4e894bd9103962d78a06c",
+    "ci": {
+      "s1": {
+        "runId": 38643191849,
+        "status": "success"
+      },
+      "serverInstaller": {
+        "runId": 38643191840,
+        "jobId": 116123553936,
+        "status": "success"
+      },
+      "nativeRenderer": {
+        "runId": 38643191838,
+        "status": "success",
+        "jobId": 116123553861,
+        "nativeTests": "6/6",
+        "portableTests": "7/7",
+        "installerLifecycle": "passed"
+      }
+    },
+    "artifact": {
+      "id": 11931218925,
+      "runId": 38643191838,
+      "archiveSha256": "c5532f23b995c00fc2106f089f863f7aa02d8f7fd1d216cf305bdf777839618c",
+      "archiveHashVerified": true,
+      "setupVersion": "0.3.10",
+      "productVersionVerified": true,
+      "rendererIncluded": true,
+      "setupBytes": 30061290,
+      "setupSha256": "82c78a79aa0d78b2d7a179021986ecb89e13e8850821bebab5c659f66d22ec6e",
+      "portableSha256": "e5750d9ac30623652b9ba136368c4a712c14574ebf00c70333c98663162343e7",
+      "localSetup": "dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe",
+      "installedOnOperatorHost": false,
+      "proofArtifactId": 11930629217,
+      "proofArchiveSha256": "1fc24a7bb04a91a949554484bc2a2ca591eb00e7868bdb87b380947f23b01aa8",
+      "proofImagesVisuallyInspected": [
+        "paketszene-png-jpeg-text.png",
+        "paketszene-browser.png"
+      ]
+    },
+    "reason": "First complete CI; subsequent independent P2 layer UUID compatibility correction requires new CI and artifact"
+  },
+  "artifact": {
+    "id": 11932795796,
+    "runId": 38644596762,
+    "archiveSha256": "5011c0ce6ec19e0ee4d8f67ab3fd1d0a0c0ed2e1c1b0dfab53770e710757ea5f",
+    "archiveHashVerified": true,
+    "setupVersion": "0.3.10",
+    "productVersionVerified": true,
+    "rendererIncluded": true,
+    "setupBytes": 30060923,
+    "setupSha256": "6ba446b6f5cd29b5a0b83ded69c645fdbac76485bb9f2017235ca0fb2f97b0c9",
+    "portableSha256": "803691c81854a51f8f61a645b7e57c54c173cd0b17d37f2fce16f1da2aa2e6a5",
+    "localSetup": "dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe",
+    "operatorCopy": "%USERPROFILE%/Downloads/ShowNight-0.3.10/ShowNight-Streaming-Setup-x64.exe",
+    "installedOnOperatorHost": false,
+    "proofArtifactId": 11933040314,
+    "proofArchiveSha256": "b00751eef89c4dec9bf66fd4ef387d5ecdf0de9acf828847fdc2bc1e37e919fa",
+    "nativeImageVisuallyInspected": true,
+    "nativeImageSha256": "3e1815898a0c47b0fffbb356b1fbc7106ccd1f65e7706caf7f62cc416b06f859"
+  }
+}

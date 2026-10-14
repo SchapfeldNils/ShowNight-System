@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-15",
+  "issue": 36,
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/37",
+  "branch": "codex/netcup-release-preflight",
+  "baseCommit": "460bb1de75e42fa05ccf23909c10d97428f30c90",
+  "runtimeCommit": "61d77be964746f1fb2071a68d38df824b6961f9d",
+  "workerCorrectionSource": "dd28868da5d483df85a43dda85809e0d16d78ce4",
+  "scope": "F50/A17, F30/A18, F12/F28 partial software preflight",
+  "inventory": {
+    "hostPortBindings": false,
+    "imageTag": "shownight:1c983fc01c98916fc782422f19e67567821bdaaa-arm64",
+    "method": "Portainer HTTPS GET, public HTTPS readiness; no exec/POST/mutations",
+    "endpoint": 3,
+    "restartPolicy": "unless-stopped",
+    "mediaVolume": "shownight-s3-recovery-20261014-media",
+    "stack": 23,
+    "postgresHealth": "healthy",
+    "mailDeliveryEnabled": false,
+    "architecture": "arm64",
+    "workerMediaReadOnly": true,
+    "imageDigest": "sha256:de17514bbe2e87821cfc6cf5e3e6e5ba7bfaf73a2d6395dfce8e3dd12862acd3",
+    "schemaVersion": 4,
+    "appHealth": "healthy",
+    "worker": "running without healthcheck",
+    "databaseVolume": "shownight-s3-recovery-20261014-database",
+    "restartCounts": 0,
+    "checkedAt": "2026-10-14T22:35:30Z"
+  },
+  "local": {
+    "probeUnits": {
+      "failed": 0,
+      "passed": 2
+    },
+    "claimRegression": {
+      "failed": 0,
+      "passed": 11
+    },
+    "environment": "Windows x64, Node24.19.0, PostgreSQL17.9 and real FFmpeg",
+    "typecheck": "passed",
+    "yaml": "parsed/formatted with Prettier3.6.2"
+  },
+  "independentReview": {
+    "reviewer": "non-implementing netcup_github_audit",
+    "status": "complete full code/test/workflow/documentation and final CI/artifact/hash review; no confirmed findings",
+    "confirmedFindings": 0
+  },
+  "ci": {
+    "s1": {
+      "runId": 38649908576,
+      "status": "success",
+      "jobs": {
+        "amd64": 116145848385,
+        "windows": 116145848630,
+        "arm64": 116145848533
+      }
+    },
+    "rehearsal": {
+      "runId": 38649908680,
+      "status": "success",
+      "jobs": {
+        "amd64": 116145848996,
+        "arm64": 116145849147
+      },
+      "results": [
+        "netcup-release-amd64.json",
+        "netcup-release-arm64.json"
+      ]
+    },
+    "native": {
+      "runId": 38649908579,
+      "status": "in_progress"
+    },
+    "installer": {
+      "runId": 38649908601,
+      "status": "success"
+    }
+  },
+  "arm64Delivery": {
+    "source": "exact rehearsal-tested candidate, not separately rebuilt S1 artifact",
+    "artifactId": 11933787609,
+    "outerAndInnerHashesVerified": true,
+    "imageArchiveBytes": 239327412,
+    "installed": false,
+    "localIgnoredPath": ".local/artifacts/release61d77/candidate-arm64/shownight-arm64.tar.gz",
+    "imageID": "sha256:746115ece75a131e836320a5f4fd88ffcb0fede12519d6a6d37c9d8d52a259cd",
+    "artifactZipSHA256": "8c9c52148f93eea9a6a3230eea30bc21dffffc16fe8c246bc045943ffcc5e20c",
+    "imageArchiveSHA256": "b2c852056dfea404bb3fa4017417c73d45d4c991f12a497ead3be523452e6b87"
+  },
+  "proofArtifacts": {
+    "amd64": {
+      "id": 11934621631,
+      "zipSHA256": "c8b8902d914f679e7024a2758df7e723346bcc225e4f0dcafe23cfaf8e598c57"
+    },
+    "arm64": {
+      "id": 11933409512,
+      "zipSHA256": "dd54c49aa0825303d187fa50e986757ceeb0803eb47f42fd49e5676bfdcd4617"
+    }
+  },
+  "operatorChoice": {
+    "proposedLocalDirectory": "C:\\Users\\nilss\\AppData\\Local\\ShowNight\\backups\\netcup",
+    "transferEnabled": false,
+    "backupTarget": "this Windows PC outside OneDrive/Git",
+    "date": "2026-10-15",
+    "timerEnabled": false
+  },
+  "limits": [
+    "Synthetic isolated CI; no production backup/restore/update or merge",
+    "Rebuilt baseline code is not exact production image digest",
+    "Independent password custody/provider scope/schedule/monitoring unresolved",
+    "Production update requires separate concrete operator approval and fresh verified backup",
+    "No hardware/event acceptance"
+  ]
+}

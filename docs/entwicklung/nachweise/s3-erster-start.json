@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-14",
+  "issue": 20,
+  "pullRequest": 21,
+  "runtimeCommit": "c83aacc68b731753633fcdd770f671c749b17719",
+  "local": {
+    "platform": "Windows x64",
+    "typecheck": "passed",
+    "build": "passed",
+    "unit": "18/18 passed",
+    "offlineIntegration": "10/10 passed",
+    "serverPackage": "built"
+  },
+  "ci": [
+    { "name": "S1 checks", "runId": 38625375085, "result": "success" },
+    { "name": "Native renderer", "runId": 38625375078, "result": "success" },
+    { "name": "Streaming installer", "runId": 38625375071, "result": "success" }
+  ],
+  "rendererSetupArtifact": {
+    "id": 11923179535,
+    "version": "0.3.7",
+    "expiresAt": "2026-10-21T19:46:34Z",
+    "artifactZipSha256": "5a5e966e75baa9d3ce7560af3d58ce4b3828d3c93e66a9be75b56540206ac684",
+    "locallyDownloaded": true,
+    "artifactDigestVerified": true,
+    "setupHashVerified": true,
+    "localSetupPath": "dist/streaming-installer/ShowNight-Streaming-Setup-0.3.7-x64.exe",
+    "setupSizeBytes": 30033580,
+    "setupSha256": "907dc3e13b10d31407b3d21b286d9feb1b33283c8b10be79f4515d29e324b285",
+    "rendererIncluded": true,
+    "signed": false
+  },
+  "publicReadOnlyObservation": {
+    "dateTime": "2026-10-14T21:47:00+02:00",
+    "normalWindowsDnsReturnedIPv4AndIPv6": true,
+    "httpsReadiness": 200,
+    "schemaVersion": 4,
+    "tlsVerificationDisabled": false,
+    "serverChangedByThisWork": false,
+    "agentConnectionProven": false
+  },
+  "limits": [
+    "No operator installation or actual account import",
+    "No production update by this work",
+    "No hardware or event acceptance",
+    "Issues remain open for review and applicable operational acceptance"
+  ]
+}

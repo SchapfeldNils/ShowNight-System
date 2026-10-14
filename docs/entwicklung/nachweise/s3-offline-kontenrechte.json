@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-14",
+  "scope": "F05/F30/A18: lokale Technikrollenvergabe nur durch Admin",
+  "branch": "codex/s3-offline-account-rights",
+  "baseCommit": "000f1a2995443d84bfc1a9fd4b2a11b77ed1d936",
+  "runtimeCommit": "7dba227007f4127f7cf6a8a4dd77029a40615bff",
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/28",
+  "issue": 27,
+  "local": {
+    "platform": "Windows x64",
+    "node": "24.19.0",
+    "typecheck": "passed",
+    "build": "passed",
+    "unitTests": {
+      "passed": 35,
+      "failed": 0
+    },
+    "accountRightsIncluded": {
+      "passed": 8,
+      "failed": 0,
+      "mode": "real SQLite/MFA and Fastify injection; synthetic accounts; no listener"
+    },
+    "browser": {
+      "passed": 6,
+      "failed": 0,
+      "mode": "headless Edge with synthetic API data; two new account form cases"
+    }
+  },
+  "independentReview": {
+    "reviewer": "non-implementing subagent windows_io_review",
+    "reviewedCommit": "7dba227007f4127f7cf6a8a4dd77029a40615bff",
+    "scope": "complete ten-file package diff including implementation, tests, installer and documentation",
+    "confirmedFindings": [
+      {
+        "priority": "P2",
+        "file": "deploy/windows/streaming.iss:11",
+        "scenario": "Setup AppVersion remained 0.3.8 while build-info claimed 0.3.9",
+        "resolution": "fixed in 7dba227; actual installed DisplayVersion comparison added to isolated CI installer test; independently re-reviewed"
+      }
+    ],
+    "remainingConfirmedFindings": 0,
+    "independentlyRepeated": [
+      "account rights 8/8",
+      "typecheck",
+      "installer scripts syntax",
+      "diff whitespace check"
+    ],
+    "documentationFollowup": "Independently checked final Markdown/JSON, artifact metadata and honest operated-state boundaries; no new confirmed findings"
+  },
+  "ci": {
+    "s1": {
+      "runId": 38640003700,
+      "status": "success",
+      "firstAttempt": {
+        "arm64JobId": 116113289958,
+        "result": "failed",
+        "reason": "120s pg_dump wrapper timeout during initial postgres image download before dump/restore",
+        "retry": "same commit; no changes to tests",
+        "retryJobId": 116116358158
+      },
+      "retryResult": "success; ARM64 full suite and actual container restore passed on unchanged commit"
+    },
+    "serverInstaller": {
+      "runId": 38640003549,
+      "jobId": 116113214949,
+      "status": "success"
+    },
+    "nativeRenderer": {
+      "runId": 38640003677,
+      "status": "success",
+      "jobId": 116113214966,
+      "nativeTests": "5/5",
+      "portableTests": "6/6"
+    }
+  },
+  "limits": [
+    "No local installation update; operated version remains 0.3.8",
+    "No Netcup deployment, merge, real device or mail action",
+    "No retroactive repair of preexisting grants",
+    "No hardware or event release",
+    "LocalAI helper absent at operator-specified path"
+  ],
+  "next": "Native composition of prepared manifest-v2 text/rectangle/image scenes",
+  "artifact": {
+    "id": 11930770617,
+    "runId": 38640003677,
+    "archiveSha256": "9da1a2a8011d079b4076cbadff3de383be26493726aaa54f0285d1f76466019e",
+    "archiveHashVerified": true,
+    "setupVersion": "0.3.9",
+    "productVersionVerified": true,
+    "rendererIncluded": true,
+    "setupBytes": 30049055,
+    "setupSha256": "c08646a57f5d7c3f5bc76beea36e4ea1c93df378598464aa904e1a64e6976d68",
+    "portableSha256": "fcb899e4efa54b2fda424eaa7c84c1795546bd1af297a649fccc0cec743efcc8",
+    "localSetup": "dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe",
+    "installedOnOperatorHost": false,
+    "serverBundleGuardVerified": true
+  }
+}

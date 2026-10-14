@@ -1,17 +1,35 @@
-# Kostenlose Komponenten und Lizenzen – S1
+# Kostenlose Komponenten und Lizenzen – S1/S2/S3
+
+Issue #3: Sicherungsverschlüsselung ausschließlich über vorhandenes Node `crypto`/Dateisystem/Streams; keine neue npm-Abhängigkeit. Linux-Runner setzt `flock` aus util-linux voraus, Quelllizenz MIT laut [Herstellerquelle](https://github.com/util-linux/util-linux/blob/master/sys-utils/flock.c), geprüft am 14. Oktober 2026. Tatsächlich verwendete Distributionsversion vor Produktiveinrichtung dokumentieren. Keine neue kostenpflichtige Komponente und kein `flock` im Windows-Installer. [Ablauf](backup-betrieb.md).
+
+S3-05: Microsoft Windows Imaging Component mit Microsoft-PNG-Decoder aus dem vorhandenen Windows/Windows-SDK; Windows-Betriebssystemvoraussetzung, kein gesondertes kostenpflichtiges Paket und keine neue npm-Abhängigkeit. Skia/GStreamer bleiben vorhanden. Renderer-Browsernachweis nutzt das auf dem isolierten GitHub-Windows-Runner vorhandene Edge über bestehendes Playwright, kein Edge-Binary im Installer. [Quellen und Grenzen](s3-paketmedien.md).
+
+Streaming-Installer nach D018: Inno Setup 6, kostenlose Nutzung einschließlich kommerzieller Anwendungen gemäß [Inno Setup License](https://github.com/jrsoftware/issrc/blob/main/license.txt). Compiler nur auf dem Buildrechner, keine Compilerinstallation beim Anwender. Originale Copyright-/Herkunftshinweise im generierten Setup erhalten; Hinweis in Installationshinweise.txt. Die Herstellerseite bittet kommerzielle Nutzer um einen Kauf; die Quelllizenz erlaubt die kostenlose Nutzung. Keine zusätzliche npm-Abhängigkeit. [Anleitung](s3-streaming-installer.md).
+
+S3-04: Skia (BSD), libpng/zlib gemäß mitgelieferten Quelllizenztexten, nlohmann/json 3.12.0 (MIT), GStreamer/GLib und tatsächlich benötigte SDK-DLLs gemäß offiziellem Lizenzbestand. Native Quellen, Parameter und Lizenztexte im Rendererpaket. GStreamer dynamisch eingebunden; keine FFmpeg-Binary-Auslieferung, keine kostenpflichtige Komponente. MSVC/CMake/Ninja/Python sind Buildvoraussetzungen; Windows x64/Arial/VC-v14-x64-Laufzeit externe Laufzeitvoraussetzungen. Tatsächlicher Paket-/Lizenznachweis entsteht mit erfolgreichem CI-Build, noch nicht aus dieser Auswahl. [Buildquellen und Grenzen](s3-renderer.md).
+
+S3-03 ergänzt keine neue Komponente: vorhandene Node-/Fastify-/Zod-Laufzeit, SQLite und Windows DPAPI/PKI. Netzwerkdiagnose verwendet Node-Bordmittel. Manuelle Windows-Firewall-/Zertifikatskonfiguration ist eine Betriebssystemvoraussetzung; keine gekaufte zusätzliche Software. Die vollständigen bisherigen Lizenztexte bleiben im Server-ZIP enthalten. [LAN-Anleitung](s3-lan.md).
+
+Nachprüfung des S3-02-ZIPs: abstract-logging 2.0.1 bringt nur MIT-Metadaten und einen Autoren-Lizenzlink mit. Der vollständige Autoren-Lizenztext wurde am 10. Oktober 2026 geprüft und mit Quellenvermerk festgehalten; der Builder nimmt ihn versionsgebunden in die ZIP auf. [Quelle](licenses/abstract-logging-source.md). Jeder der 69 Paketlizenzordner enthält damit einen Lizenz-/Notice-Text.
+
+S3-02 benötigt keine zusätzliche npm-Abhängigkeit. Der portable lokale Server nutzt vorhandenes Fastify mit Cookie-/Helmet-/RateLimit-/Static-Plugins, Zod, SQLite und Windows DPAPI/PKI. Windows-Systemfunktionen sind externe Betriebssystemvoraussetzungen. Der ZIP-Builder übernimmt Paketmetadaten und vorhandene License-/Notice-Dateien aller tatsächlich gebündelten Serverpakete sowie React/React-DOM/Scheduler für die Weboberfläche, dazu den vollständigen offiziellen Node-Lizenztext. Kein kostenpflichtiger Zusatzdienst und kein Renderer-/Codecbuild in diesem Paket.
+
+S3-01 verwendet bestehendes Zod (MIT) und SQLite aus der offiziellen Node-Laufzeit. Keine zusätzliche npm-Abhängigkeit. Portable Windows-Paketablage enthält dieselbe SHA256-geprüfte Node-24.19.0-Laufzeit inklusive vollständigem Node-/Drittlizenztext und Zod-Lizenz. Kein FFmpeg-/Rendererbuild in dieser ZIP; dessen Auslieferungs-/Codecprüfung bleibt offen. [Paketablage](s3-paketablage.md).
+
+S2-Agent: direkte Laufzeitabhängigkeit `ws` (MIT) und bereits verwendetes Zod (MIT), installierte Versionen im Lockfile/Inventar. Portable Windows-x64-ZIP enthält den offiziellen Node-24.19.0-Build, dessen vollständigen Lizenztext einschließlich Drittlizenzen sowie ws-/Zod-Lizenzdateien. Hersteller-ZIP gegen festgelegten SHA256 geprüft; keine kostenpflichtige zusätzliche Komponente. Vorhandene VirtualDJ-Pro-/Daslight-/Hardwarevoraussetzungen sind getrennt und noch kein Praxisnachweis. Einzelheiten: [Agentanleitung](s2-agent.md).
 
 Stand: 9. Oktober 2026. Aufgelöste npm-Versionen stehen in `pnpm-lock.yaml`. `pnpm licenses:inventory` erfasst installierte Paketmetadaten in [dependency-licenses.json](dependency-licenses.json); das Actions-Artefakt enthält den tatsächlichen Linux-Stand. Betriebssystemabhängige native Pakete unterscheiden sich. Die Bestandsliste ersetzt nicht Lizenztexte/Notice-Dateien im ausgelieferten Image.
 
-| Komponente | Lizenz / Einsatz |
-| --- | --- |
-| React, Fastify und Plugins, Zod, pg, Vite, esbuild, tsx | MIT; kostenlose Kern-/Buildkomponenten |
-| Node.js | MIT mit Drittanbieterhinweisen des offiziellen Node-Images |
-| TypeScript, Playwright | Apache-2.0 |
-| Nodemailer | MIT-0 |
-| PostgreSQL / native Entwicklungsdatenbank | PostgreSQL License; embedded-postgres Wrapper MIT |
-| FFmpeg/FFprobe | Container: Debian-Paket mit dessen tatsächlicher LGPL/GPL-Konfiguration; Entwicklung: ffmpeg-static GPL-3.0-or-later, ffprobe-static npm-Metadaten MIT, ausführbare FFprobe-Datei hat separate FFmpeg-Buildlizenz |
-| Einige transitive Dateisystempakete | BlueOak-1.0.0; weitere ISC/BSD/0BSD in Bestandsliste |
-| parse-cache-control | BSD laut `licenses` und beigelegtem LICENSE; keine fehlende Lizenz als Freigabe interpretieren |
+| Komponente                                              | Lizenz / Einsatz                                                                                                                                                                                                  |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React, Fastify und Plugins, Zod, pg, Vite, esbuild, tsx | MIT; kostenlose Kern-/Buildkomponenten                                                                                                                                                                            |
+| Node.js                                                 | MIT mit Drittanbieterhinweisen des offiziellen Node-Images                                                                                                                                                        |
+| TypeScript, Playwright                                  | Apache-2.0                                                                                                                                                                                                        |
+| Nodemailer                                              | MIT-0                                                                                                                                                                                                             |
+| PostgreSQL / native Entwicklungsdatenbank               | PostgreSQL License; embedded-postgres Wrapper MIT                                                                                                                                                                 |
+| FFmpeg/FFprobe                                          | Container: Debian-Paket mit dessen tatsächlicher LGPL/GPL-Konfiguration; Entwicklung: ffmpeg-static GPL-3.0-or-later, ffprobe-static npm-Metadaten MIT, ausführbare FFprobe-Datei hat separate FFmpeg-Buildlizenz |
+| Einige transitive Dateisystempakete                     | BlueOak-1.0.0; weitere ISC/BSD/0BSD in Bestandsliste                                                                                                                                                              |
+| parse-cache-control                                     | BSD laut `licenses` und beigelegtem LICENSE; keine fehlende Lizenz als Freigabe interpretieren                                                                                                                    |
 
 FFmpeg wird als separater Prozess gestartet, nicht in einen proprietären Renderer gelinkt. Für tatsächliche Imageweitergabe Debian-Copyrightdateien unter `/usr/share/doc`, `ffmpeg -version`, `ffprobe -version`, Buildkonfigurationen und Bezugsquellen erhalten. Statische Testbinaries werden nicht in das Produktionsimage kopiert; die Produktionsstufe enthält ausschließlich Produktions-npm-Pakete und das Debian-Medienpaket. Keine gekauften Plugins als Voraussetzung. Vollständiges Auslieferungs-/Codecverzeichnis für die Windows-Fassung folgt mit S2/S3.
 

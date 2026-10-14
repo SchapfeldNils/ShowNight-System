@@ -83,8 +83,10 @@ export async function processMedia(db: DB, cfg: Config) {
     const duration = probe.format.duration
       ? Number(probe.format.duration)
       : undefined;
+    // A newer claim increments attempts. An expired worker must not publish over
+    // its successor or clear that successor's lease, even on the error path.
     await db.query(
-      "UPDATE media SET status='ready',analysis=$2,error=NULL,lease_until=NULL WHERE id=$1",
+      "UPDATE media SET status='ready',analysis=$2,error=NULL,lease_until=NULL WHERE id=$1 AND status='processing' AND attempts=$3",
       [
         row.id,
         JSON.stringify({
@@ -94,12 +96,13 @@ export async function processMedia(db: DB, cfg: Config) {
             ? "not_run_s1"
             : "not_applicable",
         }),
+        row.attempts,
       ],
     );
   } catch {
     await db.query(
-      "UPDATE media SET status='failed',error='Datei beschädigt, Analysewerkzeug nicht verfügbar oder Prüfung fehlgeschlagen.',lease_until=NULL WHERE id=$1",
-      [row.id],
+      "UPDATE media SET status='failed',error='Datei beschädigt, Analysewerkzeug nicht verfügbar oder Prüfung fehlgeschlagen.',lease_until=NULL WHERE id=$1 AND status='processing' AND attempts=$2",
+      [row.id, row.attempts],
     );
   }
   return true;
@@ -146,6 +149,7 @@ export async function processMail(db: DB, cfg: Config) {
       to: job.recipient,
       subject: job.subject,
       text: job.body,
+      html: job.body_html ?? undefined,
       disableFileAccess: true,
       disableUrlAccess: true,
     });

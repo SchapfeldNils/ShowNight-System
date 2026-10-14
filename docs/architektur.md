@@ -1,6 +1,16 @@
 # Show Night – Technische Architektur
 
+S3-Szenenkomposition, 14. Oktober 2026: vorhandene Manifest-v2-Text-/Rechteck-/Bildebenen werden über serveraufgelöste, begrenzte und gehashte private Snapshots an den bestehenden C++-/Skia-Prozess angebunden. Stumme Offscreen-Diagnose; keine Browser-Publikumsausgabe, neue Fachrechte oder geänderten Ausfallregeln. [Umfang und tatsächliche Nachweise](entwicklung/s3-native-szenen.md). Frühere fehlende native Szenenanbindung in den folgenden Absätzen beschreibt den damaligen Stand.
+
+S3-06, 14. Oktober 2026: showbezogene Szenenentwürfe im vorhandenen PostgreSQL-Kern mit eigener Revision und exklusiver Lease; versionierte Paketübertragung an SQLite. SVG dient nur der ausdrücklich gekennzeichneten Browsergestaltung dieses ersten Bausteins. Geplanter Konva-Editor und C++/GStreamer/Skia-Ausgabe bleiben Zielarchitektur. Keine Browser-Publikumsausgabe oder neue Rechte-/Ausfallarchitektur. [Teilumfang](entwicklung/s3-szenenentwuerfe.md).
+
+S3-04, 14. Oktober 2026: erster separater Windows-C++-Prozess integriert GStreamer und Skia in einen ausdrücklich auf Softwarediagnose begrenzten Offscreen-Weg. CPU-Raster und lokale VP8-Testdatei statt physischer Sinks; Named-Pipe mit ACL/Token/Epoch, native PNG-Auslieferung über lokale Admin-API. Direct3D11, HDMI, WebRTC, persönliche Regievorschau und echte Tonwege bleiben bestehende Ziele. Keine neue Fach-/Live-/Ausfallarchitektur oder Leistungszusage. [Ablauf/Build/Prüfgrenzen](entwicklung/s3-renderer.md).
+
+S3-03, 10. Oktober 2026: optionaler gezielter LAN-Zugang des lokalen Vorbereitungsservers. Eine private IPv4-Schnittstelle, passendes selbstsigniertes IP-SAN-Zertifikat, manuelle Client-Vertrauens-/Firewallkonfiguration und lokale Diagnose. Loopback bleibt Standard und bestehende Profile bleiben erhalten. Der nachfolgende S3-02-Satz beschreibt den früheren Teilstand. Keine neue Fach-/Live-/Ausfallarchitektur, Renderer bleibt C++/GStreamer/Skia; tatsächliche Mehrgeräte-/Internettrennungsabnahme offen. [Bedienung und Grenzen](entwicklung/s3-lan.md).
+
 Version 2.0 · Entwicklungsgrundlage vom 9. Oktober 2026
+
+Implementierter Teilstand vom 10. Oktober 2026: S3-02 ergänzt einen lokalen HTTPS-Vorbereitungsdienst mit eigener SQLite-Kontenablage, signiertem/verschlüsseltem Quellimport und bestehender Veranstaltungsrechteprüfung. Loopback, lesende Pakete, lokale Konten/MFA/Sperren/Recovery; noch kein LAN, Onlineabgleich oder Renderer. [Bedienung und Grenzen](entwicklung/s3-lokalserver.md). Das folgende vollständige Architekturziel bleibt verbindlich; Netcup bleibt Vorbereitung ohne HDMI.
 
 ## 1. Entscheidung
 
@@ -185,5 +195,9 @@ Durch D016 geklärt: Nginx läuft in Docker auf derselben VM; Portainer vorhande
 Codex soll eine einbindbare VHost-/Location-Vorlage und Integrationsanleitung liefern. Vorhandene Konfigurationen, Domains und Zertifikate erhalten; WebSockets, Uploadgrößen, Timeouts und vertrauenswürdige Proxyheader anhand des tatsächlichen Aufbaus prüfen. Die bloße Existenz von Nginx bestätigt keine fertige TLS-/Domain-Konfiguration für das neue System.
 
 
-## Vorhandene Docker-/Portainer-Umgebung – D016
+## Softwarefortsetzung und erster lokaler Baustein – D017/S3-01
+
+Am 10. Oktober 2026 erlaubt der Betreiber weitere vorbereitbare Softwarearbeiten bei späteren Funktionstests. S3-01 überträgt eingefrorene S1-Inhalte/Originalmedien in eine lokale SQLite-Paketablage. Portable Windows-CLI, keine direkte Datenbankreplikation und keine Netzwerkdienste beim Import. Paketaufbewahrung, Offlineanmeldung und Liveaktivierung bleiben getrennte Schritte. Kein Windows-Renderer-/HDMI-/Ton-/Hardwarebeleg; bestehender C++/GStreamer/Skia-Zielentwurf bleibt bestehen. [Ablauf, Format und Grenzen](entwicklung/s3-paketablage.md).
+
+## Vorhandene Docker-/Portainer-Umgebung – D016 (Betriebsentwurf)
 Genannte Proxy-Adresse: https://proxy.familie-schapfeld.de. app erhält Anschluss an externes Proxy-Netz und eigenes Backend-Netz; DB und Worker erhalten keine öffentlichen Dienstports. Proxyprodukt, tatsächliche Netzwerknamen und Portainer-Modus vor Deployment erheben. Vollständige Vorgaben: [Deployment](entwicklung/deployment.md).

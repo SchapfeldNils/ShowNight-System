@@ -30,13 +30,14 @@ try {
       secret = password.parse(process.env.RECOVERY_PASSWORD);
     await transaction(db, async (c) => {
       const r = await c.query(
-        "UPDATE users SET password_hash=$2,mfa_secret=NULL,mfa_counter=-1,recovery_hashes='[]' WHERE login=$1 RETURNING id",
+        "UPDATE users SET password_hash=$2,pending_email=NULL,mfa_secret=NULL,mfa_counter=-1,recovery_hashes='[]' WHERE login=$1 RETURNING id",
         [login, await hashPassword(secret)],
       );
       if (!r.rowCount) throw new Error("Konto fehlt.");
       const uid = r.rows[0].id;
       await c.query("DELETE FROM sessions WHERE user_id=$1", [uid]);
       await c.query("DELETE FROM challenges WHERE user_id=$1", [uid]);
+      await c.query("DELETE FROM account_tokens WHERE user_id=$1", [uid]);
     });
     console.log(
       "Kennwort ersetzt, Sitzungen widerrufen. MFA beim nächsten Login neu einrichten.",
