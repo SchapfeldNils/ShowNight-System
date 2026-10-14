@@ -2,6 +2,10 @@
 
 ## 14. Oktober 2026 · Installationsanwendung für Streaming-Rechner
 
+Tatsächlicher Nachweis nach Korrektur des Windows-8.3-Pfadvergleichs: Runtime d101808, Streaming installer 38588768992 vollständig erfolgreich. Inno Setup 6.7.1; reale Installation, Startmenü, Laufzeit, DPAPI-Ersteinrichtung, aktive Updatesperre, Update und Deinstallation mit identisch erhaltenem verschlüsseltem Profil und Wiederherstellungsschlüssel. GitHub-Artefakt 11906353949 heruntergeladen, Archiv- und Setup-SHA256 lokal bestätigt. Setup liegt unter dist/streaming-installer; ausschließlich Server-Vorabpaket ohne Renderer. [Maschinenlesbarer Nachweis](nachweise/s3-streaming-installer.json). Keine Installation auf dem DJ-Rechner.
+
+S1 checks 38588768808 für denselben Runtimecommit auf Windows/AMD64/ARM64 vollständig erfolgreich, inklusive bestehender Container-/Backup-/Restoreprüfung. Lokale Typprüfung und elf Unitprüfungen erneut bestanden. Installer- und Regressionsnachweise ersetzen keinen nativen Renderer- oder Hardwarebeleg.
+
 Betreiber fordert ausdrücklich eine Windows-Installationsanwendung. Inno-Setup-Quellen und Buildskript ergänzt: pro Benutzer installierter Server mit eigener Node-Laufzeit, deutsche Einrichtungshinweise, Startmenü und Deinstallation mit erhaltenen externen Benutzerdaten. Rendererpaket wird erst nach erfolgreichem nativen Build erstellt; Server-Vorabpaket weist fehlenden Renderer aus. Automatische isolierte Windows-Prüfung von Installation, Startmenü, Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation ergänzt. Nachweis noch ausstehend; keine tatsächliche Installation auf dem DJ-/Streaming-Rechner.
 
 CI zum bisherigen Stand 85230ad: S1 checks 38527091254 Windows/AMD64/ARM64 bestanden. Native renderer 38527091273 scheiterte vor Kompilierung am SDK-Teilabruf; offizieller Gesamt-SHA256 bestätigt, kein unsicherer Downloadweg. Wiederholungen/Diagnose erweitert. Issue #12 / Entwurfs-PR #13 bleiben offen.

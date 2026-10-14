@@ -2,9 +2,13 @@
 
 ## Streaming-Rechner: Setup-Anwendung
 
-14. Oktober 2026 ausdrücklich beauftragt. Deutscher Windows-x64-Installer, gebündelte Server-/Node-Laufzeit, Startmenüeinträge, optionale Desktopverknüpfung und datenerhaltende Deinstallation implementiert. Echte Installerprüfung in isolierter Windows-CI vorbereitet, noch kein bestandener Nachweis. [Installation, Build und Grenzen](s3-streaming-installer.md). Server-Vorabpaket und späteres Rendererpaket sind im Installer eindeutig gekennzeichnet. Umfangreiche Betreiber-/Gerätetests bleiben offen.
+14. Oktober 2026 ausdrücklich beauftragt (D018). Deutscher Windows-x64-Installer, gebündelte Server-/Node-Laufzeit, Startmenüeinträge, optionale Desktopverknüpfung und datenerhaltende Deinstallation implementiert. Runtime d101808: [Streaming installer 38588768992](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768992) vollständig bestanden. Inno Setup 6.7.1; echte Installation in temporären Pfad mit Leerzeichen, Startmenü, gebündelte Node-Laufzeit, DPAPI-Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation mit byteidentisch erhaltener Rechneridentität/Wiederherstellung geprüft. Erster Vergleichsfehler bei Windows-8.3-Pfad durch kanonischen Pfad korrigiert. [Nachweis/Prüfsummen](nachweise/s3-streaming-installer.json), [Installation und Grenzen](s3-streaming-installer.md). Server-Vorabpaket ohne Renderer ausdrücklich gekennzeichnet; Rendererpaket erst nach bestandenem nativen Build. Umfangreiche Betreiber-/Gerätetests bleiben offen.
 
 S1 checks für Renderer-Commit 85230ad auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38527091254](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38527091254)). Der native Lauf 38527091273 scheiterte nach bestätigter offizieller SHA256 weiterhin an zeitweise nicht bestätigten SDK-Teilabrufen. Abrufprotokollierung und begrenzte Wiederholungen erweitert. Kein nativer Build-/Renderer-Erfolg behauptet.
+
+Auch S1 checks für Installer-Runtime d101808 ist auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38588768808](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768808)), einschließlich vorhandener Browser-/Offline-/Container-/Sicherungs-/Restoreprüfungen. Lokal Typprüfung und elf Unitprüfungen nochmals bestanden. Native Prüfung bleibt gesondert.
+
+Native renderer für dieselbe Runtime: [Lauf 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) am 14. Oktober 2026 um 17:40 Uhr Berlin noch im nativen Build. Kein fertiges Renderer-Setup oder nativer Funktionsnachweis aus dem bestandenen Server-Installer ableiten. Folgender Dokumentationsstand ändert keine Runtime; Nachweiscommit mit CI-Skip verhindert erneuten Abbruch des laufenden großen SDK-/Quellenbuilds. Für einen Merge sind die tatsächlichen nativen Ergebnisse weiterhin zu prüfen.
 
 ## S3-04: native Renderer-Grundlage
 

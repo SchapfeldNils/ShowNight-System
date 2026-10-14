@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-14",
+  "commit": "d101808b99b7e3e848bf8fd85cf3f38119e3b138",
+  "environment": "GitHub Actions windows-2025 x64",
+  "compiler": "Inno Setup 6.7.1",
+  "workflowRun": "https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768992",
+  "artifactId": 11906353949,
+  "artifactSha256": "86375662a07d6f78fafe9db6e3ea982586275a32d214a17db1f2702ae1833c0b",
+  "setupFilename": "ShowNight-Streaming-Setup-x64.exe",
+  "setupBytes": 25116234,
+  "setupSha256": "a59411ab35a0cbece16cc9f633095c842c6cf80daa15f465780590e9491755b2",
+  "result": "passed",
+  "checks": [
+    "actual silent current-user installation into a path with spaces",
+    "bundled Node 24.19.0 runtime",
+    "Start menu shortcut targets installed launcher",
+    "actual DPAPI setup in isolated synthetic profile",
+    "running installed application prevents update",
+    "upgrade preserves encrypted profile and recovery key",
+    "uninstall removes application and preserves profile and recovery key",
+    "downloaded artifact and setup hashes verified locally"
+  ],
+  "rendererIncluded": false,
+  "physicalOutputTested": false,
+  "interactiveOperatorAcceptance": "not_run",
+  "productionInstallation": false
+}
