@@ -1,5 +1,12 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
 ## 10. Oktober 2026 – S3-01: Übertragung und lokale Paketablage
 
 Betreiber beauftragt weitere vorbereitbare Themen und spätere Funktionstests (D017). Pflichtgrundlagen erneut geprüft, Teilpaket [Issue #6](https://github.com/SchapfeldNils/ShowNight-System/issues/6) über GitHub-Plugin angelegt, eigener Branch `codex/s3-local-packages` vom dokumentierten S2-Stand `974264f`. Kein Merge oder produktives Update. S1/S2 bleiben Ausgangsbasis; erster lokaler Baustein importiert ausschließlich bestehende Vorbereitungsinhalte, keine neue Rechte-/Liveausfallentscheidung.

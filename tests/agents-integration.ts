@@ -24,7 +24,7 @@ import {
   loadIdentity,
   secureDirectory,
 } from "../apps/agent/src/identity.js";
-import { database, migrate } from "../apps/api/src/db.js";
+import { database, migrate, migrationVersions } from "../apps/api/src/db.js";
 async function until(check: () => Promise<boolean>, timeout = 7000) {
   const end = Date.now() + timeout;
   while (Date.now() < end) {
@@ -583,7 +583,7 @@ test("S2 mit echtem PostgreSQL und outbound Windows-/Node-Agent", async (t) => {
                 "SELECT version FROM schema_migrations ORDER BY version",
               )
             ).rows.map((r) => r.version),
-            [1, 2],
+            await migrationVersions(),
           );
         } finally {
           await upgrade.end();
