@@ -32,13 +32,57 @@ Geladenes `shownight-local:8b`: 8.192 Kontexttokens, Modellmanifest-Digest `efcd
 
 Erster Codex-Lesetest ohne explizite Windows-Sandboxkonfiguration konnte den Shellaufruf nicht ausfuehren. Eingeschraenktes `unelevated`-Profil, deaktivierte Plugins/Apps/Shell-Snapshots und Entfernung eines nicht erkannten Konfigurationsfelds fuehrten zum echten Lesewerkzeugnachweis; keine Sandboxumgehung. Die CLI meldet weiterhin fehlende eigene Modellmetadaten und nutzt Fallbackmetadaten. Interaktive Codebearbeitung, komplexe Agentenaufgaben, modelluebergreifende Qualitaet und konkrete Cloud-Tokenersparnis sind nicht durch diesen Lesetest nachgewiesen. Lokale Modelle erzeugen weiter lokale Tokens; Cloudplanung/-review bleibt Cloudnutzung. F01–F50/A01–A30 und alle Hardware-/Veranstaltungsabnahmen unveraendert.
 
+
 ## Streaming-Rechner: Setup-Anwendung
 
 14. Oktober 2026 ausdrücklich beauftragt. Deutscher Windows-x64-Installer, gebündelte Server-/Node-Laufzeit, Startmenüeinträge, optionale Desktopverknüpfung und datenerhaltende Deinstallation implementiert. Echte Installerprüfung in isolierter Windows-CI vorbereitet, noch kein bestandener Nachweis. [Installation, Build und Grenzen](s3-streaming-installer.md). Server-Vorabpaket und späteres Rendererpaket sind im Installer eindeutig gekennzeichnet. Umfangreiche Betreiber-/Gerätetests bleiben offen.
 
 S1 checks für Renderer-Commit 85230ad auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38527091254](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38527091254)). Der native Lauf 38527091273 scheiterte nach bestätigter offizieller SHA256 weiterhin an zeitweise nicht bestätigten SDK-Teilabrufen. Abrufprotokollierung und begrenzte Wiederholungen erweitert. Kein nativer Build-/Renderer-Erfolg behauptet.
 
+
 ## S3-04: native Renderer-Grundlage
+
+[Entwurfs-PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [aktueller CI-Prüfstand](https://github.com/SchapfeldNils/ShowNight-System/pull/13/checks). Erster nativer Lauf 38525323695 scheiterte am SDK-Download, obwohl die offizielle Prüfsumme aus CI erreichbar war; robuste Übertragung ergänzt. Keine native Erfolgsaussage vor tatsächlichem Abschluss. Lokale Vertragstests und Ziel-C++-Nachweis getrennt führen.
+
+14. Oktober 2026, Betreiberauftrag zur Umsetzung ohne zweiten Client, umfangreiche Hardwaretests später. Branch codex/s3-renderer-foundation, [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12), auf S3-03 aufgebaut. C++-/GStreamer-/Skia-Prozess und geschützter lokaler Pipe-Kanal, getrennte Vorschau-/Programmdiagnose, begrenzte Revisions-/Receiptprüfung, aktuelle Admin-/MFA-/Origin-/CSRF-Prüfung, PNG-Frameauslieferung und deutsche Diagnoseoberfläche implementiert. Sicherer leerer Start, keine physische Bild-/Ton-/Geräteausgabe. [Ablauf, Build und Grenzen](s3-renderer.md).
+
+Lokal auf Windows x64: Typprüfung, elf Unit-/Vertragstests und Web-/Node-Build bestanden. Kein C++-Compiler/GStreamer-SDK auf dem DJ-Rechner; nativer Build und tatsächliche C++-/Video-/Skia-/portable HTTPS-Prüfung erfolgen separat in GitHub Actions. Aktueller lokaler Download des offiziellen GStreamer-SHA256-Endpunkts liefert HTTP 503; Zielbuild noch nicht als bestanden behaupten. Tatsächliche Ergebnisse werden am PR ergänzt.
+
+Offen bleiben vollständiger S3/S4-Umfang, Direct3D11/HDMI/Full HD, persönliche Regievorschau, Ton, WebRTC, reale Medien-/Kamera-/Mehrmonitor-/Last-/Synchronitäts-/Ausfallabnahme und F01–F50/A01–A30. Netcup bleibt S2/Schema 2; vorhandener DJ-Aufbau unverändert. Nachfolgende Einträge sind historische Teilstände.
+
+
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+Stand: 9. Oktober 2026. Paket S1, Arbeitsbranch `feat/s1-online-server`, [Issue #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1), [PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). S1 ist ein Entwicklungszwischenstand; erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
+Stand: 10. Oktober 2026. S1-Onlinevorbereitung und S2-Agentgrundlage; S2-Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-[PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). Erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
+
+
+## Aktuell: Setup mit nativer Renderer-Grundlage geprüft
+
+Runtime d101808: [Native renderer 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) vollständig erfolgreich. Echter MSVC-/GStreamer-1.28.8-/Skia-Build, native Softwareprüfung 4/4, portabler Server-/Renderer-HTTPS-Ablauf einschließlich nativer Prüfungen 5/5 sowie Setup mit Renderer und Installations-/Update-/Deinstallationsprüfung bestanden. Leerer sicherer Start, tatsächliche Skia-PNGs, lokale Videodekodierung, Vorschau-/Programmtrennung, konkurrierende/identische Diagnosebefehle, Pipe-Wiederverbindung ohne Replay und aktuelle Admin-/MFA-/CSRF-/Sperrprüfungen sind Softwarebelege.
+
+Renderer-Setup lokal aus GitHub-Artefakt 11908530393 materialisiert und Archiv-/Paket-/Setup-Prüfsummen bestätigt: dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe, 29.999.071 Bytes, SHA256 13ead14a4791843156d80fa3f8c31eab03ceaae46f2cea7bd705730e2ce9c0fb. build-info.json bestätigt rendererIncluded=true. Tatsächliche Diagnosebilder heruntergeladen und visuell geprüft. [Maschinenlesbarer Nachweis](nachweise/s3-renderer.json), [Installation](s3-streaming-installer.md).
+
+Dies ist eine installierbare Softwarediagnose-Grundlage mit synthetischen Assets. Echte Showpakete/Szenen, persönliche Regievorschau, Ausgabefenster/Monitorwahl, HDMI/Full HD, Publikumston, WebRTC/OBS, vollständiges GO und Hardware-/Veranstaltungsabnahme bleiben offen. Nächster Softwarebaustein: verifizierte Paketmedien und Szenen an den Renderer anbinden. Kein Merge, keine Installation auf dem DJ-Rechner und kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
+
+## Historisch: Server-Setup vor Renderer-Nachweis
+
+14. Oktober 2026 ausdrücklich beauftragt (D018). Deutscher Windows-x64-Installer, gebündelte Server-/Node-Laufzeit, Startmenüeinträge, optionale Desktopverknüpfung und datenerhaltende Deinstallation implementiert. Runtime d101808: [Streaming installer 38588768992](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768992) vollständig bestanden. Inno Setup 6.7.1; echte Installation in temporären Pfad mit Leerzeichen, Startmenü, gebündelte Node-Laufzeit, DPAPI-Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation mit byteidentisch erhaltener Rechneridentität/Wiederherstellung geprüft. Erster Vergleichsfehler bei Windows-8.3-Pfad durch kanonischen Pfad korrigiert. [Nachweis/Prüfsummen](nachweise/s3-streaming-installer.json), [Installation und Grenzen](s3-streaming-installer.md). Server-Vorabpaket ohne Renderer ausdrücklich gekennzeichnet; Rendererpaket erst nach bestandenem nativen Build. Umfangreiche Betreiber-/Gerätetests bleiben offen.
+
+S1 checks für Renderer-Commit 85230ad auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38527091254](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38527091254)). Der native Lauf 38527091273 scheiterte nach bestätigter offizieller SHA256 weiterhin an zeitweise nicht bestätigten SDK-Teilabrufen. Abrufprotokollierung und begrenzte Wiederholungen erweitert. Kein nativer Build-/Renderer-Erfolg behauptet.
+
+Auch S1 checks für Installer-Runtime d101808 ist auf Windows/AMD64/ARM64 vollständig bestanden ([Lauf 38588768808](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768808)), einschließlich vorhandener Browser-/Offline-/Container-/Sicherungs-/Restoreprüfungen. Lokal Typprüfung und elf Unitprüfungen nochmals bestanden. Native Prüfung bleibt gesondert.
+
+Native renderer für dieselbe Runtime: [Lauf 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) am 14. Oktober 2026 um 17:40 Uhr Berlin noch im nativen Build. Kein fertiges Renderer-Setup oder nativer Funktionsnachweis aus dem bestandenen Server-Installer ableiten. Folgender Dokumentationsstand ändert keine Runtime; Nachweiscommit mit CI-Skip verhindert erneuten Abbruch des laufenden großen SDK-/Quellenbuilds. Für einen Merge sind die tatsächlichen nativen Ergebnisse weiterhin zu prüfen.
+
+## Historisch: S3-04 vor erfolgreichem nativen Build
 
 [Entwurfs-PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [aktueller CI-Prüfstand](https://github.com/SchapfeldNils/ShowNight-System/pull/13/checks). Erster nativer Lauf 38525323695 scheiterte am SDK-Download, obwohl die offizielle Prüfsumme aus CI erreichbar war; robuste Übertragung ergänzt. Keine native Erfolgsaussage vor tatsächlichem Abschluss. Lokale Vertragstests und Ziel-C++-Nachweis getrennt führen.
 
