@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Betreiber-Erstinstallation 0.3.6: noch nicht vollständig eingerichtet
+
+14. Oktober 2026, [Issue #20](https://github.com/SchapfeldNils/ShowNight-System/issues/20): Betreiber bestätigt Installation auf dem DJ-Rechner. Tatsächlich vorhandene Installation in benutzerdefiniertem Programmordner geprüft; Server, eigene Laufzeit und Renderer enthalten, installierte main.js per SHA256 gegen das geprüfte Paket bestätigt. Zunächst fehlten lokales Serverprofil und Listener auf 3443. Einmalige Einrichtung mit installiertem CLI durchgeführt; Loopback-/Zertifikat-Konfigurationsprüfung bestanden. Keine Rootstore-/Firewalländerung oder Geräte-/Mailausgabe. Noch kein Anmeldestand und null lokale Benutzer; Dienst nicht gestartet. Online-Readiness tatsächlich ready/Schema 2: der neuere Exportweg ist dort noch nicht bereitgestellt. Nötig bleiben kompatibler Onlineexport, Inhaltspaket, ausdrücklich vertrauter Serverschlüssel und zielgebundener Anmeldestand sowie Zertifikatvertrauen/Start. Kein Produktivupdate oder Anmelde-/MFA-Bypass. [Realer Einrichtungsnachweis](nachweise/2026-10-14-erstinstallation.json). Historische CI-Nachweise unten ersetzen diesen offenen Betreiberablauf nicht; die frühere Aussage „keine Installation auf DJ-Rechner“ beschreibt den damaligen Abschlussstand.
+
 ## Aktuell: S3-06 Szenenentwürfe als Software geprüft
 
 14. Oktober 2026, codex/s3-scene-drafts, [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), [Entwurfs-PR #18](https://github.com/SchapfeldNils/ShowNight-System/pull/18), auf PR #16 aufgebaut. Szenentabelle/Migration 004, Text-/Rechteck-/Bildebenen, exklusive sitzungsgebundene Lease, automatische Entwurfsspeicherung, bewusste lokale Wiederherstellung, Einsatzzuordnung, unabhängige Kopie und Manifest-v2-Übertragung implementiert. [Bedienung und offene Grenzen](s3-szenenentwuerfe.md).
