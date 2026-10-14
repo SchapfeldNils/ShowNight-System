@@ -1,6 +1,6 @@
 # ShowNight-System
 
-Aktuell in Arbeit: [native Komposition vorbereiteter Paket-v2-Szenen](docs/entwicklung/s3-native-szenen.md), Issue #29. Text/Rechteck/PNG-/JPEG-Bild als stumme Softwarediagnose; Nachweise vor Abschluss. Keine Veranstaltungsfreigabe oder Betreiberaktualisierung.
+Als Software geprüft: [native Komposition vorbereiteter Paket-v2-Szenen](docs/entwicklung/s3-native-szenen.md), [PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30). Text/Rechteck/PNG-/JPEG-Bild als stumme Softwarediagnose, vollständige CI und unabhängiger Review samt Korrekturprüfung bestanden. Setup 0.3.10 mit Renderer bereitgestellt, nicht installiert. Keine Veranstaltungsfreigabe oder Betreiberaktualisierung. Folgende Angaben beschreiben frühere Teilstände.
 
 Aktuelles Korrekturpaket: [lokale Technikrollenvergabe nur durch Admin](docs/entwicklung/s3-offline-kontenrechte.md), F05/F30/A18, Issue #27. Setupquellen 0.3.9; laufende Installationen werden durch die Entwicklung nicht aktualisiert.
 

@@ -2,6 +2,8 @@
 
 ## Issue #29: native Komposition vorbereiteter Szenen
 
+Abschluss 15. Oktober 2026: Runtime `f807645`, [PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30). TS-Build/Typen und 45/45 Units, vorhandener Browser 6/6 bestanden; finale CI Windows/AMD64/ARM64, MSVC-/Skia-/GStreamer, native Regression 6/6 inklusive echter Szenenpixel und UUID-Korrektur, portable Prüfung 7/7 sowie vollständiger Installerlebenszyklus erfolgreich. Unabhängiger Full-Diff-Review mit einem bestätigten P2 (Großbuchstaben-Ebenenkennungen), gezielt behoben und unabhängig nachgeprüft, keine verbleibenden bestätigten Befunde. Setup 0.3.10 mit Renderer aus finaler CI heruntergeladen, Hashes/EXE-Produktversion bestätigt, zusätzlich in Downloads abgelegt, nicht installiert. Natives synthetisches Beispielbild im Nachweis. Bestehende lokale 0.3.8 und Netcup unverändert; kein Merge, keine Geräte-/Veranstaltungsfreigabe. PNG-Quellalpha-Zwischenwerte nicht gesondert pixelgeprüft; weitere Grenzen und [Nachweis](nachweise/s3-native-szenen.json). Nächster Schritt: vorbereiteter Showablauf mit serverseitiger Ordnung/Deduplizierung. Die folgende Zwischenstandsangabe ist historisch.
+
 14. Oktober 2026, `codex/s3-native-scene-composition`, auf PR #28 / `1ac7758`: Manifest-v2-Text-/Rechteck-/Bildebenen als stumme native Softwarediagnose. F07/F08/F09/F12/F17/F25/F28/F30; Teilnachweise A02/A04/A06/A18. Implementierung/Prüfungen in Arbeit, keine fertige Ausgabe behauptet. Setupquellen 0.3.10; installierte lokale 0.3.8 und Netcup unverändert. [Bedienung, Grenzen und Prüfstand](s3-native-szenen.md).
 
 ## Issue #27: lokale Technikvergabe nur durch Admin
