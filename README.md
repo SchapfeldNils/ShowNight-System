@@ -38,6 +38,7 @@ MFA ist für Admin/Leitung verpflichtend. Keine Standardkennwörter. Demo und Ge
 - [Abnahmeplan für Server, Agenten und ersten Showablauf](docs/entwicklung/abnahmeplan.md)
 - [Startprompt für Codex](docs/entwicklung/codex-startprompt.md)
 - [Bestätigte Entwicklungsentscheidungen](docs/planung/entwicklungsuebergabe.md)
+- [Geprüfter PR-Abschlussplan](docs/entwicklung/pr-abschlussplan.md) – Befunde, Abhängigkeiten und nächste Nachweise
 
 Entwicklungsarbeit erfolgt über Arbeitsbranches und Pull Requests. S1: `feat/s1-online-server`, [GitHub-Arbeitspaket #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1). Kein automatischer Merge. Die weiterführenden Fachkapitel beschreiben weiterhin den Zielumfang.
 
