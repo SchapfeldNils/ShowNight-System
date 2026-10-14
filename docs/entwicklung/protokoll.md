@@ -1,5 +1,13 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
+
 ## 10. Oktober 2026 – S3-02: lokaler Server, Offlinekonten und MFA
 
 Nachprüfung der 69 Lizenzordner fand abstract-logging 2.0.1 ohne separate LICENSE-Datei im npm-Paket. Hersteller-Readme verweist auf die Autoren-MIT-Seite; tatsächlichen Lizenztext mit Quellenvermerk festgehalten und versionsgebunden in den ZIP-Builder aufgenommen. Keine neue Komponente. Runtimecode bleibt 7ab7b8b, Paket-/Dokumentationskorrektur als eigener Commit; erneute CI mit tatsächlichem vollständigem ZIP angefordert. Lokal ZIP neu gebaut, vollständige Lizenzdateien in allen 69 Ordnern und SHA256 geprüft.

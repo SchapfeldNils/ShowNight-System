@@ -1,5 +1,16 @@
 # Entwicklungsstatus
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+Stand: 9. Oktober 2026. Paket S1, Arbeitsbranch `feat/s1-online-server`, [Issue #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1), [PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). S1 ist ein Entwicklungszwischenstand; erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
+Stand: 10. Oktober 2026. S1-Onlinevorbereitung und S2-Agentgrundlage; S2-Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-[PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). Erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
 ## S3-02: lokaler HTTPS-Server und vorbereitete Offlinekonten
 
 Stand: 10. Oktober 2026. Beauftragte Softwarefortsetzung gemäß D017; Branch codex/s3-local-server von S3-01 e9a78f3, [Issue #8](https://github.com/SchapfeldNils/ShowNight-System/issues/8), [Entwurfs-PR #9](https://github.com/SchapfeldNils/ShowNight-System/pull/9). Runtime 7ab7b8b; der jeweils aktuelle native AMD64-/ARM64-/Windows-Prüfstand und die Artefakte stehen unter [PR-Prüfungen](https://github.com/SchapfeldNils/ShowNight-System/pull/9/checks). Keine Zusammenführung und kein Netcup-Update.

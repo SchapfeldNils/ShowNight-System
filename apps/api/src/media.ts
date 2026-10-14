@@ -142,11 +142,11 @@ export function mediaRoutes(app: FastifyInstance, db: DB, cfg: Config) {
         )
       ).rows.map(mediaDto);
     }
-    await showAccess(db, req.actor, q.showId);
+    const show = await showAccess(db, req.actor, q.showId);
     return (
       await db.query(
-        "SELECT m.* FROM media m JOIN show_media sm ON sm.media_id=m.id WHERE sm.show_id=$1 ORDER BY m.created_at DESC",
-        [q.showId],
+        "SELECT m.* FROM media m WHERE m.event_id=$2 OR EXISTS (SELECT 1 FROM show_media sm WHERE sm.media_id=m.id AND sm.show_id=$1) ORDER BY m.created_at DESC",
+        [q.showId, show.event_id],
       )
     ).rows.map(mediaDto);
   });
