@@ -4,6 +4,10 @@ Ergänzung S3-02 vom 10. Oktober 2026: Admin/MFA kann GET /api/v1/offline/trust 
 
 Stand: 9. Oktober 2026. Führende Implementierung: `packages/contracts/src/index.ts`, `apps/api/src`. Der umfassendere [Schnittstellenentwurf](schnittstellen.md) bleibt das Ziel für spätere Pakete. Nur folgende Teilmenge ist jetzt implementiert.
 
+## Reviewkorrekturen vom 14. Oktober 2026
+
+Neue berechtigte Einladungs-Recovery und Teamwiderrufsrouten, Pflicht-MFA an der Eventrechteentscheidung, Eventmedienwahl in Shows, Paket-Recovery, automatische Statuswiederverbindung und dauerhaft gespeicherte Testversandart: [exakter Vertrag und Grenzen](pr-bug-abnahme.md). Readiness erwartet die gesamte zum jeweiligen Branch gehörende SQL-Versionsliste einschließlich Migration 5; Produktivstand bleibt unverändert bis gesonderter Freigabe.
+
 ## Auth und Rechte
 
 `/api/v1` auf demselben Origin wie Web. Schreibende Browseranfragen brauchen exakten `Origin` gemäß `PUBLIC_BASE_URL`; angemeldete Mutationen zusätzlich `X-CSRF-Token` aus `/me`. Cookie `sn_session`: HttpOnly, SameSite Strict, Secure bei HTTPS, acht Stunden. DB speichert nur Tokenhash. Kennwörter: gesalzene scrypt-Ableitung. Admin/Leitung: TOTP mit verschlüsseltem Secret, fünf Minuten gültige Challenge, maximal fünf Versuche, pro Konto verbrauchter TOTP-Zähler und einmalige gehashte Recovery-Codes. Rechte werden bei jedem Zugriff aus aktuellen Zuordnungen ermittelt; Rollenwechsel zur Leitung invalidiert MFA-unbestätigte Zugriffe sofort.

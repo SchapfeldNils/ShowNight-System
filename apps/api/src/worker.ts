@@ -105,17 +105,22 @@ export async function processMedia(db: DB, cfg: Config) {
   return true;
 }
 export async function processMail(db: DB, cfg: Config) {
+  const allowSmtp =
+    cfg.MAIL_DELIVERY_ENABLED === "true" &&
+    cfg.MAIL_MODE === "smtp" &&
+    cfg.DEMO_ENABLED === "false";
   // A worker crash during SMTP cannot prove whether the peer accepted the message.
   await db.query(
     "UPDATE mail_jobs SET status='unknown',last_error='Worker unterbrochen; Übergabe unbestätigt.' WHERE status='sending' AND started_at<now()-interval '5 minutes'",
   );
   const job = (
     await db.query(
-      `UPDATE mail_jobs SET status='sending',attempts=attempts+1,started_at=now() WHERE id=(SELECT id FROM mail_jobs WHERE status='queued' AND next_attempt_at<=now() ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,
+      `UPDATE mail_jobs SET status='sending',attempts=attempts+1,started_at=now() WHERE id=(SELECT id FROM mail_jobs WHERE status='queued' AND next_attempt_at<=now() AND (delivery_mode='test' OR (delivery_mode='smtp' AND $1)) ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,
+      [allowSmtp],
     )
   ).rows[0];
   if (!job) return false;
-  if (cfg.MAIL_DELIVERY_ENABLED === "false") {
+  if (job.delivery_mode !== "smtp") {
     await db.query(
       "UPDATE mail_jobs SET status='simulated',provider_message_id=NULL,last_error=NULL WHERE id=$1",
       [job.id],

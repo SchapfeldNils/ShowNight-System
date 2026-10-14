@@ -9,7 +9,7 @@ import { powershell } from "../apps/agent/src/identity.js";
 import { request as httpsRequest } from "node:https";
 import { checkServerIdentity } from "node:tls";
 import { DatabaseSync } from "node:sqlite";
-import { database, migrate } from "../apps/api/src/db.js";
+import { database, migrate, migrationVersions } from "../apps/api/src/db.js";
 import { fixture, multipartFile } from "./fixture.js";
 import { totp, hashPassword, seal } from "../apps/api/src/security.js";
 import { processMedia } from "../apps/api/src/worker.js";
@@ -636,7 +636,7 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
                 "SELECT version FROM schema_migrations ORDER BY version",
               )
             ).rows.map((r) => r.version),
-            [1, 2, 3],
+            await migrationVersions(),
           );
           assert.equal(
             (await upgrade.query("SELECT count(*) FROM offline_exports"))

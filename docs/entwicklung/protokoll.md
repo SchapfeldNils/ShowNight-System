@@ -1,5 +1,15 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+
+
+
+
+
 ## 14. Oktober 2026 · Abschluss des nativen Softwarebuilds nachgeprüft
 
 GitHub-Lauf 38588768652 zur Runtime d101808 ist inzwischen vollständig erfolgreich. Offizieller SDK-Download mit bestätigtem Gesamt-SHA256, tatsächlicher Skia-/MSVC-Build, native Tests 4/4, portabler HTTPS-/DPAPI-/Rendererablauf 5/5 und Renderer-Setup mit Installations-/Update-/Deinstallationsprüfung bestanden. Keine weitere Runtimeänderung nötig.
