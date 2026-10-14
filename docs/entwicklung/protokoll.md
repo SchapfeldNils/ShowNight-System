@@ -223,3 +223,7 @@ Initiale Umsetzung als Commit `aed161e` gepusht; [PR #2](https://github.com/Scha
 # Issue #20 – Softwarekorrektur des Erststarts, 14. Oktober 2026
 
 PR #21 ergänzt konkrete deutsche Voraussetzungen und lesenden Status vor lokalem Server-/Rendererstart. Konten-/Paketdatenbanken werden dafür nicht neu angelegt oder migriert; Rohfehler/Geheimnisse werden nicht veröffentlicht. Lokale Typprüfung, Build und 18 Unitprüfungen bestanden, einschließlich isoliertem Windows-Profil und Dateierhalt. Lokaler KI-Helfer für apps/local und Paket-/Installerskripte abgerufen: keine relevanten Hinweise. Neue Setup-/CI-Nachweise und echte Betreiberbereitstellung bleiben gesondert offen. [Ablauf](s3-erster-start.md).
+
+# Issue #3 – portable Sicherung vorbereitet, 14. Oktober 2026
+
+Eigener Branch codex/issue-3-external-backup. Betreiber stellt klar: keine externe Festplatte verfügbar; angenommener Netcup-VM-Backupumfang bleibt nachzuweisen. Keine externe Festplatte als bestätigtes Ziel dokumentiert. Verschlüsselte DB-/Medien-/Konfigurationsarchive mit unabhängigem Kennwort, lesbarer Wiederherstellung und Linux-Wartungsrunner ergänzt. Lokale Negativ-/Dateiwiederherstellungsprüfungen 3/3 bestanden; Docker-/Containerrestore in CI ausstehend. Kein produktiver Zeitplan/Deployment. Lokale KI-Hinweise zu Backup-/Deploymentpfaden vor Umsetzung: keine Treffer. [Ablauf](backup-betrieb.md), [zehn offene Issues](issue-arbeitsliste.md).

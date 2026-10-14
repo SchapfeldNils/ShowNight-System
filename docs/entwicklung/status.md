@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Issue #3: portable verschlüsselte Sicherung vorbereitet
+
+14. Oktober 2026, `codex/issue-3-external-backup`: AES-GCM-/scrypt-Archiv mit DB, Medien, Prüfsummen und privater Stackkonfiguration, unabhängiges Kennwort statt DPAPI; Linux-Wartungsrunner mit Sperre und geprüftem Wiederanlauf vorbereitet. Lokal drei Verschlüsselungs-/Negativ-/Wiederherstellungsprüfungen bestanden. Kein Docker auf diesem Rechner; echter Runner-/Containerrestore in neuer CI zu prüfen. Betreiber korrigiert: keine externe Festplatte vorhanden, Providerbackup der VM angenommen. Kein konkreter Providerumfang/Restore, kein unabhängiges Ziel, kein produktiver Timer/Retention-/Monitoringnachweis. [Ablauf und Grenzen](backup-betrieb.md), [Arbeitsliste aller zehn Issues](issue-arbeitsliste.md). Issue #3 bleibt insgesamt offen.
+
 ## Issue #20: konkrete Erststartmeldungen und lesender Status
 
 14. Oktober 2026, `codex/s3-first-run-diagnosis` / PR #21: Startvorprüfung und `status` unterscheiden fehlendes/teilweises/nicht lesbares Profil, Serverschlüssel, Anmeldestand, Paketablage, Zertifikat und belegten Startport. Deutscher Startmenü-Status ergänzt; vorhandene Datenbanken nur lesend geprüft, keine Onlineanfrage und keine automatische Einrichtung. [Bedienung, tatsächliche Prüfungen und Grenzen](s3-erster-start.md). Lokal Typen/Build sowie 18/18 Unitprüfungen einschließlich isolierter Windows-DPAPI-Erststartprüfung bestanden. Installerquellen 0.3.7; neues ausgeliefertes Setup und vollständige CI noch nicht nachgewiesen. Betreiberinstallation/Onlineexport/Produktivupdate bleiben offen. Die folgenden Abschnitte beschreiben frühere Teilstände.
