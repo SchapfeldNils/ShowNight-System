@@ -44,38 +44,55 @@ async function download(url, path, expected) {
     if (expected && url.endsWith(".exe")) {
       const temporary = path + ".download";
       try {
-        const probe = await fetch(url, {
-          headers: { Range: "bytes=0-0", "Accept-Encoding": "identity" },
-          signal: AbortSignal.timeout(30000),
-        });
+        let probe;
+        for (let attempt = 0; attempt < 5; ++attempt) {
+          probe = await fetch(url + "?shownight-probe=" + attempt, {
+            headers: { Range: "bytes=0-0", "Accept-Encoding": "identity" },
+            signal: AbortSignal.timeout(30000),
+          });
+          if (probe.status === 206) break;
+          await probe.body?.cancel();
+          if (attempt === 4)
+            throw new Error("Offizieller SDK-Teilabruf nicht verfügbar.");
+          await pause(1000);
+        }
         const range = probe.headers
           .get("content-range")
           ?.match(/^bytes 0-0\/([0-9]+)$/);
         if (probe.status === 206 && range) {
           await probe.arrayBuffer();
           const size = Number(range[1]),
-            step = 4 * 1024 * 1024;
+            step = 512 * 1024;
           if (!Number.isSafeInteger(size) || size < 1024 || size > 1024 ** 3)
             throw new Error("SDK-Länge unzulässig.");
           const file = await open(temporary, "w");
           let position = 0;
           try {
-            await Promise.all(
-              Array.from({ length: 4 }, async () => {
+            const results = await Promise.allSettled(
+              Array.from({ length: 8 }, async () => {
                 while (position < size) {
                   const start = position,
                     end = Math.min(size, start + step) - 1;
                   position = end + 1;
                   let completed = false;
-                  for (let attempt = 0; attempt < 3 && !completed; ++attempt) {
+                  for (let attempt = 0; attempt < 5 && !completed; ++attempt) {
                     try {
-                      const r = await fetch(url, {
-                        headers: {
-                          Range: "bytes=" + start + "-" + end,
-                          "Accept-Encoding": "identity",
+                      const r = await fetch(
+                        url +
+                          "?shownight-part=" +
+                          start +
+                          "-" +
+                          end +
+                          "&attempt=" +
+                          attempt,
+                        {
+                          headers: {
+                            Range: "bytes=" + start + "-" + end,
+                            "Accept-Encoding": "identity",
+                          },
+                          signal: AbortSignal.timeout(60000),
                         },
-                        signal: AbortSignal.timeout(60000),
-                      });
+                      );
                       if (
                         r.status !== 206 ||
                         r.headers.get("content-range") !==
@@ -92,13 +109,15 @@ async function download(url, path, expected) {
                         ).bytesWritten;
                       completed = true;
                     } catch (e) {
-                      if (attempt === 2) throw e;
+                      if (attempt === 4) throw e;
                       await pause(1000);
                     }
                   }
                 }
               }),
             );
+            const failed = results.find((r) => r.status === "rejected");
+            if (failed) throw failed.reason;
           } finally {
             await file.close();
           }
