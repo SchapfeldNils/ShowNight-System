@@ -16,7 +16,14 @@
       "platforms": ["Windows x64", "Linux amd64", "Linux arm64"],
       "result": "success"
     },
-    "serverInstaller": { "runId": 38626408257, "result": "success" }
+    "serverInstaller": {
+      "runId": 38626408257,
+      "result": "success"
+    },
+    "nativeRenderer": {
+      "runId": 38626408225,
+      "result": "success"
+    }
   },
   "provenInIsolatedCi": [
     "Authenticated encrypted DB/media/config file recovery",
