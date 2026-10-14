@@ -1,5 +1,7 @@
 # Abnahmeplan – agile Entwicklung ab Netcup
 
+S3-06 zu F06/F07/F11/F12/F25/F30 sowie Teilgrundlagen A04/A05/A06/L-01: echte PostgreSQL-Leasekonkurrenz/Sitzung/Ablauf/Rechtewiderruf/Revisionskonflikte, unabhängige Szenenkopie, v1/v2-Referenz-/Integritätsprüfung, tatsächlicher SQLite-Import/Neustart und deutscher Browserablauf mit Gestaltung/Sperre/Export/lokalem Lesen. Diese Softwareprüfungen ersetzen keine vollständige Editor-/native Szenen-/Hardwareabnahme. [Ausführbare Befehle und Grenzen](s3-szenenentwuerfe.md).
+
 S3-05 zu F12/F17/F26/F28/F30 und L-01/L-12: reale Medienkopie/Hashgrenzen/Rechteverlust, native PNG-/VP8-Dateidekodierung, Windows-Schreib-/Löschsperre, unbeeinflusste geladene Kopie bei geändertem Original, keine automatische Wiederholung/Folgeaktion, Ressourcenfreigabe nach ungültiger Datei und nativer Desktop-/Mobilbrowserablauf. Vertragsadapter und tatsächlicher C++-/Browserbeleg getrennt protokollieren. Keine Geräte-/HDMI-/Ton-/vollständige Szenen-/Showabnahme daraus ableiten. [Aktueller Stand](status.md), [Ablauf](s3-paketmedien.md).
 
 D018 / F26: echte Windows-Setup-Installation, Startmenü-/Laufzeitprüfung, geschützte Ersteinrichtung, Updatesperre bei laufender eigener EXE, Update und Deinstallation mit erhaltenen Benutzerdaten in isolierter CI prüfen. Interaktive Einrichtung am tatsächlichen Streaming-Rechner und vollständige Medien-/Streamingfunktion bleiben getrennte offene Nachweise. [Tatsächliches Ergebnis](nachweise/s3-streaming-installer.json).

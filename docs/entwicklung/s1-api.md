@@ -1,5 +1,7 @@
 # Implementierter S1-Vertrag
 
+S3-06, 14. Oktober 2026: showbezogene Szenenentwürfe und exklusive Bearbeitungsleases mit vorhandenen Rechten, Additivmigration 004. GET/POST /shows/:id/scenes; POST/PATCH/DELETE /scenes/:id/lease; PATCH /scenes/:id. Manifest-v2 mit Szenen, v1 bleibt erhalten. Kein Produktivupdate; Online-VM weiterhin bestehender S2-Stand. [Konkreter Teilvertrag](s3-szenenentwuerfe.md).
+
 Ergänzung S3-02 vom 10. Oktober 2026: Admin/MFA kann GET /api/v1/offline/trust und POST /api/v1/offline/exports für getrennte, zielverschlüsselte Offline-Anmeldestände verwenden. Additive Entwicklungsmigration 003; produktiv bleibt Schema 2 bis zum gesonderten Update. [Vollständiger neuer Vertrag](s3-lokalserver.md). Die übrigen S1-Routen bleiben erhalten.
 
 Stand: 9. Oktober 2026. Führende Implementierung: `packages/contracts/src/index.ts`, `apps/api/src`. Der umfassendere [Schnittstellenentwurf](schnittstellen.md) bleibt das Ziel für spätere Pakete. Nur folgende Teilmenge ist jetzt implementiert.

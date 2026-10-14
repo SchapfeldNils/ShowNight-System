@@ -1,5 +1,7 @@
 # Fachliches Datenmodell – erster Showablauf
 
+S3-06, 14. Oktober 2026: additive PostgreSQL-Migration 004 mit scenes (Show, eigene Revision, strikte Ebenendefinition) und scene_leases (Sitzungs-/Tokenhash, Ablauf). cue.sceneId optional, gleiche Show erforderlich. Szenenänderung erhöht auch Showrevision und schreibt Historie. Manifest-v2 enthält Szenen; v1 bleibt erhalten. Lokales SQLite-Schema unverändert, Szenen im hashgebundenen unveränderlichen Manifest. Kein aktiver Szenen-/Live-/GO-Zustand. [Konkreter Vertrag](s3-szenenentwuerfe.md).
+
 S3-05 ergänzt ausschließlich den flüchtigen Rendererdiagnosezustand um Paket-/Medien-/Manifest-/Dateihash, MIME, Größe und private Ressourcenkennung. Kein SQL-/Paketformatwechsel und kein vollständiges Szenenmodell. Native Scene hält geprüfte Kopie/Dateisperre bis zur Freigabe; Paketoriginal und bereits geladener Diagnoseinhalt sind getrennt. [Technischer Vertrag](s3-paketmedien.md).
 
 S3-04, 14. Oktober 2026: ausschließlich flüchtiger Rendererdiagnosezustand je Prozess-Epoch, getrennte Testszene/Videozähler für preview/program, eigene Diagnoserevision und begrenzte Receipts. Kein SQLite-/Online-Schemawechsel, kein persistenter Live-/GO-/Durchlauf-/Szenenstand. Prozesse beginnen ohne vorbereitete/übernommene Szene; bild-/tonbezogene Hardwarefähigkeiten bleiben aus. [Vertrag und Grenzen](s3-renderer.md).

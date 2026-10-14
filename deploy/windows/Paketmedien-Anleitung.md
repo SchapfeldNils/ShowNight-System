@@ -12,6 +12,8 @@ Dieses Paket ist eine Softwarediagnose. Bildschirm-, Ton- und Geräteausgabe ble
 
 ## Bild oder Video prüfen
 
+Ab Version 0.3.6 können vorbereitete Pakete auch Szenenentwürfe enthalten (Paketmanifest Version 2). Unter dem angesehenen Paket zeigt „Vorbereitete Szenenentwürfe“ diese Gestaltung lesend im Browser. Das ist keine native Rendererprüfung; zusammengesetzte Szenen werden noch nicht in die Diagnose übernommen. Die folgenden Schritte prüfen weiterhin ein einzelnes PNG-/VP8-Medium. Alte Pakete bleiben lesbar; für neue Szenenpakete den lokalen Server vorher aktualisieren.
+
 1. ShowNight Streaming starten und die ausgegebene HTTPS-Adresse im Browser öffnen.
 2. Mit dem vorbereiteten lokalen Admin und MFA anmelden.
 3. Unter „Vorbereitete Pakete“ ein Paket ansehen.

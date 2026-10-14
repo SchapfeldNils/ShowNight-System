@@ -126,7 +126,7 @@ await writeFile(
   join(out, "build-info.json"),
   JSON.stringify(
     {
-      version: "0.3.5",
+      version: "0.3.6",
       rendererIncluded: renderer,
       stage: "software-preparation",
       signed: false,

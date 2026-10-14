@@ -17,6 +17,7 @@ await build({
 });
 await copyFile("apps/api/migrations/001_core.sql", "dist/api/001_core.sql");
 await copyFile("apps/api/migrations/002_agents.sql", "dist/api/002_agents.sql");
+await copyFile("apps/api/migrations/004_scenes.sql", "dist/api/004_scenes.sql");
 await copyFile(
   "apps/api/migrations/003_offline.sql",
   "dist/api/003_offline.sql",

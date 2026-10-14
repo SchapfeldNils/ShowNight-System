@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { SceneSketch } from "../../web/src/scenes.js";
 import { createRoot } from "react-dom/client";
 import "../../web/src/style.css";
 import "./style.css";
@@ -319,6 +320,14 @@ function App() {
                           <strong>{c.name}</strong>
                           <p>{c.triggerHint}</p>
                           <p>{c.notes}</p>
+                          {c.sceneId && (
+                            <p>
+                              Szene:{" "}
+                              {selected.scenes?.find(
+                                (scene) => scene.id === c.sceneId,
+                              )?.definition.name ?? "Referenz fehlt"}
+                            </p>
+                          )}
                           <p>
                             {c.enabled ? "Cue vorgesehen" : "Cue deaktiviert"}
                           </p>
@@ -327,6 +336,29 @@ function App() {
                     </ol>
                   </article>
                 ))}
+                {!!selected.scenes?.length && (
+                  <>
+                    <h3>Vorbereitete Szenenentwürfe</h3>
+                    <p>
+                      Lesende Browsergestaltung · keine native Rendererprüfung
+                      oder Liveausgabe. Einzelne Paketmedien bleiben getrennt in
+                      der Softwarediagnose prüfbar.
+                    </p>
+                    {selected.scenes.map((scene) => (
+                      <article key={scene.id}>
+                        <h4>
+                          {scene.definition.name} · Revision {scene.revision}
+                        </h4>
+                        <SceneSketch
+                          definition={scene.definition}
+                          mediaUrl={(id) =>
+                            `/api/local/packages/${selected.id}/media/${id}`
+                          }
+                        />
+                      </article>
+                    ))}
+                  </>
+                )}
                 <h3>Medien</h3>
                 <p>Downloads spielen weder Vorschau- noch Publikumston ab.</p>
                 <ul>

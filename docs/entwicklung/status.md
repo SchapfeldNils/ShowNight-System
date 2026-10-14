@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## In Arbeit: S3-06 Szenenentwürfe
+
+14. Oktober 2026, codex/s3-scene-drafts, [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), auf PR #16 aufgebaut. Szenentabelle/Migration 004, Text-/Rechteck-/Bildebenen, exklusive sitzungsgebundene Lease, automatische Entwurfsspeicherung, lokale Wiederherstellung, Einsatzzuordnung, unabhängige Kopie und Manifest-v2-Übertragung implementiert. Lokal Typprüfung/Build und 14 Unitprüfungen bestanden; eigene PostgreSQL-/SQLite-Szenensuite 5/5 und bisherige Paketsuite 9/9 bestanden. Erweiterte Rechte-/Browser-/Windows-CI-/Setupnachweise folgen gesondert. Kein Merge, kein Produktivupdate. [Bedienung und offene Grenzen](s3-szenenentwuerfe.md).
+
 ## Aktuell: S3-05 Paketmedien als Software geprüft
 
 14. Oktober 2026, Branch codex/s3-package-renderer, [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), [Entwurfs-PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16), abhängig von PR #13. Strikte Paketmedienaktion, aktuelle Paket-/Admin-/MFA-/CSRF-Prüfung, hashgeprüfte private Kopie, native Windows-Dateisperre und PNG-/VP8-Diagnose implementiert. Deutsche Auswahl, sichtbares Diagnoseende, direkter Paketimport im gebündelten CLI/Startmenü und kurze Anwenderanleitung. [Ablauf und Grenzen](s3-paketmedien.md).

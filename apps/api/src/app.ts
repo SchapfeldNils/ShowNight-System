@@ -28,6 +28,11 @@ import { mediaRoutes } from "./media.js";
 import { packageRoutes } from "./packages.js";
 import { agentRoutes } from "./agents.js";
 import { offlineRoutes } from "./offline.js";
+import { sceneRoutes } from "./scenes.js";
+import {
+  sceneCreate,
+  scenePatch,
+} from "../../../packages/contracts/src/scene.js";
 import {
   pairingInput,
   diagnosticInput,
@@ -76,6 +81,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   await app.register(websocket, { options: { maxPayload: 4096 } });
   authRoutes(app, db, cfg);
   contentRoutes(app, db, cfg);
+  sceneRoutes(app, db);
   mediaRoutes(app, db, cfg);
   packageRoutes(app, db, cfg);
   agentRoutes(app, db);
@@ -135,8 +141,9 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       const r = await db.query(
         "SELECT version FROM schema_migrations ORDER BY version",
       );
-      if (r.rows.map((r) => r.version).join(",") !== "1,2,3") throw new Error();
-      return { status: "ready", schemaVersion: 3 };
+      if (r.rows.map((r) => r.version).join(",") !== "1,2,3,4")
+        throw new Error();
+      return { status: "ready", schemaVersion: 4 };
     } catch {
       return reply.code(503).send({ status: "not_ready" });
     }
@@ -274,6 +281,8 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       "/events/{id}": ["patch", eventPatch],
       "/shows": ["post", showCreate],
       "/shows/{id}": ["patch", showPatch],
+      "/shows/{id}/scenes": ["post", sceneCreate],
+      "/scenes/{id}": ["patch", scenePatch],
       "/events/{id}/show-copies": ["post", showCopy],
       "/devices/pairings": ["post", pairingInput],
       "/devices/{id}/diagnostics": ["post", diagnosticInput],

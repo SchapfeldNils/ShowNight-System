@@ -14,6 +14,8 @@ import type { Config } from "./config.js";
 import { Readable } from "node:stream";
 import { mediaAccess } from "./permissions.js";
 import { transferManifest } from "../../../packages/contracts/src/transfer.js";
+import { sceneDto } from "./scenes.js";
+import { sceneMediaIds } from "../../../packages/contracts/src/scene.js";
 import {
   packageHeader,
   packageBytes,
@@ -58,6 +60,12 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
             [eventId],
           )
         ).rows;
+        const scenes = (
+          await c.query(
+            "SELECT sc.* FROM scenes sc JOIN shows s ON s.id=sc.show_id WHERE s.event_id=$1 ORDER BY sc.created_at,sc.id",
+            [eventId],
+          )
+        ).rows.map(sceneDto);
         const media = (
           await c.query(
             "SELECT * FROM media WHERE event_id=$1 OR id IN (SELECT sm.media_id FROM show_media sm JOIN shows s ON s.id=sm.show_id WHERE s.event_id=$1)",
@@ -68,13 +76,20 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
           .filter((m) => m.status !== "ready")
           .map((m) => `Datei ${m.name}: ${m.status}.`);
         const mediaIds = new Set(media.map((m) => m.id));
+        for (const scene of scenes)
+          for (const mediaId of sceneMediaIds(scene.definition))
+            if (!mediaIds.has(mediaId))
+              errors.push(
+                `Szene ${scene.definition.name}: Medienreferenz fehlt.`,
+              );
         for (const s of shows)
           for (const cue of s.cues)
             for (const mediaId of cue.mediaIds)
               if (!mediaIds.has(mediaId))
                 errors.push(`Einsatz ${cue.name}: Medienreferenz fehlt.`);
         const m = manifest.parse({
-          schemaVersion: 1,
+          schemaVersion: scenes.length ? 2 : 1,
+          ...(scenes.length ? { scenes } : {}),
           id: randomUUID(),
           eventId,
           createdAt: new Date().toISOString(),

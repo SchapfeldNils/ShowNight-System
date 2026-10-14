@@ -1,5 +1,7 @@
 # ShowNight-System
 
+In Arbeit: [S3-06 Szenenentwürfe, Sperren und Paketübertragung](docs/entwicklung/s3-szenenentwuerfe.md), [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17). Erste Browsergestaltung und gespeicherte Ebenen; native Szenenkomposition, vollständiger Editor und Showbetrieb bleiben offen. Aktuelle Softwareprüfungen in status.md. Die folgenden Absätze beschreiben den vorherigen S3-05-Stand.
+
 S3-05: [Paketmedien in der nativen Softwarediagnose](docs/entwicklung/s3-paketmedien.md) implementiert und als Software geprüft. Setup 0.3.5 mit direktem Paketimport; [Nachweise und Prüfsummen](docs/entwicklung/nachweise/s3-paketmedien.json), [PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Vollständige Szenen, Show-GO und Geräteausgabe bleiben offen. Die folgenden Absätze dokumentieren frühere Teilstände.
 
 Streaming-Rechner: [Windows-Setup-Anwendung, Installation und Grenzen](docs/entwicklung/s3-streaming-installer.md). Server-Vorabpaket und Renderer-Diagnosepaket getrennt; tatsächlichen Build-/Prüfstand beachten.

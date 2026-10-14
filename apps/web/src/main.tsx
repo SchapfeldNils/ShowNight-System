@@ -11,6 +11,8 @@ import "./style.css";
 import { moduleKeys } from "../../../packages/contracts/src/index.js";
 import { Devices } from "./devices.js";
 import { OfflineExport } from "./offline.js";
+import { SceneDrafts } from "./scenes.js";
+import type { SceneRecord } from "../../../packages/contracts/src/scene.js";
 type Me = {
   id: string;
   displayName: string;
@@ -866,6 +868,7 @@ function App() {
               <ShowEditor
                 key={editShow.id}
                 initial={editShow}
+                ownerId={me.id}
                 teams={teams}
                 onSave={(s) =>
                   run(() =>
@@ -1323,6 +1326,7 @@ function ShowRow({ show, onEdit }: { show: ShowRecord; onEdit: () => void }) {
 }
 function ShowEditor({
   initial,
+  ownerId,
   teams,
   onSave,
   onAssign,
@@ -1331,6 +1335,7 @@ function ShowEditor({
   busy,
 }: {
   initial: ShowRecord;
+  ownerId: string;
   teams: Team[];
   onSave: (s: ShowRecord) => Promise<void>;
   onAssign: (teamId: string) => Promise<void>;
@@ -1342,6 +1347,8 @@ function ShowEditor({
     [media, setMedia] = useState<MediaRecord[]>([]),
     [team, setTeam] = useState(""),
     [error, setError] = useState("");
+  const [scenes, setScenes] = useState<SceneRecord[]>([]),
+    [sceneEditing, setSceneEditing] = useState(false);
   const scope = "showId=" + s.id;
   const load = async () => {
     try {
@@ -1352,6 +1359,8 @@ function ShowEditor({
   };
   useEffect(() => {
     void load();
+    const timer = setInterval(() => void load(), 3000);
+    return () => clearInterval(timer);
   }, [s.id]);
   function updateCue(index: number, values: Partial<Cue>) {
     setS({
@@ -1365,7 +1374,7 @@ function ShowEditor({
         <h2>
           {s.name} · {s.eventId ? "Eventkopie" : "Unabhängige Vorbereitung"}
         </h2>
-        <button className="secondary" onClick={onClose}>
+        <button className="secondary" disabled={sceneEditing} onClick={onClose}>
           Arbeitsfläche schließen
         </button>
       </div>
@@ -1386,6 +1395,22 @@ function ShowEditor({
         value={s.description}
         disabled={!s.canEdit}
         onChange={(e) => setS({ ...s, description: e.target.value })}
+      />
+      <SceneDrafts
+        showId={s.id}
+        ownerId={ownerId}
+        canEdit={s.canEdit}
+        media={media}
+        api={api}
+        onScenes={setScenes}
+        onEditing={setSceneEditing}
+        onSaved={(before, after) =>
+          setS((current) =>
+            current.revision === before
+              ? { ...current, revision: after }
+              : current,
+          )
+        }
       />
       <h3>Einsätze</h3>
       {s.cues.map((c, i) => (
@@ -1436,6 +1461,38 @@ function ShowEditor({
                 {media.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} · {m.status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Szene des Einsatzes
+              <select
+                value={c.sceneId ?? ""}
+                disabled={!s.canEdit || sceneEditing}
+                onChange={(e) => {
+                  const { sceneId: _old, ...rest } = c;
+                  setS({
+                    ...s,
+                    cues: s.cues.map((cue, index) =>
+                      index !== i
+                        ? cue
+                        : {
+                            ...rest,
+                            ...(e.target.value
+                              ? { sceneId: e.target.value }
+                              : {}),
+                          },
+                    ),
+                  });
+                }}
+              >
+                <option value="">Keine Bildaktion</option>
+                {scenes.map((scene) => (
+                  <option key={scene.id} value={scene.id}>
+                    {scene.definition.name} ·{" "}
+                    {s.cues.filter((cue) => cue.sceneId === scene.id).length}{" "}
+                    Verwendungen
                   </option>
                 ))}
               </select>
@@ -1517,7 +1574,10 @@ function ShowEditor({
           >
             Einsatz hinzufügen
           </button>
-          <button disabled={busy} onClick={() => void onSave(s)}>
+          <button
+            disabled={busy || sceneEditing}
+            onClick={() => void onSave(s)}
+          >
             Show speichern
           </button>
           <h3>Showmedien</h3>

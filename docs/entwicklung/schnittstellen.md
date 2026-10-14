@@ -1,5 +1,7 @@
 # Schnittstellen und Zustandsprotokoll – Entwicklungsstart
 
+S3-06: GET/POST /api/v1/shows/:id/scenes, POST/PATCH/DELETE /api/v1/scenes/:id/lease, PATCH /api/v1/scenes/:id. Bestehende Show-/Medienrechte, Origin/CSRF, eigene Szenenrevision und 90-Sekunden-Lease mit Token/Sitzung; Heartbeat 20 Sekunden. Manifestversion 2 trägt scenes und cue.sceneId, v1 weiter lesbar. Keine neue native Nachricht, Liveaktivierung oder Show-GO. [Schemas/Bedienung/Grenzen](s3-szenenentwuerfe.md).
+
 S3-05: zusätzliche technische Diagnoseaktion POST /api/local/renderer/package-media mit Kennungen/erwarteter Diagnoserevision. Paketbindung plus bestehende Admin-/MFA-/Origin-/CSRF-Prüfung, erneute Prüfung nach Dateioperation/Warteschlange. Bestätigte Fähigkeit packageMediaSupported, optionale gepinnte packageMedia-Ressource und ended im nativen Diagnosezustand. Keine Dateipfade/URIs aus Browseranfragen, kein Show-GO. [Vertrag und Grenzen](s3-paketmedien.md).
 
 S3-04, 14. Oktober 2026: geschützter Windows-Named-Pipe-Diagnosekanal, Version/Epoch/Token, 16-KiB-Limit; prepare/take/clear mit commandId und erwarteter Revision, query/frame ohne Zustandsänderung. TS-Vertrag packages/contracts/src/renderer.ts, C++-Validierung separat. Lokale globale Admindiagnose GET /api/local/renderer, POST /renderer/test, GET /renderer/frames/preview oder /program, aktuelle MFA-/Origin-/CSRF-/Sitzungsprüfung. PNGs stammen aus dem nativen Prozess, keine Frames im JSON. Keine Live-/GO-/Paketaktivierungsnachricht. [Details und Grenzen](s3-renderer.md).

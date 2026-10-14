@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { manifest } from "./index.js";
+import { sceneMediaIds } from "./scene.js";
 
 // A content-only S1 snapshot; identities, sessions and live activation are absent.
 export const packageLimits = {
@@ -9,7 +10,7 @@ export const packageLimits = {
   files: 2000,
 } as const;
 export const transferManifest = manifest
-  .extend({
+  .safeExtend({
     event: manifest.shape.event.strict(),
     shows: z
       .array(
@@ -42,6 +43,32 @@ export const transferManifest = manifest
   })
   .superRefine((m, ctx) => {
     const media = new Set(m.media.map((f) => f.id));
+    const scenes = new Map((m.scenes ?? []).map((s) => [s.id, s]));
+    if (
+      scenes.size !== (m.scenes ?? []).length ||
+      (m.scenes ?? []).some(
+        (s) => !m.shows.some((show) => show.id === s.showId),
+      )
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Ungültige Szenenzuordnung im Paket.",
+      });
+    if (
+      (m.scenes ?? []).some((s) =>
+        sceneMediaIds(s.definition).some((id) => !media.has(id)),
+      )
+    )
+      ctx.addIssue({ code: "custom", message: "Szenenmedium fehlt im Paket." });
+    if (
+      m.shows.some((s) =>
+        s.cues.some((c) => c.sceneId && scenes.get(c.sceneId)?.showId !== s.id),
+      )
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Einsatz verweist auf fremde oder fehlende Szene.",
+      });
     const unique = (ids: string[]) => new Set(ids).size === ids.length;
     if (
       !unique(m.shows.map((s) => s.id)) ||

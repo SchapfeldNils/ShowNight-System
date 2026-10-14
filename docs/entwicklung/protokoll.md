@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 · S3-06 Szenenentwürfe
+
+Betreiber setzt Softwarearbeit fort. Eigener Branch codex/s3-scene-drafts und Issue #17 auf PR #16, kein Merge/Deployment. Strikte Text-/Rechteck-/Bildebenen, eigenständige Szenenrevision, exklusive sitzungsgebundene Lease mit Ablauf, deutsche Browsergestaltung/Autospeicherung und bewusste lokale Wiederherstellung, optionale wiederverwendbare Einsatzreferenz. Veranstaltungskopie vergibt neue Szenen-/Ebenenkennungen; Manifest-v2 exportiert Szenen, v1 bleibt kompatibel. Native Szenenkomposition und vollständiger Editor bleiben offen.
+
+LocalAI-Entwurf (1022/254 Tokens) und begrenzter Review (2650/650 Tokens, unvollständig) tatsächlich ausgeführt. Unbelegte Behauptung fehlender FOR-UPDATE-/Sitzungssperre gegen Code geprüft und verworfen. Tatsächliche Konkurrenzprüfungen bestimmen den Nachweis. Erster Testfehler war Wiederverwendung desselben TOTP für zwei Sitzungen; echte MFA lehnt Replay korrekt ab, zweite synthetische Testsitzung explizit vorbereitet. PostgreSQL-/SQLite-Szenenprüfung danach 5/5, v1-Paketsuite 9/9, Typprüfung/14 Units/Build bestanden. Browserstart zunächst belegter Testdatenbankport; optionalen isolierten Testport ergänzt, bestehenden Dienst nicht beendet. Browserprüfung fand fehlenden leeren JSON-Inhalt beim Lease-POST und uneindeutige Textarea-Beschriftung; beides korrigiert. Bildstatus aktualisiert nach Analyse. Abschließende Browser-/CI-Ergebnisse gesondert führen.
+
 ## 14. Oktober 2026 · S3-05 Abschlussnachweis
 
 Finale Runtime 5d3c34e: Native renderer 38599883983 vollständig erfolgreich, native Suite 5/5 und portable Suite 6/6. Tatsächliche PNG-/VP8-Dekodierung, Windows-Dateisperren, unveränderte geladene Kopie, Videoende, ungültige PNG-Signatur/Decoderfehler mit Freigabe, echter Edge-Desktop-/Mobilbrowser und gebündelter CLI-Paketimport bestanden. Setup 0.3.5 einschließlich zusätzlichem Import-Startmenüeintrag, Installation, aktiver Updatesperre, Update und datenerhaltender Deinstallation bestanden. S1 checks 38599883927 auf Windows/AMD64/ARM64 und Server-Installer 38599884010 ebenfalls vollständig grün.

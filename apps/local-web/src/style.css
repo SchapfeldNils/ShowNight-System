@@ -86,3 +86,11 @@
     padding: 16px;
   }
 }
+.scene-sketch {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  background: #000;
+  border: 1px solid #657385;
+  margin: 12px 0;
+}

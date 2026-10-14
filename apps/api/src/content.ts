@@ -15,6 +15,10 @@ import {
   eventRecord,
   showRecord,
 } from "../../../packages/contracts/src/index.js";
+import {
+  sceneRecord,
+  sceneMediaIds,
+} from "../../../packages/contracts/src/scene.js";
 import type { Config } from "./config.js";
 import type { Actor } from "./auth.js";
 import { transaction, type DB, type Queryable } from "./db.js";
@@ -374,6 +378,22 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
       if (current.revision !== input.expectedRevision)
         conflict(await showDto(c, current));
       if (input.cues) {
+        for (const cue of input.cues) {
+          if (
+            cue.sceneId &&
+            !(
+              await c.query("SELECT 1 FROM scenes WHERE id=$1 AND show_id=$2", [
+                cue.sceneId,
+                showId,
+              ])
+            ).rowCount
+          )
+            throw new HttpError(
+              400,
+              "SCENE_SCOPE",
+              "Einsätze dürfen nur Szenen derselben Show verwenden.",
+            );
+        }
         if (new Set(input.cues.map((c) => c.id)).size !== input.cues.length)
           throw new HttpError(
             400,
@@ -426,9 +446,19 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
       const source = await showAccess(c, req.actor, input.sourceShowId);
       if (source.revision !== input.sourceRevision)
         conflict(await showDto(c, source));
+      const sourceScenes = (
+        await c.query(
+          "SELECT * FROM scenes WHERE show_id=$1 ORDER BY created_at,id",
+          [source.id],
+        )
+      ).rows;
+      const sceneIds = new Map<string, string>(
+        sourceScenes.map((s) => [s.id, randomUUID()]),
+      );
       const copiedCues = source.cues.map((cue: any) => ({
         ...cue,
         id: randomUUID(),
+        ...(cue.sceneId ? { sceneId: sceneIds.get(cue.sceneId) } : {}),
       }));
       const s = (
         await c.query(
@@ -449,9 +479,33 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
         "INSERT INTO show_media(show_id,media_id) SELECT $1,media_id FROM show_media WHERE show_id=$2",
         [s.id, source.id],
       );
-      for (const mediaId of new Set<string>(
-        source.cues.flatMap((cue: any) => cue.mediaIds),
-      )) {
+      for (const original of sourceScenes) {
+        const definition = sceneRecord.shape.definition.parse(
+          original.definition,
+        );
+        definition.layers = definition.layers.map((l) => ({
+          ...l,
+          id: randomUUID(),
+        }));
+        const row = (
+          await c.query(
+            "INSERT INTO scenes(id,show_id,definition,created_by,updated_by) VALUES($1,$2,$3,$4,$4) RETURNING *",
+            [
+              sceneIds.get(original.id),
+              s.id,
+              JSON.stringify(definition),
+              req.actor.id,
+            ],
+          )
+        ).rows[0];
+        await remember(c, "scene", row, req.actor.id);
+      }
+      for (const mediaId of new Set<string>([
+        ...source.cues.flatMap((cue: any) => cue.mediaIds),
+        ...sourceScenes.flatMap((s) =>
+          sceneMediaIds(sceneRecord.shape.definition.parse(s.definition)),
+        ),
+      ])) {
         await mediaAccess(c, req.actor, mediaId);
         await c.query(
           "INSERT INTO show_media(show_id,media_id) VALUES($1,$2) ON CONFLICT DO NOTHING",

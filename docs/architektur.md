@@ -1,5 +1,7 @@
 # Show Night – Technische Architektur
 
+S3-06, 14. Oktober 2026: showbezogene Szenenentwürfe im vorhandenen PostgreSQL-Kern mit eigener Revision und exklusiver Lease; versionierte Paketübertragung an SQLite. SVG dient nur der ausdrücklich gekennzeichneten Browsergestaltung dieses ersten Bausteins. Geplanter Konva-Editor und C++/GStreamer/Skia-Ausgabe bleiben Zielarchitektur. Keine Browser-Publikumsausgabe oder neue Rechte-/Ausfallarchitektur. [Teilumfang](entwicklung/s3-szenenentwuerfe.md).
+
 S3-04, 14. Oktober 2026: erster separater Windows-C++-Prozess integriert GStreamer und Skia in einen ausdrücklich auf Softwarediagnose begrenzten Offscreen-Weg. CPU-Raster und lokale VP8-Testdatei statt physischer Sinks; Named-Pipe mit ACL/Token/Epoch, native PNG-Auslieferung über lokale Admin-API. Direct3D11, HDMI, WebRTC, persönliche Regievorschau und echte Tonwege bleiben bestehende Ziele. Keine neue Fach-/Live-/Ausfallarchitektur oder Leistungszusage. [Ablauf/Build/Prüfgrenzen](entwicklung/s3-renderer.md).
 
 S3-03, 10. Oktober 2026: optionaler gezielter LAN-Zugang des lokalen Vorbereitungsservers. Eine private IPv4-Schnittstelle, passendes selbstsigniertes IP-SAN-Zertifikat, manuelle Client-Vertrauens-/Firewallkonfiguration und lokale Diagnose. Loopback bleibt Standard und bestehende Profile bleiben erhalten. Der nachfolgende S3-02-Satz beschreibt den früheren Teilstand. Keine neue Fach-/Live-/Ausfallarchitektur, Renderer bleibt C++/GStreamer/Skia; tatsächliche Mehrgeräte-/Internettrennungsabnahme offen. [Bedienung und Grenzen](entwicklung/s3-lan.md).

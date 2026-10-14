@@ -57,12 +57,18 @@ export async function migrate(db: DB) {
         ? "dist/api/002_agents.sql"
         : "apps/api/migrations/002_agents.sql";
       await c.query(await readFile(path, "utf8"));
-    } else if (installed !== "1,2" && installed !== "1,2,3")
+    } else if (!["1,2", "1,2,3", "1,2,3,4"].includes(installed))
       throw new Error("Nicht unterstützter Migrationsstand.");
-    if (installed !== "1,2,3") {
+    if (["1", "1,2"].includes(installed)) {
       const path = existsSync(resolve("dist/api/003_offline.sql"))
         ? "dist/api/003_offline.sql"
         : "apps/api/migrations/003_offline.sql";
+      await c.query(await readFile(path, "utf8"));
+    }
+    if (installed !== "1,2,3,4") {
+      const path = existsSync(resolve("dist/api/004_scenes.sql"))
+        ? "dist/api/004_scenes.sql"
+        : "apps/api/migrations/004_scenes.sql";
       await c.query(await readFile(path, "utf8"));
     }
   });

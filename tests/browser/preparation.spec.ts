@@ -71,7 +71,87 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   await expect(
     page.getByText("Original gespeichert. Analyse läuft im Worker."),
   ).toBeVisible();
+  await expect(
+    page.locator(".editor").getByText("Geprüft", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Szene anlegen", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Szene bearbeiten", exact: true })
+    .click();
+  await page
+    .getByLabel("Szenenname", { exact: true })
+    .fill("Browser Titelszene");
+  await page
+    .getByRole("button", { name: "Rechteck hinzufügen", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Bild hinzufügen", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Text hinzufügen", exact: true })
+    .click();
+  await page
+    .getByLabel("Ebenentext", { exact: true })
+    .fill("ShowNight · synthetischer Titel");
+  await expect(
+    page.getByText(/Server gespeichert · Szenenrevision/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", {
+      name: "Gestaltungsentwurf im Browser",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".scene-sketch image")).toHaveCount(1);
+  await expect(
+    page.getByText("Medium nicht verfügbar", { exact: true }),
+  ).toHaveCount(0);
+  const competing = await context.newPage();
+  await competing.goto("/");
+  await competing.getByRole("button", { name: "Shows", exact: true }).click();
+  await competing
+    .getByRole("button", { name: "Arbeitsfläche öffnen", exact: true })
+    .click();
+  await competing
+    .getByRole("combobox", { name: "Szene ansehen", exact: true })
+    .selectOption({ label: "Browser Titelszene" });
+  await competing
+    .getByRole("button", { name: "Szene bearbeiten", exact: true })
+    .click();
+  await expect(
+    competing.getByText(/Szene wird bereits bearbeitet/),
+  ).toBeVisible();
+  await expect(
+    competing.getByLabel("Szenenname", { exact: true }),
+  ).toBeDisabled();
+  await competing.close();
+  await page.screenshot({
+    path: "test-results/s3-szenenentwurf.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/s3-szenenentwurf-mobil.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page
+    .getByRole("button", { name: "Speichern und freigeben", exact: true })
+    .click();
+  await expect(
+    page.getByText("Gespeichert · Bearbeitung freigegeben", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Einsatz hinzufügen" }).click();
+  await page
+    .getByRole("combobox", { name: "Szene des Einsatzes", exact: true })
+    .selectOption({ index: 1 });
   await page.getByLabel("Einsatzname", { exact: true }).fill("Begrüßung");
   await page
     .getByLabel("Auslösehinweis", { exact: true })
@@ -178,6 +258,18 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
     ).toBeVisible();
     await expect(
       localPage.getByText("Originalfassung für die Veranstaltung"),
+    ).toBeVisible();
+    await expect(
+      localPage.getByRole("heading", {
+        name: "Vorbereitete Szenenentwürfe",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      localPage.getByRole("img", {
+        name: "Gestaltungsentwurf im Browser",
+        exact: true,
+      }),
     ).toBeVisible();
     await localPage
       .getByLabel("Benutzername", { exact: true })

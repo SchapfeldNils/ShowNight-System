@@ -153,6 +153,10 @@
 
 ## Weitere Entscheidungen nach D017
 
+### S3-06 – technische Konkretisierung, 14. Oktober 2026
+
+Status: Umsetzungsteil des fortgesetzten Betreiberauftrags, keine neue Fachentscheidung. Erste Szenenentwürfe speichern Text/Rechteck/Bild getrennt von Livezuständen. Exklusive Lease je Szene/Sitzung (90 Sekunden, Heartbeat 20 Sekunden), eigene Revision, ausdrückliche lokale Entwurfswiederherstellung und versionierte Paketübertragung konkretisieren D006/D008/D010. Browser-SVG ist nur Entwurfsdarstellung; Konva und nativer Renderer bleiben Ziel. Keine geänderte Regie-, Rechte-, Aktivierungs- oder Ausfallregel. [Vertrag/Grenzen](../entwicklung/s3-szenenentwuerfe.md).
+
 ### S3-04 – technischer Umsetzungsteil, 14. Oktober 2026
 
 Status: Betreiber beauftragt Renderer-Grundlage trotz fehlendem Testclient; umfangreiche Funktionstests später. Architektur bleibt C++/GStreamer/Skia. Erstes Paket verwendet einen isolierten stummen Offscreen-Diagnoseweg und lokale Prozessanbindung; Full HD/Direct3D11/HDMI/WebRTC/Ton/Regie-/Ausfallabnahme bleiben Ziele mit offenen Nachweisen. Keine bestätigten Fachrechte oder Ersatzregeln durch einen Prototyp ändern. [Anleitung](../entwicklung/s3-renderer.md), [Status](../entwicklung/status.md).
