@@ -1,5 +1,13 @@
 # Entscheidungsprotokoll
 
+## D018 – Installationsanwendung für den Streaming-Rechner
+
+- Status: bestätigt durch ausdrücklichen Betreiberauftrag; Umsetzung/Nachweise getrennt
+- Datum: 14. Oktober 2026
+- Vorgabe: Das Anwenderpaket für den Streaming-Rechner wird als Windows-Installationsanwendung bereitgestellt.
+- Umsetzung: kostenlose Inno-Setup-EXE mit Server, eigener Node-Laufzeit und nach erfolgreichem nativen Build dem Renderer; deutsche Hinweise, Startmenü, datenerhaltende Deinstallation. Server-Vorabpaket ohne Renderer ausdrücklich gekennzeichnet.
+- Grenzen: Kein vorweggenommener HDMI-/Streaming-/Hardwarebeleg. Bestehende Fachrechte, Livefreigabe und Ausfallregeln bleiben verbindlich. [Ablauf und tatsächliche Grenzen](../entwicklung/s3-streaming-installer.md).
+
 ## D001 – Dokumentationsstand 2.0
 
 - Status: bestätigt als Ausgangsstand der bisherigen Planung
