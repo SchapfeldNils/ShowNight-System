@@ -36,7 +36,7 @@ namespace fs = std::filesystem;
 constexpr int width = 640, height = 360;
 constexpr size_t messageLimit = 16384;
 std::atomic<bool> stopping{false};
-const std::regex uuid("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+const std::regex uuid("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
 std::string utf8(const std::wstring& s) {
   int n = WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,s.data(),static_cast<int>(s.size()),nullptr,0,nullptr,nullptr);
   if (!n) throw std::runtime_error("UTF8");

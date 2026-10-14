@@ -4,6 +4,10 @@
 // Native validation is independent of the TypeScript controller. Only the
 // versioned, hashed private snapshot and UUID-derived image children are read.
 class PackageComposition {
+  static bool layerIdentifier(const json& value) {
+    static const std::regex pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",std::regex::icase);
+    return value.is_string() && std::regex_match(value.get<std::string>(),pattern);
+  }
   static bool hash(const json& value) {
     static const std::regex pattern("^[0-9a-f]{64}$");
     return value.is_string() && std::regex_match(value.get<std::string>(),pattern);
@@ -96,7 +100,7 @@ public:
       else if (kind == "image") { fields.insert("mediaId"); fields.insert("fit"); }
       else throw std::runtime_error("INVALID");
       exact(layer,fields);
-      if (!identifier(layer.at("id")) || !layerIds.insert(layer.at("id").get<std::string>()).second || !layer.at("visible").is_boolean()) throw std::runtime_error("INVALID");
+      if (!layerIdentifier(layer.at("id")) || !layerIds.insert(layer.at("id").get<std::string>()).second || !layer.at("visible").is_boolean()) throw std::runtime_error("INVALID");
       label(layer.at("name"));
       number(layer.at("x"),-8192,8192); number(layer.at("y"),-8192,8192);
       number(layer.at("width"),1,8192); number(layer.at("height"),1,8192); number(layer.at("opacity"),0,1);
