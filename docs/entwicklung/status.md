@@ -2,7 +2,7 @@
 
 ## DEV-KI-01: lokale GPU-KI fuer die Entwicklung
 
-14. Oktober 2026, Betreiberauftrag zur lokalen Entwicklungsunterstuetzung. Eigener Branch `codex/local-ai-development`, isolierter Checkout auf Renderer-/Installer-Zwischenstand `120fbe9`. [Einrichtung und Nutzung aus anderen Entwicklungschats](lokale-ki.md). Keine Aenderung der ShowNight-Laufzeit oder des produktiven Systems.
+14. Oktober 2026, Betreiberauftrag zur lokalen Entwicklungsunterstuetzung. Eigener Branch `codex/local-ai-development`, isolierter Checkout auf Renderer-/Installer-Zwischenstand `120fbe9`. Runtime-/Werkzeugcommit `3ef99f0`, [Entwurfs-PR #14](https://github.com/SchapfeldNils/ShowNight-System/pull/14), kein Merge. [Einrichtung und Nutzung aus anderen Entwicklungschats](lokale-ki.md). Keine Aenderung der ShowNight-Laufzeit oder des produktiven Systems. Die folgenden Ergebnisse sind lokale Zielrechnernachweise; ein GitHub-CI-Erfolg wird hier nicht vorweggenommen.
 
 Tatsaechlich eingerichtet: offizielles Ollama 0.40.4, Windows-amd64-Archiv mit SHA256 `7485a1172f8527db4342a63521b9342fc466185ff0855da378cc864ecf6354cf` vor Entpacken geprueft, Laufzeit und Modelldaten ausserhalb OneDrive unter dem lokalen Benutzerprofil. Loopback-Version 0.40.4 bestaetigt; Serverlog meldet Cloud deaktiviert und CUDA 12.6/Compute 8.6 fuer RTX 3070 Laptop, 8 GiB VRAM/ca. 7 GiB verfuegbar. Vorhandener Treiber 560.81 erhalten, RAM 31,7 GiB. Start-/Status-/Stopwerkzeuge, begrenzter Entwurfs-/Reviewaufruf und optionaler lokaler Codex-Aufruf installiert. Windows-Sandbox des aufrufenden Entwicklungschats erfordert freigegebenen Hostaufruf fuer diese Loopback-API.
 
