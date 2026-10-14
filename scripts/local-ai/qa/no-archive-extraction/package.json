@@ -1,0 +1,1 @@
+{"name":"shownight-no-archive-extraction","version":"1.0.0","private":true,"main":"index.cjs","description":"Intentional capability removal: this QA runtime never extracts browser archives"}

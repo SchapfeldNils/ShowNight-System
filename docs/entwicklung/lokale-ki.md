@@ -14,7 +14,7 @@ Einmal im Checkout mit diesen Werkzeugen:
 & .\scripts\local-ai\Install-ShowNightLocalAI.ps1
 ```
 
-Daten liegen unter `%LOCALAPPDATA%\ShowNight\LocalAI`, ausserhalb von OneDrive. Keine maschinenweiten PATH-/Treiber-/Firewallaenderungen, kein geplanter Autostart. Nach Windows-Neustart startet der Aufruf unten den Server erneut. Bindung ausschliesslich `127.0.0.1:11434`, Cloudfunktionen mit `OLLAMA_NO_CLOUD=1` ausgeschaltet. Eine fremde bereits laufende Ollama-Instanz wird nicht ersetzt.
+Daten liegen unter `%LOCALAPPDATA%\ShowNight\LocalAI`, ausserhalb von OneDrive. Keine maschinenweiten PATH-/Treiber-/Firewallaenderungen; die Grundinstallation richtet keinen Autostart ein. Fuer den separat beauftragten Hintergrundhelfer siehe [Dauerbetrieb mit WhatsApp](lokale-ki-dauerbetrieb.md). Nach Windows-Neustart startet der Aufruf unten den Server erneut. Bindung ausschliesslich `127.0.0.1:11434`, Cloudfunktionen mit `OLLAMA_NO_CLOUD=1` ausgeschaltet. Eine fremde bereits laufende Ollama-Instanz wird nicht ersetzt.
 
 Modelldownload ist auf vier gleichzeitige IPv4-Verbindungen mit je 32-MiB-Abschnitten begrenzt. Fertige Abschnitte bleiben bei Netzwerkfehlern erhalten, Range-/Laengenpruefung und abschliessender Gesamt-SHA256 verhindern die Verwendung einer fehlerhaften Datei. Gepinnter Modellblob: `a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f`. Anschliessend ergaenzt Ollama das offizielle Manifest samt Lizenzmetadaten. Ein erneuter Installationsaufruf verwendet den bestehenden geprueften Laufzeitbestand. `-RefreshTools` kopiert lediglich aktualisierte Startwerkzeuge, ohne Server oder Modell zu ersetzen.
 

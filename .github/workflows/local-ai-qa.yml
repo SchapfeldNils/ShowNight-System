@@ -1,0 +1,32 @@
+name: Local AI QA tools
+on:
+  pull_request:
+    paths:
+      - scripts/local-ai/**
+      - .github/workflows/local-ai-qa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: "24.19.0" }
+      - run: node --test scripts/local-ai/qa/core.test.mjs
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @('scripts/local-ai/Install-ShowNightLocalQA.ps1', 'scripts/local-ai/ShowNightLocalQA.ps1', 'scripts/local-ai/qa/Invoke-ShowNightQARequest.ps1')
+          foreach ($file in $files) {
+            $tokens = $null; $errors = $null
+            [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+      - run: npm install --global pnpm@11.25.0
+      - name: Isolated runtime dependency check
+        working-directory: scripts/local-ai/qa
+        run: |
+          pnpm install --prod --frozen-lockfile --ignore-scripts
+          pnpm audit --prod

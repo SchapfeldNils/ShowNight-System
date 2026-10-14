@@ -1,0 +1,8 @@
+{
+  "name": "shownight-local-qa-private-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lesender lokaler Entwicklungshelfer mit privater WhatsApp-Rueckmeldung",
+  "dependencies": { "qrcode": "1.5.4", "whatsapp-web.js": "1.34.7" }
+}

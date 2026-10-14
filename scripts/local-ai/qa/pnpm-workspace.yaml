@@ -1,0 +1,5 @@
+# Separate developer runtime; never added to the ShowNight product workspace.
+packages: []
+overrides:
+  extract-zip: link:./no-archive-extraction
+  basic-ftp: link:./no-ftp

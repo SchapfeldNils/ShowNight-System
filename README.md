@@ -47,6 +47,7 @@ MFA ist für Admin/Leitung verpflichtend. Keine Standardkennwörter. Demo und Ge
 ## Entwicklung vorbereiten
 
 - [Lokale GPU-KI fuer Entwicklungsentwuerfe und begrenzte Codex-Aufgaben](docs/entwicklung/lokale-ki.md) – separates kostenloses Entwicklungswerkzeug; kein Bestandteil der ShowNight-Laufzeit.
+- [Lokaler KI-Pruefhelfer im Dauerbetrieb mit WhatsApp-Rueckmeldung](docs/entwicklung/lokale-ki-dauerbetrieb.md) – lesende Aufgaben aus Git-Staenden; private Verknuepfung erforderlich.
 - [Entwicklungsauftrag für Codex](docs/entwicklung/auftrag.md)
 - [Arbeitsregeln](AGENTS.md)
 - [Arbeitspakete](docs/entwicklung/arbeitspakete.md)

@@ -1,0 +1,1 @@
+{"name":"shownight-no-ftp","version":"1.0.0","private":true,"main":"index.cjs","description":"Intentional capability removal: no FTP transport in the private QA runtime"}

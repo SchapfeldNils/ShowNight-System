@@ -1,0 +1,24 @@
+// Explicit synthetic GPU acceptance probe; never queued as a product review.
+import { readFile, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import path from 'node:path';
+import { requestFor, validateResponse, atomicJson } from './core.mjs';
+const exec = promisify(execFile);
+const root = process.argv[2];
+if (!root || !path.isAbsolute(root)) throw new Error('Absoluter installierter QA-Pfad erforderlich.');
+const config = JSON.parse(await readFile(path.join(root,'config.json'),'utf8'));
+const state = path.join(root,'state');
+const text = 'export function boundedIndex(values, index) {\n  if (!Number.isInteger(index) || index < 0 || index >= values.length) return null;\n  return values[index];\n}';
+const task = {file:'scripts/synthetic-probe.mjs',commit:'0'.repeat(40),startLine:1,endLine:4};
+const request = path.join(state,'probe-request.json'), response = path.join(state,'probe-response.json');
+await atomicJson(request,requestFor(task,text));
+await exec(config.powerShellPath,['-NoProfile','-File',path.join(root,'Invoke-ShowNightQARequest.ps1'),'-RequestPath',request,'-ResponsePath',response],{windowsHide:true,timeout:200000});
+const answer = JSON.parse((await readFile(response,'utf8')).replace(/^\uFEFF/,''));
+const result = validateResponse(answer,task,text);
+const gpu = await (await fetch('http://127.0.0.1:11434/api/ps')).json();
+const model = gpu.models.find(item=>item.name==='shownight-local:8b');
+if (!(model?.size_vram > 0)) throw new Error('Kein geladener GPU-Modellnachweis.');
+const evidence = {date:new Date().toISOString(),kind:'synthetic-gpu-probe',model:model.name,vramBytes:model.size_vram,sizeBytes:model.size,syntaxContract:true,result};
+await atomicJson(path.join(state,'gpu-acceptance.json'),evidence);
+console.log(JSON.stringify({kind:evidence.kind,model:evidence.model,vramBytes:evidence.vramBytes,tokens:result.tokens,tokensPerSecond:result.tokensPerSecond,findings:result.findings.length,testIdeas:result.testIdeas.length,rejected:result.rejected.length}));
