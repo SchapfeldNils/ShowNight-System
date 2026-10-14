@@ -328,7 +328,11 @@ export function SceneDrafts({
       await current.current.api(`/scenes/${lease.scene.id}/lease`, "DELETE", {
         leaseToken: lease.leaseToken,
       });
-      if (!blocked) localStorage.removeItem(key(lease.scene.id));
+      if (
+        !blocked &&
+        localStorage.getItem(key(lease.scene.id)) === saved.current
+      )
+        localStorage.removeItem(key(lease.scene.id));
       setStatus(
         blocked
           ? "Bearbeitung beendet · lokalen Entwurf vor erneutem Laden vergleichen"

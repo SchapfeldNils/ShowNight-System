@@ -108,6 +108,54 @@ test("S1: Browserablauf mit MFA, Event, Team, Showkopie, Upload, Konflikt und Ma
   await expect(
     page.getByText("Medium nicht verfügbar", { exact: true }),
   ).toHaveCount(0);
+  let failedSaves = 0;
+  await page.route("**/api/v1/scenes/*", (route) => {
+    if (route.request().method() === "PATCH") {
+      failedSaves++;
+      return route.abort();
+    }
+    return route.continue();
+  });
+  await page
+    .getByLabel("Ebenentext", { exact: true })
+    .fill("Lokaler Wiederherstellungsentwurf");
+  await expect(
+    page.getByText(
+      "Speicherung nicht bestätigt · keine automatische Wiederholung",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await page.waitForTimeout(1500); // A further autosave interval must not replay the failed mutation.
+  expect(failedSaves).toBe(1);
+  await page.unroute("**/api/v1/scenes/*");
+  await page
+    .getByRole("button", {
+      name: "Bearbeitung beenden · Entwurf behalten",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Szene bearbeiten", exact: true })
+    .click();
+  await expect(page.getByLabel("Ebenentext", { exact: true })).toHaveValue(
+    "ShowNight · synthetischer Titel",
+  );
+  await page.getByText("Lokalen Entwurf vergleichen", { exact: true }).click();
+  await expect(
+    page.getByRole("button", {
+      name: "Lokalen Entwurf übernehmen",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Lokalen Entwurf übernehmen", exact: true })
+    .click();
+  await expect(page.getByLabel("Ebenentext", { exact: true })).toHaveValue(
+    "Lokaler Wiederherstellungsentwurf",
+  );
+  await expect(
+    page.getByText(/Server gespeichert · Szenenrevision/),
+  ).toBeVisible();
   const competing = await context.newPage();
   await competing.goto("/");
   await competing.getByRole("button", { name: "Shows", exact: true }).click();
