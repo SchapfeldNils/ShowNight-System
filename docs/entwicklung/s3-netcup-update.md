@@ -1,6 +1,6 @@
 # S3 · Online-Update für die lokale Erstinbetriebnahme
 
-Stand: 14. Oktober 2026. [Issue #20](https://github.com/SchapfeldNils/ShowNight-System/issues/20), [Entwurfs-PR #21](https://github.com/SchapfeldNils/ShowNight-System/pull/21). Produktiv läuft weiterhin S2/Schema 2. **Kein Produktivupdate durchgeführt und keine produktive Datenbank migriert.**
+Historischer Vorbereitungsstand vom 14. Oktober 2026. [Issue #20](https://github.com/SchapfeldNils/ShowNight-System/issues/20), [Entwurfs-PR #21](https://github.com/SchapfeldNils/ShowNight-System/pull/21). Damals produktiv S2/Schema 2; Probelauf ohne Produktivupdate. **Anschließend ausdrücklich freigegeben und Schema 4 produktiv bereitgestellt: [tatsächliche Durchführung mit Rückkehr und erneutem Versuch](s3-netcup-durchfuehrung-20261014.md).** Nachfolgende Vorbereitungsnachweise bleiben historisch; lokale Erstinbetriebnahme weiterhin offen.
 
 ## Anlass und Abgrenzung
 

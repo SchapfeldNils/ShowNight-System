@@ -1,6 +1,6 @@
 # S1-Zielabnahme auf Netcup
 
-Historischer S1-Zielnachweis vom 9. Oktober 2026, nach ausdrücklicher Betreiberfreigabe zur Ausführung des vorbereiteten Freischaltungsplans. **Aktueller Produktivstand seit 10. Oktober: S2/Schema 2, siehe [Update-/Agentnachweise](s2-netcup-update.md).** S1/S2 bleiben Entwicklungszwischenstände, keine Veranstaltungs-/Hardwarefreigabe. Folgende Tabelle dokumentiert den damals tatsächlich geprüften S1-Stand.
+Historischer S1-Zielnachweis vom 9. Oktober 2026, nach ausdrücklicher Betreiberfreigabe zur Ausführung des vorbereiteten Freischaltungsplans. **Aktueller Produktivstand seit 14. Oktober: Runtime 1c983fc/Schema 4, siehe [Durchführung mit Sicherung/Rückkehr](s3-netcup-durchfuehrung-20261014.md).** Historischer [S2-/Agentnachweis](s2-netcup-update.md) erhalten. Entwicklungszwischenstand, keine Veranstaltungs-/Hardwarefreigabe. Folgende Tabelle dokumentiert den damals tatsächlich geprüften S1-Stand.
 
 ## Bereitgestellter Stand
 

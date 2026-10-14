@@ -1,5 +1,7 @@
 # ShowNight-System
 
+Betreiberupdate vom 14. Oktober 2026: Online nach ausdrücklicher Freigabe auf geprüfte Runtime 1c983fc/Schema 4 aktualisiert; [Sicherung, Rückkehr und erfolgreicher erneuter Versuch](docs/entwicklung/s3-netcup-durchfuehrung-20261014.md). Website bereit, Mail aus. Betreiber online angemeldet; Inhaltspaket und geprüfter Serverschlüssel lokal importiert. Setup-0.3.6-Ersteinrichtung wartet noch auf Anmeldestand, Zertifikatvertrauen und lokalen Start. Neuere Entwicklungsfixes/Schema 5 nicht mitbereitgestellt. Die nachfolgenden Absätze beschreiben frühere Teilstände.
+
 S3-06: [Szenenentwürfe, Sperren und Paketübertragung](docs/entwicklung/s3-szenenentwuerfe.md) als Software umgesetzt und geprüft, [PR #18](https://github.com/SchapfeldNils/ShowNight-System/pull/18). Setup 0.3.6 mit lesender Szenenansicht und bestehender nativer Einzelmedien-Diagnose bereitgestellt; [Nachweise/Prüfsummen](docs/entwicklung/nachweise/s3-szenenentwuerfe.json). Native Szenenkomposition, vollständiger Editor und Showbetrieb bleiben offen. Kein Merge oder Produktivupdate. Die folgenden Absätze beschreiben frühere Teilstände.
 
 S3-05: [Paketmedien in der nativen Softwarediagnose](docs/entwicklung/s3-paketmedien.md) implementiert und als Software geprüft. Setup 0.3.5 mit direktem Paketimport; [Nachweise und Prüfsummen](docs/entwicklung/nachweise/s3-paketmedien.json), [PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Vollständige Szenen, Show-GO und Geräteausgabe bleiben offen. Die folgenden Absätze dokumentieren frühere Teilstände.
