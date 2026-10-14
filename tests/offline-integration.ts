@@ -636,7 +636,7 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
                 "SELECT version FROM schema_migrations ORDER BY version",
               )
             ).rows.map((r) => r.version),
-            [1, 2, 3],
+            [1, 2, 3, 4],
           );
           assert.equal(
             (await upgrade.query("SELECT count(*) FROM offline_exports"))
