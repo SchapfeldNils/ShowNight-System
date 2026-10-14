@@ -2,6 +2,8 @@
 
 ## Issue #27: lokale Technikvergabe nur durch Admin
 
+Abschluss: Runtime `7dba227`, [PR #28](https://github.com/SchapfeldNils/ShowNight-System/pull/28), lokale Units 35/35 und Browser 6/6; unabhängiger vollständiger Diff-Review samt Korrekturen/Nachtrag ohne verbleibende bestätigte Befunde. Neue S1-CI Windows/AMD64/ARM64, Server-Installer und nativer Renderer vollständig erfolgreich. ARM64-Dockerimage-Downloadtimeout im ersten Lauf dokumentiert, unveränderter Wiederholungslauf vollständig bestanden. Setup 0.3.9 mit Renderer tatsächlich heruntergeladen und Archiv-/Dateihashes sowie EXE-Produktversion bestätigt, nicht installiert. Laufender lokaler Betrieb 0.3.8 und Netcup unverändert, kein Merge oder Hardwarebeleg. [Nachweis](nachweise/s3-offline-kontenrechte.json). Nächstes Paket: native Komposition der vorbereiteten Paket-v2-Szenen. Die folgende Zwischenstandsangabe ist historisch.
+
 14. Oktober 2026, `codex/s3-offline-account-rights`, auf PR #25 (`000f1a2`): bestehende Online-Regel lokal durchgesetzt (F05/F30/A18). Leitung erhält bei Technikvergabe 403 vor Datenänderungen; normale Veranstaltungskonten bleiben möglich. Technikoption nur für Admin. Synthetische SQLite-/MFA-/HTTP- und Browserregressionen ergänzt; Build und erste lokale Prüfungen bestanden. Vollständiger unabhängiger Review und neue CI werden vor Abschluss nachgetragen. Setupquellen 0.3.9, vorhandener Betrieb 0.3.8 und Netcup unverändert. [Ablauf, Grenzen und Nachweise](s3-offline-kontenrechte.md).
 
 ## Issue #24: lokale Serverübersicht und lesendes Windows-Inventar

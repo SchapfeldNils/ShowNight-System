@@ -1,5 +1,7 @@
 # Offene GitHub-Issues – bearbeitbarer Stand
 
+Neuer Korrekturstand, 14. Oktober 2026: [Issue #27 / PR #28](https://github.com/SchapfeldNils/ShowNight-System/pull/28) setzt Technikvergabe lokal auf Adminrechte; SQLite-/MFA-/HTTP- und Browserregressionen sowie unabhängiger Full-Diff-Review bestanden. CI vollständig erfolgreich; Setup 0.3.9 mit Renderer heruntergeladen und hashgeprüft, nicht installiert. [Aktueller Nachweis](s3-offline-kontenrechte.md). Die folgende Zehn-Issue-Liste und PR-Tabelle sind historische Momentaufnahmen. PR #25 bleibt ungemergte Ausgangsbasis; PR #23 hat aktuell einen Mergekonflikt, PR #19 ist geschlossen und ungemergt. Lokaler Betrieb bereits 0.3.8, durch dieses Paket unverändert.
+
 14. Oktober 2026. Betreiberauftrag: alle offenen Issues stückweise lösen. GitHub-Suche lieferte zehn Issues. Diese Liste beschreibt tatsächliche Teilstände und nächste Schritte; sie schließt keine Issues und bestätigt keinen Merge oder Gerätebetrieb.
 
 | Issue                                                                             | Nachgewiesener Softwarestand                                                                                                                                | Nächster offener Schritt                                                                                                                                               |
