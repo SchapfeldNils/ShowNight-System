@@ -2,3 +2,5 @@
 *.docx -text
 *.png -text
 *.mp4 -text
+# Unified patches require a space marker on empty context lines.
+scripts/local-ai/qa/patches/*.patch whitespace=-blank-at-eol

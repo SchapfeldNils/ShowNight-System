@@ -28,10 +28,12 @@ New-Item -ItemType Directory -Path (Join-Path $qaRoot 'state') -Force | Out-Null
 $accountSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 & icacls.exe $qaRoot /inheritance:r /grant:r "*${accountSid}:(OI)(CI)F" '*S-1-5-18:(OI)(CI)F' | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Private Zugriffsrechte konnten nicht gesetzt werden.' }
-foreach ($name in @('core.mjs','notifications.mjs','worker.mjs','Invoke-ShowNightQARequest.ps1','package.json','pnpm-lock.yaml','pnpm-workspace.yaml')) {
+foreach ($name in @('core.mjs','dashboard.mjs','notifications.mjs','worker.mjs','reconcile-whatsapp.mjs','Invoke-ShowNightQARequest.ps1','package.json','pnpm-lock.yaml','pnpm-workspace.yaml')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "qa\$name") -Destination (Join-Path $qaRoot $name) -Force
 }
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ShowNightLocalQA.ps1') -Destination $control -Force
+New-Item -ItemType Directory -Path (Join-Path $qaRoot 'patches') -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'qa\patches\whatsapp-web.js@1.34.7.patch') -Destination (Join-Path $qaRoot 'patches\whatsapp-web.js@1.34.7.patch') -Force
 foreach ($name in @('no-archive-extraction','no-ftp')) {
     New-Item -ItemType Directory -Path (Join-Path $qaRoot $name) -Force | Out-Null
     foreach ($fileName in @('package.json','index.cjs')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot "qa\$name\$fileName") -Destination (Join-Path $qaRoot "$name\$fileName") -Force }

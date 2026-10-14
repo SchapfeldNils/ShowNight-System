@@ -1,11 +1,20 @@
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { randomBytes } from 'node:crypto';
-import { readFile, rm } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { atomicJson } from './core.mjs';
+import { atomicJson, sensitive } from './core.mjs';
+import { renderDashboard } from './dashboard.mjs';
 
 const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+export function messageId(message) {
+  const id = typeof message?.id === 'string' ? message.id : message?.id?._serialized ?? message?.id?.$1;
+  return typeof id === 'string' && id.length > 0 ? id : null;
+}
+export function diagnostic(error) {
+  const text = String(error?.message ?? 'Unbekannter Versandfehler.').replace(/\+?\d{7,}/g, '[Nummer]').replace(/\r?\n/g, ' ').slice(0, 500);
+  return sensitive(text) ? 'Geschuetzter Fehlertext ausgeblendet.' : text;
+}
 async function bounded(promise) {
   let timer;
   try { return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('WhatsApp antwortet nicht rechtzeitig.')), 20000); })]); }
@@ -39,10 +48,19 @@ export class WhatsAppFeedback {
     const saved = pairing ? /^http:\/\/127\.0\.0\.1:(\d{1,5})\/([0-9a-f]{48})$/.exec(pairing.url) : null;
     if (pairing && (!saved || Number(saved[1]) < 1024 || Number(saved[1]) > 65535)) throw new Error('Privater Verknuepfungspfad ungueltig.');
     const secret = saved?.[2] ?? randomBytes(24).toString('hex');
-    this.server = createServer((request, response) => {
-      if (request.method !== 'GET' || request.url !== `/${secret}`) { response.writeHead(404).end(); return; }
+    this.server = createServer(async (request, response) => {
+      if (request.method !== 'GET' || ![`/${secret}`, `/${secret}/bericht`].includes(request.url)) { response.writeHead(404).end(); return; }
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store',
         'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'", 'Referrer-Policy': 'no-referrer' });
+      if (request.url === `/${secret}/bericht`) {
+        try {
+          const [state, status] = await Promise.all([readFile(path.join(config.stateRoot,'state.json'),'utf8').then(JSON.parse),readFile(path.join(config.stateRoot,'status.json'),'utf8').then(JSON.parse)]);
+          const html = renderDashboard(state,status);
+          await writeFile(path.join(config.stateRoot,'Uebersicht.html'),html,'utf8');
+          response.end(html);
+        } catch { response.end('<!doctype html><html lang="de"><meta charset="utf-8"><title>ShowNight</title><h1>Die Übersicht ist noch nicht bereit.</h1><p>Bitte in wenigen Sekunden aktualisieren.</p></html>'); }
+        return;
+      }
       const image = this.qrImage ? `<img width="300" height="300" src="${this.qrImage}" alt="WhatsApp-Verknuepfungscode">` : '';
       response.end(`<!doctype html><html lang="de"><meta charset="utf-8"><meta http-equiv="refresh" content="8"><title>ShowNight – WhatsApp verbinden</title><style>body{font:18px system-ui;max-width:720px;margin:40px auto;padding:20px;background:#111;color:#eee}img{background:white;padding:16px}strong{color:#ffce79}</style><h1>Lokale KI: WhatsApp verbinden</h1><p>Status: ${this.status}</p><p><strong>Diese kostenlose Verbindung ist inoffiziell. Die Bibliothek warnt vor moeglichen WhatsApp-Kontosperren. Scanne nur, wenn du diesen Weg nutzen moechtest.</strong></p><p>WhatsApp am Handy → Einstellungen → Verknuepfte Geraete → Geraet hinzufuegen. Verbinde dein eigenes Konto, an das auch die Berichte gehen sollen.</p>${image}<p>Es werden nur ShowNight-Pruefberichte an das fest konfigurierte Ziel gesendet. Eingehende Nachrichten starten keine Auftraege. Die Sitzung wird lokal ausserhalb OneDrive gespeichert und kann am Handy wieder getrennt werden.</p></html>`);
     });
@@ -63,7 +81,9 @@ export class WhatsAppFeedback {
     this.client.on('auth_failure', () => { this.ready = false; this.status = 'Anmeldung fehlgeschlagen'; this.qrImage = null; });
     this.client.on('disconnected', () => { this.ready = false; this.status = 'getrennt; Dienst neu starten und verbinden'; this.qrImage = null; });
     this.client.on('message_ack', (message, ack) => {
-      const entry = Object.values(this.journal).find(item => item.messageId === message.id?._serialized);
+      const id = messageId(message);
+      if (!id) return;
+      const entry = Object.values(this.journal).find(item => item.messageId && item.messageId === id);
       if (!entry) return;
       entry.ack = ack;
       if (ack >= 1) entry.status = ack >= 2 ? 'delivered' : 'server_ack';
@@ -78,17 +98,20 @@ export class WhatsAppFeedback {
     if (!this.ready) return { status: 'pending' };
     if (entry?.status === 'uncertain' || entry?.status === 'failed') return entry;
     if (!entry) {
-      const destination = await bounded(this.client.getNumberId(this.config.recipient.slice(1)));
-      if (!destination?._serialized || !destination._serialized.endsWith('@c.us')) throw new Error('WhatsApp-Ziel nicht bestaetigt.');
+      // The only permitted recipient is the already authenticated own account.
+      // No second network lookup is needed for the personal self chat.
+      const destination = this.client.info?.wid;
+      if (destination?.user !== this.config.recipient.slice(1) || destination?._serialized !== `${this.config.recipient.slice(1)}@c.us`) throw new Error('Eigenes WhatsApp-Ziel nicht bestaetigt.');
       entry = this.journal[item.id] = { status: 'sending', createdAt: new Date().toISOString() };
       await this.persist();
       try {
         const message = await bounded(this.client.sendMessage(destination._serialized, `${item.text}\nBericht-ID: ${item.id.slice(0, 12)}`, { sendSeen: false, linkPreview: false }));
-        if (!message?.id?._serialized) throw new Error('Kein Nachrichtenbeleg.');
-        entry.messageId = message.id._serialized; entry.ack = message.ack;
+        const id = messageId(message);
+        if (!id) throw new Error('Kein Nachrichtenbeleg.');
+        entry.messageId = id; entry.ack = message.ack;
         entry.status = message.ack >= 2 ? 'delivered' : message.ack >= 1 ? 'server_ack' : 'awaiting_ack';
         await this.persist();
-      } catch { entry.status = 'uncertain'; await this.persist(); return entry; }
+      } catch (error) { entry.status = 'uncertain'; entry.error = diagnostic(error); await this.persist(); return entry; }
     }
     if (entry.status === 'awaiting_ack' && entry.messageId) {
       try {
@@ -113,8 +136,8 @@ export async function flushFeedback(state, messenger, persist) {
     if ((item.nextAttempt ?? 0) > Date.now()) return { ready:false, status:'retry_later' };
     let outcome;
     try { outcome = await messenger.send(item); }
-    catch {
-      item.nextAttempt = Date.now() + 60000; item.attempts++; item.error = 'WhatsApp vor Versand nicht erreichbar; spaeter erneut versuchen.';
+    catch (error) {
+      item.nextAttempt = Date.now() + 60000; item.attempts++; item.error = diagnostic(error);
       await persist(); return { ready:false, status:'retry_later' };
     }
     if (['server_ack', 'delivered'].includes(outcome.status)) {

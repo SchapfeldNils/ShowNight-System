@@ -3,3 +3,5 @@ packages: []
 overrides:
   extract-zip: link:./no-archive-extraction
   basic-ftp: link:./no-ftp
+patchedDependencies:
+  whatsapp-web.js@1.34.7: patches/whatsapp-web.js@1.34.7.patch

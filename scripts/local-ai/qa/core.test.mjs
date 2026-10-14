@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { EventEmitter } from 'node:events';
 import { createRequire } from 'node:module';
 import { allowedPath, sensitive, chunks, hash, newState, atomicJson, readState, discover, source, validateResponse, syntaxCheck, enqueueFeedback } from './core.mjs';
-import { WhatsAppFeedback, flushFeedback } from './notifications.mjs';
+import { WhatsAppFeedback, flushFeedback, messageId, diagnostic } from './notifications.mjs';
 const exec = promisify(execFile);
 async function fixture(t) {
   const root = await mkdtemp(path.join(tmpdir(), 'shownight-qa-test-'));
@@ -77,9 +77,9 @@ test('Dauerhafter Zustand nimmt unterbrochene Arbeit auf und bewahrt defekte Dat
   await writeFile(file, 'corrupt'); await assert.rejects(readState(file)); assert.equal(await readFile(file,'utf8'), 'corrupt');
 });
 class FakeClient extends EventEmitter {
-  constructor(options) { super(); this.options = options; this.info = {wid:{user:'4915112345678'}}; this.sent = []; }
+  constructor(options) { super(); this.options = options; this.info = {wid:{user:'4915112345678',_serialized:'4915112345678@c.us'}}; this.sent = []; }
   async initialize() { this.emit('ready'); }
-  async getNumberId(number) { return {_serialized:`${number}@c.us`}; }
+  async getNumberId() { throw new Error('Separate Zielabfrage darf fuer den eigenen Chat nicht erfolgen.'); }
   async sendMessage(to, body) { this.sent.push({to,body}); return {id:{_serialized:'synthetic-id'},ack:1}; }
   async destroy() {}
 }
@@ -129,4 +129,27 @@ test('Nicht benoetigte ZIP-/FTP-Faehigkeiten enthalten keine Extraktion oder Net
   const extraction = require('./no-archive-extraction/index.cjs');
   await assert.rejects(extraction('nonexistent-archive.zip', {dir:'nonexistent-output'}), /deaktiviert/);
   const {Client} = require('./no-ftp/index.cjs'); assert.throws(()=>new Client(), /deaktiviert/);
+});
+test('Nachrichten-IDs unterstuetzen alten und aktuellen SDK-Beleg ohne fehlende IDs gleichzusetzen',()=>{
+  assert.equal(messageId({id:{_serialized:'known-message'}}),'known-message');
+  assert.equal(messageId({id:{$1:'current-message'}}),'current-message');
+  assert.equal(messageId({id:'string-message'}),'string-message');
+  assert.equal(messageId({id:{}}),null);
+  assert.equal(messageId(null),null);
+});
+test('ACK ohne Nachrichten-ID oder fuer fremden Auftrag bestaetigt keine Zustellung',async t=>{
+  const stateRoot=await fixture(t), messenger=new WhatsAppFeedback({stateRoot,recipient:'+4915112345678'},dependencies);
+  await messenger.start();
+  messenger.journal.pending={status:'uncertain'};
+  messenger.client.emit('message_ack',{id:{}},3);
+  messenger.client.emit('message_ack',{id:{$1:'other-message'}},3);
+  assert.equal(messenger.journal.pending.status,'uncertain');
+  messenger.journal.known={status:'awaiting_ack',messageId:'known-message'};
+  messenger.client.emit('message_ack',{id:{$1:'known-message'}},2);
+  await messenger.saves;
+  assert.equal(messenger.journal.known.status,'delivered');await messenger.close();
+});
+test('Versanddiagnose gibt keine Rufnummer oder erkannte Geheimnisse aus',()=>{
+  assert.equal(diagnostic(new Error('Lookup +4915112345678 failed')),'Lookup [Nummer] failed');
+  assert.equal(diagnostic(new Error('token = "'+'x'.repeat(30)+'"')),'Geschuetzter Fehlertext ausgeblendet.');
 });

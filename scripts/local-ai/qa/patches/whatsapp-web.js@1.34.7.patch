@@ -1,0 +1,1175 @@
+diff --git a/src/Client.js b/src/Client.js
+index 800109e..c3b92f5 100644
+--- a/src/Client.js
++++ b/src/Client.js
+@@ -1177,7 +1177,7 @@ class Client extends EventEmitter {
+                             const parentMsgKey = reaction.reactionParentKey;
+                             const timestamp = reaction.reactionTimestamp / 1000;
+                             const sender = reaction.author ?? reaction.from;
+-                            const senderUserJid = sender._serialized;
++                            const senderUserJid = (sender._serialized ?? sender.$1);
+ 
+                             return {
+                                 ...reaction,
+@@ -1205,14 +1205,14 @@ class Client extends EventEmitter {
+                             const parentMsgKey = vote.pollUpdateParentKey;
+                             const timestamp = vote.t / 1000;
+                             const sender = vote.author ?? vote.from;
+-                            const senderUserJid = sender._serialized;
++                            const senderUserJid = (sender._serialized ?? sender.$1);
+ 
+                             let parentMessage = Msg.get(
+-                                parentMsgKey._serialized,
++                                (parentMsgKey._serialized ?? parentMsgKey.$1),
+                             );
+                             if (!parentMessage) {
+                                 const fetched = await Msg.getMessagesById([
+-                                    parentMsgKey._serialized,
++                                    (parentMsgKey._serialized ?? parentMsgKey.$1),
+                                 ]);
+                                 parentMessage = fetched?.messages?.[0] || null;
+                             }
+@@ -1443,7 +1443,7 @@ class Client extends EventEmitter {
+                     'Mentions with an array of Contact are now deprecated. See more at https://github.com/wwebjssapp-web.js/pull/2166.',
+                 );
+                 options.mentions = options.mentions.map(
+-                    (a) => a.id._serialized,
++                    (a) => (a.id._serialized ?? a.id.$1),
+                 );
+             }
+         }
+@@ -1490,7 +1490,7 @@ class Client extends EventEmitter {
+             internalOptions.event = content;
+             content = '';
+         } else if (content instanceof Contact) {
+-            internalOptions.contactCard = content.id._serialized;
++            internalOptions.contactCard = (content.id._serialized ?? content.id.$1);
+             content = '';
+         } else if (
+             Array.isArray(content) &&
+@@ -1498,7 +1498,7 @@ class Client extends EventEmitter {
+             content[0] instanceof Contact
+         ) {
+             internalOptions.contactCardList = content.map(
+-                (contact) => contact.id._serialized,
++                (contact) => (contact.id._serialized ?? contact.id.$1),
+             );
+             content = '';
+         } else if (content instanceof Buttons) {
+@@ -1838,7 +1838,7 @@ class Client extends EventEmitter {
+                 .joinGroupViaInvite(inviteCode);
+         }, inviteCode);
+ 
+-        return res.gid._serialized;
++        return (res.gid._serialized ?? res.gid.$1);
+     }
+ 
+     /**
+@@ -2309,7 +2309,7 @@ class Client extends EventEmitter {
+      */
+     async createGroup(title, participants = [], options = {}) {
+         !Array.isArray(participants) && (participants = [participants]);
+-        participants.map((p) => (p instanceof Contact ? p.id._serialized : p));
++        participants.map((p) => (p instanceof Contact ? (p.id._serialized ?? p.id.$1) : p));
+ 
+         return await this.pupPage.evaluate(
+             async (title, participants, options) => {
+@@ -2382,7 +2382,7 @@ class Client extends EventEmitter {
+                         (participant.wid = window
+                             .require('WAWebApiContact')
+                             .getPhoneNumber(participant.wid));
+-                    const participantId = participant.wid._serialized;
++                    const participantId = (participant.wid._serialized ?? participant.wid.$1);
+                     const statusCode = participant.error || 200;
+ 
+                     if (autoSendInviteV4 && statusCode === 403) {
+@@ -2398,7 +2398,7 @@ class Client extends EventEmitter {
+                                     (await window
+                                         .require('WAWebCollections')
+                                         .Chat.find(participant.wid)),
+-                                createGroupResult.wid._serialized,
++                                (createGroupResult.wid._serialized ?? createGroupResult.wid.$1),
+                                 createGroupResult.subject,
+                                 participant.invite_code,
+                                 participant.invite_code_exp,
+@@ -2872,7 +2872,7 @@ class Client extends EventEmitter {
+             let chatIds = window
+                 .require('WAWebCollections')
+                 .Blocklist.getModelsArray()
+-                .map((a) => a.id._serialized);
++                .map((a) => (a.id._serialized ?? a.id.$1));
+             return Promise.all(
+                 chatIds.map((id) => window.WWebJS.getContact(id)),
+             );
+@@ -2893,7 +2893,7 @@ class Client extends EventEmitter {
+             (chatid, media) => {
+                 return window.WWebJS.setPicture(chatid, media);
+             },
+-            this.info.wid._serialized,
++            (this.info.wid._serialized ?? this.info.wid.$1),
+             media,
+         );
+ 
+@@ -2907,7 +2907,7 @@ class Client extends EventEmitter {
+     async deleteProfilePicture() {
+         const success = await this.pupPage.evaluate((chatid) => {
+             return window.WWebJS.deletePicture(chatid);
+-        }, this.info.wid._serialized);
++        }, (this.info.wid._serialized ?? this.info.wid.$1));
+ 
+         return success;
+     }
+@@ -2933,7 +2933,7 @@ class Client extends EventEmitter {
+                 );
+                 const chats = window
+                     .require('WAWebCollections')
+-                    .Chat.filter((e) => chatIds.includes(e.id._serialized));
++                    .Chat.filter((e) => chatIds.includes((e.id._serialized ?? e.id.$1)));
+ 
+                 let actions = labels.map((label) => ({
+                     id: label.id,
+@@ -3314,8 +3314,8 @@ class Client extends EventEmitter {
+                         await window.WWebJS.enforceLidAndPnRetrieval(userId);
+ 
+                     return {
+-                        lid: lid?._serialized,
+-                        pn: phone?._serialized,
++                        lid: (lid?._serialized ?? lid?.$1),
++                        pn: (phone?._serialized ?? phone?.$1),
+                     };
+                 }),
+             );
+@@ -3386,9 +3386,11 @@ class Client extends EventEmitter {
+ 
+             if (!serialized) return null;
+ 
+-            serialized.chatId = window
++            serialized.chatId = (window
+                 .require('WAWebJidToWid')
+-                .userJidToUserWid(serialized.chatJid)._serialized;
++                .userJidToUserWid(serialized.chatJid)._serialized ?? window
++                .require('WAWebJidToWid')
++                .userJidToUserWid(serialized.chatJid).$1);
+             delete serialized.chatJid;
+ 
+             return serialized;
+@@ -3409,7 +3411,7 @@ class Client extends EventEmitter {
+         const pollVotes = await this.pupPage.evaluate(async (msg) => {
+             const msgKey = window
+                 .require('WAWebMsgKey')
+-                .fromString(msg.id._serialized);
++                .fromString((msg.id._serialized ?? msg.id.$1));
+             let pollVotes = await window
+                 .require('WAWebPollsVotesSchema')
+                 .getTable()
+diff --git a/src/structures/Broadcast.js b/src/structures/Broadcast.js
+index ce03dfa..ceb7246 100644
+--- a/src/structures/Broadcast.js
++++ b/src/structures/Broadcast.js
+@@ -53,7 +53,7 @@ class Broadcast extends Base {
+      * @returns {Promise<Chat>}
+      */
+     getChat() {
+-        return this.client.getChatById(this.id._serialized);
++        return this.client.getChatById((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -61,7 +61,7 @@ class Broadcast extends Base {
+      * @returns {Promise<Contact>}
+      */
+     getContact() {
+-        return this.client.getContactById(this.id._serialized);
++        return this.client.getContactById((this.id._serialized ?? this.id.$1));
+     }
+ }
+ 
+diff --git a/src/structures/Channel.js b/src/structures/Channel.js
+index cd3e087..d558fb3 100644
+--- a/src/structures/Channel.js
++++ b/src/structures/Channel.js
+@@ -126,7 +126,7 @@ class Channel extends Base {
+                     })),
+                 );
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             limit,
+         );
+     }
+@@ -237,7 +237,7 @@ class Channel extends Base {
+      * @returns {Promise<Message>} Message that was just sent
+      */
+     async sendMessage(content, options) {
+-        return this.client.sendMessage(this.id._serialized, content, options);
++        return this.client.sendMessage((this.id._serialized ?? this.id.$1), content, options);
+     }
+ 
+     /**
+@@ -245,7 +245,7 @@ class Channel extends Base {
+      * @returns {Promise<boolean>}
+      */
+     async sendSeen() {
+-        return this.client.sendSeen(this.id._serialized);
++        return this.client.sendSeen((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -262,7 +262,7 @@ class Channel extends Base {
+     async sendChannelAdminInvite(chatId, options = {}) {
+         return this.client.sendChannelAdminInvite(
+             chatId,
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             options,
+         );
+     }
+@@ -272,7 +272,7 @@ class Channel extends Base {
+      * @returns {Promise<boolean>} Returns true if the operation completed successfully, false otherwise
+      */
+     async acceptChannelAdminInvite() {
+-        return this.client.acceptChannelAdminInvite(this.id._serialized);
++        return this.client.acceptChannelAdminInvite((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -282,7 +282,7 @@ class Channel extends Base {
+      */
+     async revokeChannelAdminInvite(userId) {
+         return this.client.revokeChannelAdminInvite(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             userId,
+         );
+     }
+@@ -293,7 +293,7 @@ class Channel extends Base {
+      * @returns {Promise<boolean>} Returns true if the operation completed successfully, false otherwise
+      */
+     async demoteChannelAdmin(userId) {
+-        return this.client.demoteChannelAdmin(this.id._serialized, userId);
++        return this.client.demoteChannelAdmin((this.id._serialized ?? this.id.$1), userId);
+     }
+ 
+     /**
+@@ -311,7 +311,7 @@ class Channel extends Base {
+      */
+     async transferChannelOwnership(newOwnerId, options = {}) {
+         return this.client.transferChannelOwnership(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             newOwnerId,
+             options,
+         );
+@@ -366,7 +366,7 @@ class Channel extends Base {
+ 
+                 return msgs.map((m) => window.WWebJS.getMessageModel(m));
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             searchOptions,
+         );
+ 
+@@ -378,7 +378,7 @@ class Channel extends Base {
+      * @returns {Promise<boolean>} Returns true if the operation completed successfully, false otherwise
+      */
+     async deleteChannel() {
+-        return this.client.deleteChannel(this.id._serialized);
++        return this.client.deleteChannel((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -417,7 +417,7 @@ class Channel extends Base {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             value,
+             property,
+         );
+@@ -455,7 +455,7 @@ class Channel extends Base {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             action,
+         );
+     }
+diff --git a/src/structures/Chat.js b/src/structures/Chat.js
+index 40211bf..e274651 100644
+--- a/src/structures/Chat.js
++++ b/src/structures/Chat.js
+@@ -99,7 +99,7 @@ class Chat extends Base {
+      * @returns {Promise<Message>} Message that was just sent
+      */
+     async sendMessage(content, options) {
+-        return this.client.sendMessage(this.id._serialized, content, options);
++        return this.client.sendMessage((this.id._serialized ?? this.id.$1), content, options);
+     }
+ 
+     /**
+@@ -107,7 +107,7 @@ class Chat extends Base {
+      * @returns {Promise<Boolean>} result
+      */
+     async sendSeen() {
+-        return this.client.sendSeen(this.id._serialized);
++        return this.client.sendSeen((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -117,7 +117,7 @@ class Chat extends Base {
+     async clearMessages() {
+         return this.client.pupPage.evaluate((chatId) => {
+             return window.WWebJS.sendClearChat(chatId);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -127,21 +127,21 @@ class Chat extends Base {
+     async delete() {
+         return this.client.pupPage.evaluate((chatId) => {
+             return window.WWebJS.sendDeleteChat(chatId);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+      * Archives this chat
+      */
+     async archive() {
+-        return this.client.archiveChat(this.id._serialized);
++        return this.client.archiveChat((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+      * un-archives this chat
+      */
+     async unarchive() {
+-        return this.client.unarchiveChat(this.id._serialized);
++        return this.client.unarchiveChat((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -149,7 +149,7 @@ class Chat extends Base {
+      * @returns {Promise<boolean>} New pin state. Could be false if the max number of pinned chats was reached.
+      */
+     async pin() {
+-        return this.client.pinChat(this.id._serialized);
++        return this.client.pinChat((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -157,7 +157,7 @@ class Chat extends Base {
+      * @returns {Promise<boolean>} New pin state
+      */
+     async unpin() {
+-        return this.client.unpinChat(this.id._serialized);
++        return this.client.unpinChat((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -167,7 +167,7 @@ class Chat extends Base {
+      */
+     async mute(unmuteDate) {
+         const result = await this.client.muteChat(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             unmuteDate,
+         );
+         this.isMuted = result.isMuted;
+@@ -180,7 +180,7 @@ class Chat extends Base {
+      * @returns {Promise<{isMuted: boolean, muteExpiration: number}>}
+      */
+     async unmute() {
+-        const result = await this.client.unmuteChat(this.id._serialized);
++        const result = await this.client.unmuteChat((this.id._serialized ?? this.id.$1));
+         this.isMuted = result.isMuted;
+         this.muteExpiration = result.muteExpiration;
+         return result;
+@@ -190,7 +190,7 @@ class Chat extends Base {
+      * Mark this chat as unread
+      */
+     async markUnread() {
+-        return this.client.markChatUnread(this.id._serialized);
++        return this.client.markChatUnread((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -239,7 +239,7 @@ class Chat extends Base {
+ 
+                 return msgs.map((m) => window.WWebJS.getMessageModel(m));
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             searchOptions,
+         );
+ 
+@@ -253,7 +253,7 @@ class Chat extends Base {
+         return this.client.pupPage.evaluate((chatId) => {
+             window.WWebJS.sendChatstate('typing', chatId);
+             return true;
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -263,7 +263,7 @@ class Chat extends Base {
+         return this.client.pupPage.evaluate((chatId) => {
+             window.WWebJS.sendChatstate('recording', chatId);
+             return true;
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -273,7 +273,7 @@ class Chat extends Base {
+         return this.client.pupPage.evaluate((chatId) => {
+             window.WWebJS.sendChatstate('stop', chatId);
+             return true;
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -281,7 +281,7 @@ class Chat extends Base {
+      * @returns {Promise<Contact>}
+      */
+     async getContact() {
+-        return await this.client.getContactById(this.id._serialized);
++        return await this.client.getContactById((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -289,7 +289,7 @@ class Chat extends Base {
+      * @returns {Promise<Array<Label>>}
+      */
+     async getLabels() {
+-        return this.client.getChatLabels(this.id._serialized);
++        return this.client.getChatLabels((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -298,7 +298,7 @@ class Chat extends Base {
+      * @returns {Promise<void>}
+      */
+     async changeLabels(labelIds) {
+-        return this.client.addOrRemoveLabels(labelIds, [this.id._serialized]);
++        return this.client.addOrRemoveLabels(labelIds, [(this.id._serialized ?? this.id.$1)]);
+     }
+ 
+     /**
+@@ -306,7 +306,7 @@ class Chat extends Base {
+      * @returns {Promise<Array<Message>>}
+      */
+     async getPinnedMessages() {
+-        return this.client.getPinnedMessages(this.id._serialized);
++        return this.client.getPinnedMessages((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -314,7 +314,7 @@ class Chat extends Base {
+      * @return {Promise<boolean>} True if operation completed successfully, false otherwise.
+      */
+     async syncHistory() {
+-        return this.client.syncHistory(this.id._serialized);
++        return this.client.syncHistory((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -326,7 +326,7 @@ class Chat extends Base {
+     async addOrEditCustomerNote(note) {
+         if (this.isGroup || this.isChannel) return;
+ 
+-        return this.client.addOrEditCustomerNote(this.id._serialized, note);
++        return this.client.addOrEditCustomerNote((this.id._serialized ?? this.id.$1), note);
+     }
+ 
+     /**
+@@ -344,7 +344,7 @@ class Chat extends Base {
+     async getCustomerNote() {
+         if (this.isGroup || this.isChannel) return null;
+ 
+-        return this.client.getCustomerNote(this.id._serialized);
++        return this.client.getCustomerNote((this.id._serialized ?? this.id.$1));
+     }
+ }
+ 
+diff --git a/src/structures/Contact.js b/src/structures/Contact.js
+index 4ee5194..04c1f0f 100644
+--- a/src/structures/Contact.js
++++ b/src/structures/Contact.js
+@@ -117,7 +117,7 @@ class Contact extends Base {
+      * @returns {Promise<string>}
+      */
+     async getProfilePicUrl() {
+-        return await this.client.getProfilePicUrl(this.id._serialized);
++        return await this.client.getProfilePicUrl((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -125,7 +125,7 @@ class Contact extends Base {
+      * @returns {Promise<string>}
+      */
+     async getFormattedNumber() {
+-        return await this.client.getFormattedNumber(this.id._serialized);
++        return await this.client.getFormattedNumber((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -133,7 +133,7 @@ class Contact extends Base {
+      * @returns {Promise<string>}
+      */
+     async getCountryCode() {
+-        return await this.client.getCountryCode(this.id._serialized);
++        return await this.client.getCountryCode((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -144,7 +144,7 @@ class Contact extends Base {
+     async getChat() {
+         if (this.isMe) return null;
+ 
+-        return await this.client.getChatById(this.id._serialized);
++        return await this.client.getChatById((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -167,7 +167,7 @@ class Contact extends Base {
+             await window
+                 .require('WAWebBlockContactAction')
+                 .blockContact({ contact: resolved });
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         this.isBlocked = true;
+         return true;
+@@ -193,7 +193,7 @@ class Contact extends Base {
+             await window
+                 .require('WAWebBlockContactAction')
+                 .unblockContact(resolved);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         this.isBlocked = false;
+         return true;
+@@ -209,7 +209,7 @@ class Contact extends Base {
+             return window
+                 .require('WAWebContactStatusBridge')
+                 .getStatus({ token: '', wid: wid });
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         if (typeof about.status !== 'string') return null;
+ 
+@@ -221,7 +221,7 @@ class Contact extends Base {
+      * @returns {Promise<WAWebJS.ChatId[]>}
+      */
+     async getCommonGroups() {
+-        return await this.client.getCommonGroups(this.id._serialized);
++        return await this.client.getCommonGroups((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -229,7 +229,7 @@ class Contact extends Base {
+      * @returns {Promise<Broadcast>}
+      */
+     async getBroadcast() {
+-        return await this.client.getBroadcastById(this.id._serialized);
++        return await this.client.getBroadcastById((this.id._serialized ?? this.id.$1));
+     }
+ }
+ 
+diff --git a/src/structures/GroupChat.js b/src/structures/GroupChat.js
+index 3cecc82..454273f 100644
+--- a/src/structures/GroupChat.js
++++ b/src/structures/GroupChat.js
+@@ -156,7 +156,7 @@ class GroupChat extends Chat {
+                 };
+ 
+                 for (let pWid of participantWids) {
+-                    const pId = pWid._serialized;
++                    const pId = (pWid._serialized ?? pWid.$1);
+                     pWid =
+                         pWid.server === 'lid'
+                             ? window
+@@ -170,7 +170,7 @@ class GroupChat extends Chat {
+                         isInviteV4Sent: false,
+                     };
+ 
+-                    if (groupParticipants.some((p) => p._serialized === pId)) {
++                    if (groupParticipants.some((p) => (p._serialized ?? p.$1) === pId)) {
+                         participantData[pId].code = 409;
+                         participantData[pId].message = errorCodes[409];
+                         continue;
+@@ -223,7 +223,7 @@ class GroupChat extends Chat {
+                                 .require('WAWebChatSendMessages')
+                                 .sendGroupInviteMessage(
+                                     userChat,
+-                                    group.id._serialized,
++                                    (group.id._serialized ?? group.id.$1),
+                                     groupName,
+                                     rpcResult.inviteV4Code,
+                                     rpcResult.inviteV4CodeExp,
+@@ -249,7 +249,7 @@ class GroupChat extends Chat {
+ 
+                 return participantData;
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             participantIds,
+             options,
+         );
+@@ -274,10 +274,10 @@ class GroupChat extends Chat {
+ 
+                             return (
+                                 chat.groupMetadata.participants.get(
+-                                    lid?._serialized,
++                                    (lid?._serialized ?? lid?.$1),
+                                 ) ||
+                                 chat.groupMetadata.participants.get(
+-                                    phone?._serialized,
++                                    (phone?._serialized ?? phone?.$1),
+                                 )
+                             );
+                         }),
+@@ -288,7 +288,7 @@ class GroupChat extends Chat {
+                     .removeParticipants(chat, participants);
+                 return { status: 200 };
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             participantIds,
+         );
+     }
+@@ -312,10 +312,10 @@ class GroupChat extends Chat {
+ 
+                             return (
+                                 chat.groupMetadata.participants.get(
+-                                    lid?._serialized,
++                                    (lid?._serialized ?? lid?.$1),
+                                 ) ||
+                                 chat.groupMetadata.participants.get(
+-                                    phone?._serialized,
++                                    (phone?._serialized ?? phone?.$1),
+                                 )
+                             );
+                         }),
+@@ -326,7 +326,7 @@ class GroupChat extends Chat {
+                     .promoteParticipants(chat, participants);
+                 return { status: 200 };
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             participantIds,
+         );
+     }
+@@ -350,10 +350,10 @@ class GroupChat extends Chat {
+ 
+                             return (
+                                 chat.groupMetadata.participants.get(
+-                                    lid?._serialized,
++                                    (lid?._serialized ?? lid?.$1),
+                                 ) ||
+                                 chat.groupMetadata.participants.get(
+-                                    phone?._serialized,
++                                    (phone?._serialized ?? phone?.$1),
+                                 )
+                             );
+                         }),
+@@ -364,7 +364,7 @@ class GroupChat extends Chat {
+                     .demoteParticipants(chat, participants);
+                 return { status: 200 };
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             participantIds,
+         );
+     }
+@@ -390,7 +390,7 @@ class GroupChat extends Chat {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             subject,
+         );
+ 
+@@ -430,7 +430,7 @@ class GroupChat extends Chat {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             description,
+         );
+ 
+@@ -464,7 +464,7 @@ class GroupChat extends Chat {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             adminsOnly,
+         );
+ 
+@@ -500,7 +500,7 @@ class GroupChat extends Chat {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             adminsOnly,
+         );
+ 
+@@ -531,7 +531,7 @@ class GroupChat extends Chat {
+                     throw err;
+                 }
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             adminsOnly,
+         );
+ 
+@@ -548,7 +548,7 @@ class GroupChat extends Chat {
+     async deletePicture() {
+         const success = await this.client.pupPage.evaluate((chatid) => {
+             return window.WWebJS.deletePicture(chatid);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         return success;
+     }
+@@ -563,7 +563,7 @@ class GroupChat extends Chat {
+             (chatid, media) => {
+                 return window.WWebJS.setPicture(chatid, media);
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             media,
+         );
+ 
+@@ -584,7 +584,7 @@ class GroupChat extends Chat {
+                 if (err.name === 'ServerStatusCodeError') return undefined;
+                 throw err;
+             }
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         return codeRes?.code ? codeRes?.code : codeRes;
+     }
+@@ -599,7 +599,7 @@ class GroupChat extends Chat {
+             return window
+                 .require('WAWebGroupQueryJob')
+                 .resetGroupInviteCode(chatWid);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         return codeRes.code;
+     }
+@@ -620,7 +620,7 @@ class GroupChat extends Chat {
+      */
+     async getGroupMembershipRequests() {
+         return await this.client.getGroupMembershipRequests(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+         );
+     }
+ 
+@@ -646,7 +646,7 @@ class GroupChat extends Chat {
+      */
+     async approveGroupMembershipRequests(options = {}) {
+         return await this.client.approveGroupMembershipRequests(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             options,
+         );
+     }
+@@ -658,7 +658,7 @@ class GroupChat extends Chat {
+      */
+     async rejectGroupMembershipRequests(options = {}) {
+         return await this.client.rejectGroupMembershipRequests(
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             options,
+         );
+     }
+@@ -673,7 +673,7 @@ class GroupChat extends Chat {
+                 getAsModel: false,
+             });
+             return window.require('WAWebExitGroupAction').sendExitGroup(chat);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ }
+ 
+diff --git a/src/structures/GroupNotification.js b/src/structures/GroupNotification.js
+index a723639..3945010 100644
+--- a/src/structures/GroupNotification.js
++++ b/src/structures/GroupNotification.js
+@@ -45,7 +45,7 @@ class GroupNotification extends Base {
+          */
+         this.chatId =
+             typeof data.id.remote === 'object'
+-                ? data.id.remote._serialized
++                ? (data.id.remote._serialized ?? data.id.remote.$1)
+                 : data.id.remote;
+ 
+         /**
+@@ -54,7 +54,7 @@ class GroupNotification extends Base {
+          */
+         this.author =
+             typeof data.author === 'object'
+-                ? data.author._serialized
++                ? (data.author._serialized ?? data.author.$1)
+                 : data.author;
+ 
+         /**
+diff --git a/src/structures/Message.js b/src/structures/Message.js
+index dd977e8..6d3c7a2 100644
+--- a/src/structures/Message.js
++++ b/src/structures/Message.js
+@@ -74,7 +74,7 @@ class Message extends Base {
+          */
+         this.from =
+             typeof data.from === 'object' && data.from !== null
+-                ? data.from._serialized
++                ? (data.from._serialized ?? data.from.$1)
+                 : data.from;
+ 
+         /**
+@@ -86,7 +86,7 @@ class Message extends Base {
+          */
+         this.to =
+             typeof data.to === 'object' && data.to !== null
+-                ? data.to._serialized
++                ? (data.to._serialized ?? data.to.$1)
+                 : data.to;
+ 
+         /**
+@@ -95,7 +95,7 @@ class Message extends Base {
+          */
+         this.author =
+             typeof data.author === 'object' && data.author !== null
+-                ? data.author._serialized
++                ? (data.author._serialized ?? data.author.$1)
+                 : data.author;
+ 
+         /**
+@@ -211,12 +211,12 @@ class Message extends Base {
+                       fromId:
+                           typeof data.from === 'object' &&
+                           '_serialized' in data.from
+-                              ? data.from._serialized
++                              ? (data.from._serialized ?? data.from.$1)
+                               : data.from,
+                       toId:
+                           typeof data.to === 'object' &&
+                           '_serialized' in data.to
+-                              ? data.to._serialized
++                              ? (data.to._serialized ?? data.to.$1)
+                               : data.to,
+                   }
+                 : undefined;
+@@ -364,7 +364,7 @@ class Message extends Base {
+                 )?.messages?.[0];
+             if (!msg) return null;
+             return window.WWebJS.getMessageModel(msg);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         if (!newData) return null;
+ 
+@@ -405,7 +405,7 @@ class Message extends Base {
+             this.mentionedIds.map(
+                 async (m) =>
+                     await this.client.getContactById(
+-                        typeof m === 'string' ? m : m._serialized,
++                        typeof m === 'string' ? m : (m._serialized ?? m.$1),
+                     ),
+             ),
+         );
+@@ -419,7 +419,7 @@ class Message extends Base {
+         return await Promise.all(
+             this.groupMentions.map(
+                 async (m) =>
+-                    await this.client.getChatById(m.groupJid._serialized),
++                    await this.client.getChatById((m.groupJid._serialized ?? m.groupJid.$1)),
+             ),
+         );
+     }
+@@ -443,7 +443,7 @@ class Message extends Base {
+                 .require('WAWebQuotedMsgModelUtils')
+                 .getQuotedMsgObj(msg);
+             return window.WWebJS.getMessageModel(quotedMsg);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         return new Message(this.client, quotedMsg);
+     }
+@@ -465,7 +465,7 @@ class Message extends Base {
+ 
+         options = {
+             ...options,
+-            quotedMessageId: this.id._serialized,
++            quotedMessageId: (this.id._serialized ?? this.id.$1),
+         };
+ 
+         return this.client.sendMessage(chatId, content, options);
+@@ -477,7 +477,7 @@ class Message extends Base {
+      * @return {Promise}
+      */
+     async react(reaction) {
+-        return this.client.sendReaction(this.id._serialized, reaction);
++        return this.client.sendReaction((this.id._serialized ?? this.id.$1), reaction);
+     }
+ 
+     /**
+@@ -495,13 +495,13 @@ class Message extends Base {
+      * @returns {Promise}
+      */
+     async forward(chat) {
+-        const chatId = typeof chat === 'string' ? chat : chat.id._serialized;
++        const chatId = typeof chat === 'string' ? chat : (chat.id._serialized ?? chat.id.$1);
+ 
+         await this.client.pupPage.evaluate(
+             async (msgId, chatId) => {
+                 return window.WWebJS.forwardMessage(chatId, msgId);
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             chatId,
+         );
+     }
+@@ -585,7 +585,7 @@ class Message extends Base {
+                 if (e.status && e.status === 404) return undefined;
+                 throw e;
+             }
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         if (!result) return undefined;
+         return new MessageMedia(
+@@ -658,7 +658,7 @@ class Message extends Base {
+                       )
+                     : Cmd.sendDeleteMsgs(chat, [msg], clearMedia);
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             everyone,
+             clearMedia,
+         );
+@@ -684,7 +684,7 @@ class Message extends Base {
+                     .require('WAWebCmd')
+                     .Cmd.sendStarMsgs(chat, [msg], false);
+             }
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -707,7 +707,7 @@ class Message extends Base {
+                     .require('WAWebCmd')
+                     .Cmd.sendUnstarMsgs(chat, [msg], false);
+             }
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -724,7 +724,7 @@ class Message extends Base {
+                     duration,
+                 );
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             duration,
+         );
+     }
+@@ -736,7 +736,7 @@ class Message extends Base {
+     async unpin() {
+         return await this.client.pupPage.evaluate(async (msgId) => {
+             return await window.WWebJS.pinUnpinMsgAction(msgId, 2, 0);
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -780,7 +780,7 @@ class Message extends Base {
+                         0,
+                 );
+             });
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         return info;
+     }
+@@ -821,7 +821,7 @@ class Message extends Base {
+                     )?.messages?.[0];
+                 if (!msg) return null;
+                 return msg.serialize();
+-            }, this.id._serialized);
++            }, (this.id._serialized ?? this.id.$1));
+             return new Payment(this.client, msg);
+         }
+         return undefined;
+@@ -851,7 +851,7 @@ class Message extends Base {
+                 .Reactions.find(msgId);
+             if (!msgReactions || !msgReactions.reactions.length) return null;
+             return msgReactions.reactions.serialize();
+-        }, this.id._serialized);
++        }, (this.id._serialized ?? this.id.$1));
+ 
+         if (!reactions) {
+             return undefined;
+@@ -885,7 +885,7 @@ class Message extends Base {
+                     'Mentions with an array of Contact are now deprecated. See more at https://github.com/wwebjs/whatsapp-web.js/pull/2166.',
+                 );
+                 options.mentions = options.mentions.map(
+-                    (a) => a.id._serialized,
++                    (a) => (a.id._serialized ?? a.id.$1),
+                 );
+             }
+         }
+@@ -932,7 +932,7 @@ class Message extends Base {
+                 }
+                 return null;
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             content,
+             internalOptions,
+         );
+@@ -981,10 +981,10 @@ class Message extends Base {
+                     .sendEventEditMessage(eventOptions, msg);
+                 const editedMsg = window
+                     .require('WAWebCollections')
+-                    .Msg.get(msg.id._serialized);
++                    .Msg.get((msg.id._serialized ?? msg.id.$1));
+                 return editedMsg?.serialize();
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             editedEventObject,
+         );
+ 
+@@ -996,7 +996,7 @@ class Message extends Base {
+      * @returns {Promise<PollVote[]>}
+      */
+     async getPollVotes() {
+-        return await this.client.getPollVotes(this.id._serialized);
++        return await this.client.getPollVotes((this.id._serialized ?? this.id.$1));
+     }
+ 
+     /**
+@@ -1032,7 +1032,7 @@ class Message extends Base {
+                     .require('WAWebPollsSendVoteMsgAction')
+                     .sendVote(msg, localIdSet);
+             },
+-            this.id._serialized,
++            (this.id._serialized ?? this.id.$1),
+             selectedOptions,
+         );
+     }
+diff --git a/src/util/Injected/Utils.js b/src/util/Injected/Utils.js
+index 540078a..520bf09 100644
+--- a/src/util/Injected/Utils.js
++++ b/src/util/Injected/Utils.js
+@@ -582,7 +582,7 @@ exports.LoadUtils = () => {
+ 
+         return window
+             .require('WAWebCollections')
+-            .Msg.get(newMsgKey._serialized);
++            .Msg.get((newMsgKey._serialized ?? newMsgKey.$1));
+     };
+ 
+     window.WWebJS.editMessage = async (msg, content, options = {}) => {
+@@ -625,7 +625,7 @@ exports.LoadUtils = () => {
+         await window
+             .require('WAWebSendMessageEditAction')
+             .sendMessageEdit(msg, content, internalOptions);
+-        return window.require('WAWebCollections').Msg.get(msg.id._serialized);
++        return window.require('WAWebCollections').Msg.get((msg.id._serialized ?? msg.id.$1));
+     };
+ 
+     window.WWebJS.toStickerData = async (mediaInfo) => {
+@@ -830,7 +830,7 @@ exports.LoadUtils = () => {
+ 
+         if (typeof msg.id.remote === 'object') {
+             msg.id = Object.assign({}, msg.id, {
+-                remote: msg.id.remote._serialized,
++                remote: (msg.id.remote._serialized ?? msg.id.remote.$1),
+             });
+         }
+ 
+@@ -953,7 +953,7 @@ exports.LoadUtils = () => {
+             model.isGroup = true;
+             const chatWid = window
+                 .require('WAWebWidFactory')
+-                .createWid(chat.id._serialized);
++                .createWid((chat.id._serialized ?? chat.id.$1));
+             const groupMetadata =
+                 window.require('WAWebCollections').GroupMetadata ||
+                 window.require('WAWebCollections').WAWebGroupMetadataCollection;
+@@ -984,12 +984,12 @@ exports.LoadUtils = () => {
+             const lastMessage = chat.lastReceivedKey
+                 ? window
+                       .require('WAWebCollections')
+-                      .Msg.get(chat.lastReceivedKey._serialized) ||
++                      .Msg.get((chat.lastReceivedKey._serialized ?? chat.lastReceivedKey.$1)) ||
+                   (
+                       await window
+                           .require('WAWebCollections')
+                           .Msg.getMessagesById([
+-                              chat.lastReceivedKey._serialized,
++                              (chat.lastReceivedKey._serialized ?? chat.lastReceivedKey.$1),
+                           ])
+                   )?.messages?.[0]
+                 : null;
+@@ -1263,9 +1263,11 @@ exports.LoadUtils = () => {
+     };
+ 
+     window.WWebJS.rejectCall = async (peerJid, id) => {
+-        let userId = window
++        let userId = (window
+             .require('WAWebUserPrefsMeUser')
+-            .getMaybeMePnUser()._serialized;
++            .getMaybeMePnUser()._serialized ?? window
++            .require('WAWebUserPrefsMeUser')
++            .getMaybeMePnUser().$1);
+ 
+         const stanza = window.require('WAWap').wap(
+             'call',
+@@ -1575,9 +1577,11 @@ exports.LoadUtils = () => {
+                                       .membershipRequestsActionRejectParticipantMixins
+                                       ?.value.error;
+                             return {
+-                                requesterId: window
++                                requesterId: (window
++                                    .require('WAWebWidFactory')
++                                    .createWid(p.jid)._serialized ?? window
+                                     .require('WAWebWidFactory')
+-                                    .createWid(p.jid)._serialized,
++                                    .createWid(p.jid).$1),
+                                 ...(error
+                                     ? {
+                                           error: +error,
+@@ -1594,11 +1598,15 @@ exports.LoadUtils = () => {
+                     }
+                 } else {
+                     result.push({
+-                        requesterId: window
++                        requesterId: (window
++                            .require('WAWebJidToWid')
++                            .userJidToUserWid(
++                                participant.participantArgs[0].participantJid,
++                            )._serialized ?? window
+                             .require('WAWebJidToWid')
+                             .userJidToUserWid(
+                                 participant.participantArgs[0].participantJid,
+-                            )._serialized,
++                            ).$1),
+                         message: 'ServerStatusCodeError',
+                     });
+                 }
