@@ -33,6 +33,7 @@ jobs:
       - run: pnpm test:backup
       - run: pnpm test:integration
       - run: pnpm test:review
+      - run: pnpm test:worker-claims
       - run: pnpm test:agents
       - run: pnpm test:packages
       - run: pnpm test:scenes

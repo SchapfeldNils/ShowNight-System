@@ -1,0 +1,58 @@
+name: Netcup release rehearsal
+on:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: netcup-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    name: Schema 4 to 5 and return (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 1c983fc01c98916fc782422f19e67567821bdaaa
+          path: .local/netcup-baseline
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: "24.19.0" }
+      - run: node --test tests/netcup-release-probe.test.mjs
+      - name: Build both runtimes and rehearse encrypted backup, migration and return
+        run: sh tests/netcup-upgrade-smoke.sh
+      - name: Export exactly the tested candidate image
+        env:
+          IMAGE_TAG: shownight:${{ github.event.pull_request.head.sha || github.sha }}-${{ matrix.arch }}
+        run: |
+          mkdir -p .local/netcup-release/export
+          docker tag shownight:netcup-release-candidate "$IMAGE_TAG"
+          docker image inspect "$IMAGE_TAG" --format '{{.Id}} {{.Os}}/{{.Architecture}}' > .local/netcup-release/export/image-info.txt
+          docker save "$IMAGE_TAG" | gzip > .local/netcup-release/export/shownight-${{ matrix.arch }}.tar.gz
+          cd .local/netcup-release/export
+          sha256sum shownight-${{ matrix.arch }}.tar.gz > shownight-${{ matrix.arch }}.tar.gz.sha256
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: netcup-release-proof-${{ matrix.arch }}
+          retention-days: 7
+          path: test-results/netcup-release/result.json
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: netcup-release-candidate-${{ matrix.arch }}
+          retention-days: 7
+          compression-level: 0
+          path: .local/netcup-release/export/

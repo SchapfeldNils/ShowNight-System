@@ -6,7 +6,15 @@ import {
   scryptSync,
 } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
-import { lstat, open, readFile, mkdir, unlink, rmdir } from "node:fs/promises";
+import {
+  lstat,
+  open,
+  readFile,
+  mkdir,
+  unlink,
+  rmdir,
+  link,
+} from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { resolve, join } from "node:path";
@@ -89,6 +97,7 @@ async function privateDirectory(path) {
 }
 
 export async function sealBackup(source, configFile, destination, password) {
+  destination = resolve(destination);
   const files = names.map((name) =>
     name === "stack.env" ? resolve(configFile) : join(resolve(source), name),
   );
@@ -112,9 +121,14 @@ export async function sealBackup(source, configFile, destination, password) {
   const manifest = Buffer.from(JSON.stringify({ version: 1, entries }));
   const length = Buffer.alloc(4);
   length.writeUInt32BE(manifest.length);
-  let output;
+  // Same directory/filesystem: only publish a complete, synced archive. An
+  // exclusive hard link preserves an existing destination, including symlinks.
+  const temporary = destination + ".partial-" + randomBytes(16).toString("hex");
+  let output,
+    ownedTemporary = false;
   try {
-    output = await open(resolve(destination), "wx", 0o600);
+    output = await open(temporary, "wx", 0o600);
+    ownedTemporary = true;
     await output.writeFile(header);
     async function* content() {
       yield length;
@@ -137,7 +151,7 @@ export async function sealBackup(source, configFile, destination, password) {
     await pipeline(
       Readable.from(content()),
       cipher,
-      createWriteStream(resolve(destination), {
+      createWriteStream(temporary, {
         fd: output.fd,
         start: headerSize,
         autoClose: false,
@@ -145,21 +159,21 @@ export async function sealBackup(source, configFile, destination, password) {
     );
     await output.write(cipher.getAuthTag(), 0, 16, (await output.stat()).size);
     await output.sync();
-  } catch (error) {
-    if (output) {
-      await output.close();
-      output = undefined;
-      await unlink(resolve(destination));
-    }
-    throw error;
+    await output.close();
+    output = undefined;
+    await link(temporary, destination);
   } finally {
     key.fill(0);
-    await output?.close();
+    try {
+      await output?.close();
+    } finally {
+      if (ownedTemporary) await unlink(temporary);
+    }
   }
   return {
     format: "SNBACKUP1",
     files: names.length,
-    sha256: await hashFile(resolve(destination)),
+    sha256: await hashFile(destination),
   };
 }
 

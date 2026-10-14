@@ -1,5 +1,7 @@
 # Sicherung und unabhängige Wiederherstellung – Issue #3
 
+15. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; S1-CI 38648600570 vollständig erfolgreich auf Windows/AMD64/ARM64 einschließlich echtem verschlüsseltem Containerrestore. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
+
 14. Oktober 2026 · `codex/issue-3-external-backup`. Vorbereiteter Softwareablauf; kein eingerichteter produktiver Backupjob.
 
 Der Betreiber stellt klar: keine externe Festplatte verfügbar; er geht von einem Netcup-Backup der VM aus. Die zuvor genannte externe Festplatte ist damit keine gültige Zielvorgabe. Für das Providerbackup sind Produkt, Umfang der Docker-Datenträger/Volumes, Zeitplan, Aufbewahrung und tatsächlich nutzbare Wiederherstellung noch zu erheben. Daraus wird kein geprüfter externer Schutz oder unabhängiger Schlüsselstand abgeleitet. 30 tägliche Stände bleiben ein Planungsvorschlag; automatische Löschung ist nicht aktiviert.

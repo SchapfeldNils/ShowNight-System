@@ -7,10 +7,13 @@ import {
   readFile,
   readdir,
   access,
+  stat,
 } from "node:fs/promises";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash, randomBytes } from "node:crypto";
+import { fork } from "node:child_process";
+import { once } from "node:events";
 import { sealBackup, openBackup } from "../scripts/backup-vault.mjs";
 
 async function fixture() {
@@ -63,7 +66,153 @@ test("Portables Backup: tatsächliche verschlüsselte Dateien und Konfiguration 
     (await readdir(destination)).sort(),
     ["SHA256SUMS", "database.dump", "media.tar", "stack.env"].sort(),
   );
+  assert.deepEqual(
+    (await readdir(f.root)).sort(),
+    ["backup.snbackup", "restore", "source", "stack.env"].sort(),
+    "Erfolgreiche Veröffentlichung hinterlässt keine Teildatei",
+  );
 });
+
+test(
+  "Konkurrierende Sicherungen veröffentlichen genau ein vollständig lesbares Archiv",
+  { timeout: 60000 },
+  async () => {
+    const f = await fixture();
+    const results = await Promise.allSettled([
+      sealBackup(f.source, f.config, f.archive, f.password),
+      sealBackup(f.source, f.config, f.archive, f.password),
+    ]);
+    assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+    assert.equal(results.filter((r) => r.status === "rejected").length, 1);
+    const winner = results.find((r) => r.status === "fulfilled").value;
+    assert.equal(
+      winner.sha256,
+      createHash("sha256")
+        .update(await readFile(f.archive))
+        .digest("hex"),
+    );
+    const destination = join(f.root, "restore");
+    assert.equal(
+      (await openBackup(f.archive, destination, f.password)).authenticated,
+      true,
+    );
+    assert.deepEqual(await readFile(join(destination, "database.dump")), f.db);
+    assert.deepEqual(await readFile(join(destination, "media.tar")), f.media);
+    assert.deepEqual(
+      (await readdir(f.root)).sort(),
+      ["backup.snbackup", "restore", "source", "stack.env"].sort(),
+    );
+  },
+);
+
+test(
+  "Prozessabbruch während des verschlüsselten Streams veröffentlicht kein finales Archiv",
+  { timeout: 60000 },
+  async () => {
+    const f = await fixture();
+    const child = fork(
+      new URL("./backup-vault-child.mjs", import.meta.url),
+      [],
+      {
+        stdio: ["ignore", "ignore", "pipe", "ipc"],
+        windowsHide: true,
+      },
+    );
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    const exited = once(child, "exit");
+    const blocked = new Promise((resolve, reject) => {
+      child.once("message", (message) => {
+        if (message.state === "stream-blocked") resolve(message);
+        else
+          reject(
+            new Error(
+              "Kindprozess scheiterte vor Streambarriere: " + message.code,
+            ),
+          );
+      });
+      child.once("error", reject);
+      child.once("exit", () =>
+        reject(new Error("Vorzeitiges Prozessende: " + stderr)),
+      );
+    });
+    try {
+      child.send({
+        source: f.source,
+        config: f.config,
+        archive: f.archive,
+        password: f.password,
+      });
+      const message = await blocked;
+      assert.notEqual(message.path, f.archive);
+      assert.equal(dirname(message.path), f.root);
+      const temporary = await stat(message.path);
+      assert.ok(
+        temporary.size > 54,
+        "Verschlüsselter Stream wurde tatsächlich geschrieben",
+      );
+      if (process.platform !== "win32") assert.equal(temporary.mode & 0o077, 0);
+      await assert.rejects(access(f.archive), { code: "ENOENT" });
+      assert.equal(
+        (await readdir(f.root)).some((name) => name.endsWith(".snbackup")),
+        false,
+      );
+    } finally {
+      child.kill("SIGKILL");
+      await exited;
+    }
+    await assert.rejects(access(f.archive), { code: "ENOENT" });
+    assert.equal(
+      (await readdir(f.root)).some((name) => name.endsWith(".snbackup")),
+      false,
+    );
+  },
+);
+
+test(
+  "Abgefangener Streamfehler entfernt die eigene Teildatei ohne Veröffentlichung",
+  { timeout: 60000 },
+  async () => {
+    const f = await fixture();
+    const child = fork(
+      new URL("./backup-vault-child.mjs", import.meta.url),
+      [],
+      {
+        stdio: ["ignore", "ignore", "ignore", "ipc"],
+        windowsHide: true,
+      },
+    );
+    const exited = once(child, "exit");
+    const messages = [];
+    child.on("message", (message) => {
+      messages.push(message.state);
+      if (message.state === "stream-blocked") child.send({ continue: true });
+    });
+    child.send({
+      source: f.source,
+      config: f.config,
+      archive: f.archive,
+      password: f.password,
+      failDuringStream: true,
+    });
+    try {
+      assert.equal((await exited)[0], 1);
+      assert.deepEqual(messages, ["stream-blocked", "failed"]);
+      await assert.rejects(access(f.archive), { code: "ENOENT" });
+      assert.deepEqual(
+        (await readdir(f.root)).sort(),
+        ["source", "stack.env"].sort(),
+      );
+    } finally {
+      if (child.exitCode === null) {
+        child.kill("SIGKILL");
+        await exited;
+      }
+    }
+  },
+);
 test("Falsches Kennwort, manipuliertes Archiv und truncation liefern keine wiederhergestellten Dateien", async () => {
   const f = await fixture();
   await sealBackup(f.source, f.config, f.archive, f.password);
