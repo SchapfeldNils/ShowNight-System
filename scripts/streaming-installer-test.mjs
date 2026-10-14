@@ -92,6 +92,17 @@ let blocker;
 try {
   assert.equal(await install("install"), 0);
   installed = true;
+  const buildInfo = JSON.parse(
+    await readFile(resolve("dist/streaming-installer/build-info.json"), "utf8"),
+  );
+  assert.equal(
+    powershell(
+      "(Get-ItemProperty -LiteralPath $env:TEST_REGISTRY).DisplayVersion",
+      { TEST_REGISTRY: registry },
+    ).trim(),
+    buildInfo.version,
+    "Installierte Versionskennung muss den Artefaktmetadaten entsprechen.",
+  );
   const runtime = join(folder, "node.exe");
   assert.equal(
     execFileSync(runtime, ["--version"], {
