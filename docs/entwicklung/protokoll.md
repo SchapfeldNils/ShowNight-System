@@ -2,6 +2,8 @@
 
 ## 14. Oktober 2026 · S3-05 Paketmedien und lokale KI
 
+Runtime 33327bd: Native renderer 38597838166 einschließlich echter Desktop-/Mobilbrowserprüfung sowie Signatur-/Decoderfehler mit Sperrfreigabe vollständig bestanden (5/5 und portable Suite 6/6), Renderer-Setup 0.3.5 bestanden. S1 checks 38597838001 auf Windows/AMD64/ARM64 und Server-Installer 38597837985 ebenfalls grün. Artefakte 11912966054/11912666201 heruntergeladen und Archivhashes geprüft, native Desktop-/Mobilbilder visuell geprüft. Dabei missverständlichen alten Hinweis „Nur synthetische Testszene“ entdeckt: neue Paketmedien benötigen korrekte Softwarediagnose- und Paketbild-/Paketvideo-Beschriftung. Eng begrenzte Textkorrektur plus sichtbare Browserstatusprüfung folgt, anschließend neue Artefakte prüfen.
+
 Betreiber setzt Softwarearbeit fort und fordert Verwendung des lokalen Helpers für kleine Entwürfe/Reviews. Eigener Branch codex/s3-package-renderer, Issue #15, Entwurfs-PR #16 gegen PR #13; kein Merge/Produktivupdate. Aktuelles Paketformat enthält noch keine vollständigen Szenen. Daher erster technisch begrenzter Medienbaustein: gebundene PNG-/VP8-WebM-Dateien, private verifizierte Kopie, native Hash-/Dateisperrprüfung, explizite stumme Diagnose mit sichtbarer Paketreferenz/Videoende.
 
 LocalAI tatsächlich dreimal mit versionierten Projektdateien aufgerufen: kleiner Entwurf und zwei Reviews. Aussagen über Rechte/MP4/fehlende Streamhashprüfung/Member-RAII fachlich geprüft und verworfen; kein Modelltext als Testergebnis. Erster Reviewversuch wurde wegen noch unversionierter neuer Datei vom Helper abgelehnt, nach Commit erneut ausgeführt. [Umfang, Kontext, Tokenstände und Prüfung](s3-paketmedien.md).

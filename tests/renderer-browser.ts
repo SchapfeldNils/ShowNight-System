@@ -92,6 +92,7 @@ export async function rendererBrowserProof(
       }),
     ).toBeEnabled();
     await expect(page.getByRole("alert")).toHaveCount(0);
+    await expect(page.getByText(/Vorschau: Paketbild/)).toBeVisible();
     await page.screenshot({
       path: join(output, "paketmedien-browser.png"),
       fullPage: true,

@@ -7,6 +7,16 @@ import type {
 } from "../../../packages/contracts/src/renderer.js";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
 type Api = <T>(path: string, body?: unknown) => Promise<T>;
+const sceneName = (scene: RendererState["preview"], empty = "Leer") =>
+  !scene
+    ? empty
+    : scene.packageMedia
+      ? scene.kind === "video"
+        ? "Paketvideo"
+        : "Paketbild"
+      : scene.kind === "video"
+        ? "Video mit Grafik"
+        : "Bild, Text und Form";
 export function RendererPanel({
   api,
   selected,
@@ -106,9 +116,9 @@ export function RendererPanel({
     <section className="renderer-panel">
       <h2>Medienprozess · Softwarediagnose</h2>
       <p>
-        Nur synthetische Testszene · Bildschirm- und Tonausgabe aus. Diese
-        Bilder entstehen im nativen Medienprozess; Gerätefunktion und Leistung
-        bleiben ungeprüft.
+        Softwarediagnose · Bildschirm- und Tonausgabe aus. Diese Bilder
+        entstehen im nativen Medienprozess; Gerätefunktion und Leistung bleiben
+        ungeprüft.
       </p>
       <p role="status">
         {!report
@@ -190,18 +200,8 @@ export function RendererPanel({
           )}
           <p>
             Diagnoserevision {state.revision} · Vorschau:{" "}
-            {state.preview?.packageMedia ? "Paketmedium · " : ""}
-            {state.preview
-              ? state.preview.kind === "video"
-                ? "Video mit Grafik"
-                : "Bild, Text und Form"
-              : "Leer"}{" "}
-            · Programm: {state.program?.packageMedia ? "Paketmedium · " : ""}
-            {state.program
-              ? state.program.kind === "video"
-                ? "Video mit Grafik"
-                : "Bild, Text und Form"
-              : "Sicherer Hintergrund"}
+            {sceneName(state.preview)} · Programm:{" "}
+            {sceneName(state.program, "Sicherer Hintergrund")}
           </p>
           {(state.preview?.ended || state.program?.ended) && (
             <p>
