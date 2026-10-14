@@ -145,6 +145,10 @@
 
 ## Weitere Entscheidungen nach D017
 
+### DEV-KI-01 – lokale Entwicklungsunterstuetzung, 14. Oktober 2026
+
+Status: Einrichtung durch ausdruecklichen Betreiberauftrag bestaetigt. Kleine Entwicklungsentwuerfe mit einem kostenlosen lokalen Modell auf der vorhandenen GPU vorbereiten, um Cloud-Modellanfragen zu reduzieren. Technische Umsetzung: Ollama/Qwen3 8B, begrenzte Aufgaben, Loopback, deaktivierte Cloudfunktionen und getrennte installierte Werkzeuge ausserhalb OneDrive. Eigener Arbeitsbranch/PR; Modellantworten bleiben ungepruefte Entwuerfe. Kein neues Fach-/Rechte-/Ausfallmodell und keine Laufzeitabhaengigkeit der Showsoftware. GPU-/API-/Codex-Nachweise und eine spaetere messbare Tokenersparnis getrennt fuehren. [Ablauf und Grenzen](../entwicklung/lokale-ki.md).
+
 ### S3-04 – technischer Umsetzungsteil, 14. Oktober 2026
 
 Status: Betreiber beauftragt Renderer-Grundlage trotz fehlendem Testclient; umfangreiche Funktionstests später. Architektur bleibt C++/GStreamer/Skia. Erstes Paket verwendet einen isolierten stummen Offscreen-Diagnoseweg und lokale Prozessanbindung; Full HD/Direct3D11/HDMI/WebRTC/Ton/Regie-/Ausfallabnahme bleiben Ziele mit offenen Nachweisen. Keine bestätigten Fachrechte oder Ersatzregeln durch einen Prototyp ändern. [Anleitung](../entwicklung/s3-renderer.md), [Status](../entwicklung/status.md).
