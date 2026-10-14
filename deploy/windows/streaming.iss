@@ -7,7 +7,7 @@
 [Setup]
 AppId={{91B460DA-7153-4619-9B7D-DC6EAD45982B}
 AppName=ShowNight Streaming
-AppVersion=0.3.6
+AppVersion=0.3.7
 AppPublisher=ShowNight
 AppPublisherURL=https://github.com/SchapfeldNils/ShowNight-System
 DefaultDirName={localappdata}\Programs\ShowNight\Streaming
@@ -44,6 +44,7 @@ Name: "{group}\Inhaltspaket importieren"; Filename: "{app}\Server-Paket-Importie
 Name: "{group}\2 - Serverschlüssel importieren"; Filename: "{app}\Serverschluessel-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\3 - Anmeldestand importieren"; Filename: "{app}\Anmeldestand-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\Netzwerk prüfen"; Filename: "{app}\Server-Netzwerk-Pruefen.cmd"; WorkingDir: "{app}"
+Name: "{group}\Einrichtungsstatus prüfen"; Filename: "{app}\Server-Status.cmd"; WorkingDir: "{app}"
 Name: "{group}\Installationshinweise"; Filename: "{app}\Installationshinweise.txt"
 Name: "{group}\Programmordner"; Filename: "{app}"
 Name: "{group}\Deinstallieren"; Filename: "{uninstallexe}"

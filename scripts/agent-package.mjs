@@ -189,6 +189,7 @@ for (const [file, mode] of server
       ["Server-LAN-Einrichten.cmd", "init-lan"],
       ["Server-Paket-Importieren.cmd", "import-package"],
       ["Server-Netzwerk-Pruefen.cmd", "network-check"],
+      ["Server-Status.cmd", "status"],
       ["Serverschluessel-Importieren.cmd", "trust"],
       ["Anmeldestand-Importieren.cmd", "import-auth"],
       ["Server-Start.cmd", "run"],

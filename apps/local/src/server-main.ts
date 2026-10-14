@@ -20,6 +20,7 @@ import {
 import { localServer } from "./server.js";
 import { lanSetup, assignedAddress, certificateInfo } from "./network.js";
 import { RendererClient, disabledRenderer } from "./renderer.js";
+import { StartupError, startupStatus, printStartupStatus } from "./startup.js";
 async function inputPath(arg?: string) {
   const ui = createInterface({ input: stdin, output: stdout });
   let p = arg;
@@ -37,6 +38,19 @@ async function main() {
     secrets = join(process.env.LOCALAPPDATA, "ShowNight", "secrets"),
     packageRoot = join(process.env.LOCALAPPDATA, "ShowNight", "local-packages");
   const mode = process.argv[2] ?? "run";
+  if (mode === "status" || mode === "run" || mode === "run-renderer") {
+    const status = await startupStatus(root, packageRoot);
+    if (mode === "status" || !status.ready) {
+      printStartupStatus(status);
+      if (mode !== "status") {
+        console.log(
+          "Dienst nicht gestartet: oben genannte Voraussetzungen zuerst vervollständigen.",
+        );
+        process.exitCode = 1;
+      }
+      return;
+    }
+  }
   if (mode === "init" || mode === "init-lan") {
     const network =
       mode === "init-lan"
@@ -183,15 +197,25 @@ async function main() {
           "Eingerichtete Netzwerkadresse ist diesem Rechner nicht zugewiesen.",
         );
       certificateInfo(await readFile(join(root, "server.cer")), v.origin);
-      if (!a.meta("snapshot_id")) throw new Error("Anmeldestand fehlt.");
+      if (!a.meta("snapshot_id"))
+        throw new StartupError(
+          "Anmeldestand fehlt. '3 - Anmeldestand importieren' öffnen.",
+        );
       // Refuse corrupt prepared files before opening any listener.
-      for (const p of a.packageBindings())
-        if (
-          (await packages.verify(p.id)).status !== "valid" ||
-          packages.metadata(p.id).manifest.eventId !== p.eventId ||
-          packageHeader(packages.metadata(p.id).manifest).hash !== p.manifestSha
-        )
-          throw new Error("Vorbereitete Inhalte unvollständig.");
+      try {
+        for (const p of a.packageBindings())
+          if (
+            (await packages.verify(p.id)).status !== "valid" ||
+            packages.metadata(p.id).manifest.eventId !== p.eventId ||
+            packageHeader(packages.metadata(p.id).manifest).hash !==
+              p.manifestSha
+          )
+            throw new Error();
+      } catch {
+        throw new StartupError(
+          "Inhaltspaket fehlt, ist verändert oder unvollständig. Das zum Anmeldestand passende Original über 'Inhaltspaket importieren' laden; bestehenden Stand erhalten.",
+        );
+      }
       const bundledWeb = join(dirname(fileURLToPath(import.meta.url)), "web");
       const webRoot = existsSync(bundledWeb)
         ? bundledWeb
@@ -251,9 +275,19 @@ async function main() {
     }
   }
 }
-main().catch(() => {
-  console.error(
-    "Lokaler Server fehlgeschlagen. Anleitung, vorbereitete Dateien, Rechte und Zertifikat prüfen. Keine Geheimnisse im Chat senden.",
-  );
+main().catch((error: unknown) => {
+  if (error instanceof StartupError) console.error(error.message);
+  else if ((error as NodeJS.ErrnoException)?.code === "EADDRINUSE")
+    console.error(
+      "Dienst nicht gestartet: Port 3443 bereits belegt. Vorhandenes Serverfenster prüfen; keinen fremden Prozess beenden.",
+    );
+  else if ((error as NodeJS.ErrnoException)?.code === "EACCES")
+    console.error(
+      "Dienst oder Dateizugriff verweigert. Windows-Benutzer, Dateirechte und Anleitung.md prüfen.",
+    );
+  else
+    console.error(
+      "Lokaler Server fehlgeschlagen. Anleitung, vorbereitete Dateien, Rechte und Zertifikat prüfen. Keine Geheimnisse im Chat senden.",
+    );
   process.exitCode = 1;
 });

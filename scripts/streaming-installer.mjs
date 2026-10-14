@@ -59,6 +59,7 @@ await writeFile(
     "Keine Freigabe für Veranstaltungsbetrieb, HDMI, Audio oder OBS-Ausgabe.",
     "",
     "Nach der Installation über das Startmenü:",
+    "Zuerst 'Einrichtungsstatus prüfen' öffnen; fehlende Schritte werden einzeln erklärt.",
     "1. Lokalen Server einmal einrichten. Bestehende Einrichtung nicht erneut initialisieren.",
     "   Danach .snpkg-Dateien über Inhaltspaket importieren im Startmenü laden.",
     "2. Serverschlüssel und für diesen Rechner ausgestellten Anmeldestand importieren.",
@@ -126,7 +127,7 @@ await writeFile(
   join(out, "build-info.json"),
   JSON.stringify(
     {
-      version: "0.3.6",
+      version: "0.3.7",
       rendererIncluded: renderer,
       stage: "software-preparation",
       signed: false,

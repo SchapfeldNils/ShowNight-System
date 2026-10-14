@@ -109,6 +109,25 @@ try {
     join(folder, "Streaming-Start.cmd").toLowerCase(),
   );
   const env = { ...process.env, LOCALAPPDATA: profile };
+  const statusShortcut = powershell(
+    "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\Einrichtungsstatus prüfen.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",
+    { TEST_GROUP: group },
+  ).trim();
+  assert.equal(
+    statusShortcut.toLowerCase(),
+    join(folder, "Server-Status.cmd").toLowerCase(),
+  );
+  await access(statusShortcut);
+  const firstStatus = execFileSync(
+    runtime,
+    [join(folder, "main.js"), "status"],
+    { env, encoding: "utf8", windowsHide: true },
+  );
+  assert.match(firstStatus, /Profil: fehlt/);
+  assert.notEqual(
+    await spawnExit(runtime, [join(folder, "main.js"), "run"], env),
+    0,
+  );
   const importerShortcut = powershell(
     "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\Inhaltspaket importieren.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",
     { TEST_GROUP: group },
@@ -130,6 +149,17 @@ try {
   ];
   const privateBefore = await Promise.all(
     privateFiles.map((path) => readFile(path)),
+  );
+  const preparedStatus = execFileSync(
+    runtime,
+    [join(folder, "main.js"), "status"],
+    { env, encoding: "utf8", windowsHide: true },
+  );
+  assert.match(preparedStatus, /Anmeldestand: fehlt/);
+  assert.match(preparedStatus, /Serverschlüssel: fehlt/);
+  assert.deepEqual(
+    await Promise.all(privateFiles.map((path) => readFile(path))),
+    privateBefore,
   );
   blocker = spawn(runtime, ["-e", "setInterval(()=>{},1000)"], {
     windowsHide: true,

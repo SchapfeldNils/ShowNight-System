@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Issue #20: konkrete Erststartmeldungen und lesender Status
+
+14. Oktober 2026, `codex/s3-first-run-diagnosis` / PR #21: Startvorprüfung und `status` unterscheiden fehlendes/teilweises/nicht lesbares Profil, Serverschlüssel, Anmeldestand, Paketablage, Zertifikat und belegten Startport. Deutscher Startmenü-Status ergänzt; vorhandene Datenbanken nur lesend geprüft, keine Onlineanfrage und keine automatische Einrichtung. [Bedienung, tatsächliche Prüfungen und Grenzen](s3-erster-start.md). Lokal Typen/Build sowie 18/18 Unitprüfungen einschließlich isolierter Windows-DPAPI-Erststartprüfung bestanden. Installerquellen 0.3.7; neues ausgeliefertes Setup und vollständige CI noch nicht nachgewiesen. Betreiberinstallation/Onlineexport/Produktivupdate bleiben offen. Die folgenden Abschnitte beschreiben frühere Teilstände.
+
 ## Lokaler Start weiter offen; Online-Update isoliert vorbereitet
 
 14. Oktober 2026, [Issue #20](https://github.com/SchapfeldNils/ShowNight-System/issues/20) / [PR #21](https://github.com/SchapfeldNils/ShowNight-System/pull/21): erneuter Starterfehler bei fehlendem Anmeldestand. Profil-/Zertifikat-Konfiguration bestanden, keine Snapshot-Metadaten und null lokale Benutzer. Online weiterhin Schema 2. Für den fehlenden Exportweg geprüftes ARM64-Image 1c983fc aus erfolgreicher CI übertragen und Archiv/Config/RootFS bestätigt. Live-Snapshot in getrennten neuen Testvolumes wiederhergestellt, Schema 2→4 mit Erhalt aller 20 bestehenden Fachtabellen geprüft; ursprünglichen Schema-2-Stand in weiteren neuen Volumes wiederhergestellt. Aktuell null Medien, kein Nachweis nicht leerer Medien daraus. Exportwege mit eigenem synthetischem MFA-Konto ausschließlich im Teststack geprüft und Konto/Sitzung bereinigt. Teststacks gestoppt; produktive App/Worker nie gestoppt, Schema 2 weiterhin ready und Mail aus. Portainer-/CLI-Konfiguration konsistent; ausschließlich Imagewechsel privat vorbereitet. [Ablauf und benötigte Produktivfreigabe](s3-netcup-update.md), [Nachweis](nachweise/2026-10-14-s3-netcup-probelauf.json). Noch kein Wartungsbackup/Produktivupdate/Betreiberexport/lokaler Start und keine Runtimekorrektur der allgemeinen Fehlermeldung.
@@ -28,7 +32,6 @@ Finale Artefakte heruntergeladen, Archiv-/Paket-/Setup-SHA256 bestätigt und tat
 
 Softwarediagnose einzelner vorbereiteter Paketmedien, weiterhin 640 × 360 und stumm. Vollständige Szenen, persönliche Regievorschau, Show-GO, HDMI/Ton/WebRTC und Hardware-/Veranstaltungsabnahme bleiben offen. Kein Merge, keine Installation auf dem DJ-Rechner, kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
 
-
 ## Historisch: Setup mit nativer Renderer-Grundlage geprüft
 
 Runtime d101808: [Native renderer 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) vollständig erfolgreich. Echter MSVC-/GStreamer-1.28.8-/Skia-Build, native Softwareprüfung 4/4, portabler Server-/Renderer-HTTPS-Ablauf einschließlich nativer Prüfungen 5/5 sowie Setup mit Renderer und Installations-/Update-/Deinstallationsprüfung bestanden. Leerer sicherer Start, tatsächliche Skia-PNGs, lokale Videodekodierung, Vorschau-/Programmtrennung, konkurrierende/identische Diagnosebefehle, Pipe-Wiederverbindung ohne Replay und aktuelle Admin-/MFA-/CSRF-/Sperrprüfungen sind Softwarebelege.
@@ -37,19 +40,13 @@ Renderer-Setup lokal aus GitHub-Artefakt 11908530393 materialisiert und Archiv-/
 
 Dies ist eine installierbare Softwarediagnose-Grundlage mit synthetischen Assets. Echte Showpakete/Szenen, persönliche Regievorschau, Ausgabefenster/Monitorwahl, HDMI/Full HD, Publikumston, WebRTC/OBS, vollständiges GO und Hardware-/Veranstaltungsabnahme bleiben offen. Nächster Softwarebaustein: verifizierte Paketmedien und Szenen an den Renderer anbinden. Kein Merge, keine Installation auf dem DJ-Rechner und kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
 
-
 ## PR-Bug-Abnahme – 14. Oktober 2026
 
 Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
 
-
 Stand: 9. Oktober 2026. Paket S1, Arbeitsbranch `feat/s1-online-server`, [Issue #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1), [PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). S1 ist ein Entwicklungszwischenstand; erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
 
-
 Stand: 10. Oktober 2026. S1-Onlinevorbereitung und S2-Agentgrundlage; S2-Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-[PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). Erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
-
-
-
 
 ## Aktuell: Setup mit nativer Renderer-Grundlage geprüft
 

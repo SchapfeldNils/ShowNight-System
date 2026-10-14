@@ -54,3 +54,7 @@ Globale Admins behalten wie online Systemzugriff und werden ausschließlich glob
 Noch offen: LAN mit mehreren Geräten, automatischer Onlineabgleich, Paketaktivierung, vollständige lokale Fachmodule, Windows-Renderer, HDMI, GO, Tonwege, Hardware-/Veranstaltungsabnahme und automatische Zertifikatserneuerung. Das Lesen einer Show und Mediendownload sind kein Nachweis einer Bühnenausgabe. Vollständiger Umfang F01–F50/A01–A30 bleibt Ziel.
 
 Technische Primärquellen: [Node 24 Crypto](https://nodejs.org/download/release/v24.19.0/docs/api/crypto.html), [Windows-Zertifikatserstellung](https://learn.microsoft.com/en-us/powershell/module/pki/new-selfsignedcertificate), [PFX-Export](https://learn.microsoft.com/en-us/powershell/module/pki/export-pfxcertificate).
+
+# Erststart und Status
+
+Bei fehlender Einrichtung zeigt der Starter jetzt konkrete Voraussetzungen. Im neuen Paket **Einrichtungsstatus prüfen** / `Server-Status.cmd` verwenden; die Prüfung startet keinen Dienst. [Schritte und Grenzen](s3-erster-start.md). Vorhandene Installation 0.3.6 enthält diese Korrektur noch nicht.

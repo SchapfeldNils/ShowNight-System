@@ -12,14 +12,6 @@ Betreiber meldet „Verbindung fehlgeschlagen“ nach Installation auf diesem DJ
 
 Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
 
-
-
-
-
-
-
-
-
 ## 14. Oktober 2026 · S3-06 Abschlussnachweis
 
 1c983fc vollständig geprüft: S1 checks 38608548898 Windows/AMD64/ARM64, Native renderer 38608549592 und Server-Installer 38608548812 erfolgreich. 14 Units, Szenensuite 5/5, Paketregression 9/9, Kernintegration 13/13, Windows-Agenten 8/8 und Offline/DPAPI/HTTPS 10/10 bestanden. Echter Browser mit geladener Bildebene, konkurrierendem Fenster, Mobilansicht und abgebrochener Speicherung ohne Wiederholung sowie bewusster Wiederherstellung bestanden. Lokale und heruntergeladene CI-Desktop-/Mobilbilder visuell geprüft. Echte native Regression 5/5, portable Suite 6/6 und Setup mit Installation/Startmenü/Updatesperre/Update/datenerhaltender Deinstallation bestanden. Container-/Worker-/Sicherungs-/Restoreprüfungen grün.
@@ -227,3 +219,7 @@ Betreiber bietet Portainer-API-Zugang an. Private Vorlage `%LOCALAPPDATA%/ShowNi
 Nachprüfung fand einen Rechte-Sonderfall bei veranstaltungsübergreifenden Teams: globale Teammitglieder könnten sonst durch eine einzelne Eventleitung Zugang zu fremden zugeordneten Veranstaltungen/Privatshows erhalten. Mitgliedschaftsänderung und Zuordnungen sperren jetzt dieselbe Teamzeile; für Leitung werden alle aktuellen Zuordnungen auf ihren Verwaltungsumfang geprüft. Regression prüft eigenen Teamzugang sowie verweigerte Erweiterung auf fremdes Event und fremde Privatshow. Dies konkretisiert die bestätigte Event-/Showtrennung, ohne neue Rollen einzuführen.
 
 Initiale Umsetzung als Commit `aed161e` gepusht; [PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2) als Entwurf angelegt und im Codex-Chat verknüpft. Erster [Actions-Lauf](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/37961245998) bestand Installation, Typprüfung, Unitprüfung und Build, scheiterte jedoch an fehlendem `postgresql-client-17` in den Ubuntu-Paketquellen. Linux-Restoreprüfung verwendet jetzt die Clients aus dem festgelegten PostgreSQL-17.9-Containerimage; vorhandene Clients bleiben über `PG_BIN_DIR` nutzbar. GitHub-Actions selbst sind auf verifizierte Release-Commit-SHAs festgelegt. Screenshots des bestandenen synthetischen Browserablaufs sind versioniert; sie enthalten keine echten Kontogeheimnisse.
+
+# Issue #20 – Softwarekorrektur des Erststarts, 14. Oktober 2026
+
+PR #21 ergänzt konkrete deutsche Voraussetzungen und lesenden Status vor lokalem Server-/Rendererstart. Konten-/Paketdatenbanken werden dafür nicht neu angelegt oder migriert; Rohfehler/Geheimnisse werden nicht veröffentlicht. Lokale Typprüfung, Build und 18 Unitprüfungen bestanden, einschließlich isoliertem Windows-Profil und Dateierhalt. Lokaler KI-Helfer für apps/local und Paket-/Installerskripte abgerufen: keine relevanten Hinweise. Neue Setup-/CI-Nachweise und echte Betreiberbereitstellung bleiben gesondert offen. [Ablauf](s3-erster-start.md).
