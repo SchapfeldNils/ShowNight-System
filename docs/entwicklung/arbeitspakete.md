@@ -1,5 +1,7 @@
 # Entwicklungsplan – Server zuerst, danach Agenten
 
+S3-08, 14. Oktober 2026: [lokale Serverübersicht/Windows-Inventar](s3-serveruebersicht.md), [Issue #24](https://github.com/SchapfeldNils/ShowNight-System/issues/24), [PR #25](https://github.com/SchapfeldNils/ShowNight-System/pull/25). Grafischer Launcher und geschützte Webdiagnose; drei Subagents für Startup/UI/IO. Keine Gerätezuordnung/-ausgabe oder geänderte Rechte. Praktische Hardwareabnahme bleibt offen.
+
 S3-06, 14. Oktober 2026: gespeicherte showbezogene Szenenentwürfe mit eigener Revision, exklusiver Sitzungssperre, Text/Rechteck/Bild, Einsatzreferenz, unabhängiger Kopie und Paket-v2-Übertragung. [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), [Ablauf/Grenzen](s3-szenenentwuerfe.md). Erster Gestaltungs-/Datenbaustein; native Szenenkomposition, vollständiger Konva-Editor und S4-Showablauf bleiben nachfolgende Arbeiten.
 
 S3-05, 14. Oktober 2026: verifizierte Paketmedien an die stumme native Softwarediagnose anbinden; [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), [Entwurfs-PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Erst einzelne PNG-/VP8-WebM-Medien mit aktueller Berechtigung/Bindung und unveränderlicher Kopie; vorhandenes Paketformat enthält noch keine vollständigen Szenen. Vollständige Szenen, persönliche Regievorschau, Ausgabe und Show-GO bleiben nachfolgende Arbeiten. [Ablauf und Grenzen](s3-paketmedien.md).
