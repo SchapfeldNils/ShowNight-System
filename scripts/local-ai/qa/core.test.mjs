@@ -52,6 +52,9 @@ test('Git-Snapshot ignoriert ungespeicherte und unversionierte Aenderungen, dedu
   assert.notEqual(second.commit, first.commit);
   const tasks = Object.values(state.tasks).filter(item => item.status === 'queued');
   assert.equal(tasks.length, 2); assert.ok(tasks.every(item => item.commit === second.commit));
+  state.tasks.github = { id: 'github', sourceKind: 'github-pr', file: 'scripts/foreign.mjs', blob: 'a'.repeat(40), status: 'queued' };
+  await discover(config, state);
+  assert.equal(state.tasks.github.status, 'queued', 'Lokaler Scan darf GitHub-Auftraege nicht verwerfen.');
 });
 test('Belege werden abgeglichen; erfundene Zeilen verworfen und unvollstaendige Antworten abgelehnt', () => {
   const task = { startLine: 41, endLine: 42 }, text = 'const value = 10;\nreturn value;';

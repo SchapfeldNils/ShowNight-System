@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {renderDashboard,plainArea,plainSuggestion} from './dashboard.mjs';
 import {newState} from './core.mjs';
+test('GitHub-Issue bleibt als Beschreibung erkennbar und wird getrennt von PR-Code angezeigt',()=>{
+  const state=newState();state.github={scannedAt:'2026-10-14T19:00:00Z',openPRs:11,openIssues:10};
+  state.tasks.issue={status:'done',sourceKind:'github-issue',number:42,file:'GitHub-Issue-42.md',commit:'a'.repeat(64),startLine:1,endLine:3,completedAt:'2026-10-14T19:00:00Z',result:{summary:'Offene Frage',findings:[],testIdeas:[]}};
+  const html=renderDashboard(state,{phase:'wartezeit'});assert.ok(html.includes('GitHub-Issue #42'));assert.ok(html.includes('kein Fehler im Programm'));assert.ok(html.includes('11 offene PRs'));assert.ok(html.includes('Alle 15 Minuten'));
+});
 test('Verständliche Übersicht erklärt geleistete Arbeit ohne ungeprüfte Vorschläge als echte Fehler darzustellen',()=>{
   const state=newState();state.tasks.first={status:'done',file:'packages/contracts/src/renderer.ts',commit:'a'.repeat(40),startLine:1,endLine:96,completedAt:'2026-10-14T19:00:00Z',result:{summary:'Ein Abschnitt gelesen',findings:[{line:20,description:'Dokumentation fehlt',suggestion:'Kommentar ergänzen',evidence:'sizeBytes: schema'}],testIdeas:[{line:20,idea:'rendererMediaLimit testen',evidence:'sizeBytes: schema'}],tokens:{input:1500,output:500}}};
   state.outbox.a={status:'delivered',messageId:'real-id'};state.outbox.b={status:'delivered'};

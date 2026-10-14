@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hash, git, source, chunks, readState, atomicJson, discover, nextTask, requestFor, validateResponse, syntaxCheck, enqueueFeedback, feedback, report } from './core.mjs';
 import { WhatsAppFeedback, flushFeedback } from './notifications.mjs';
+import { discoverGitHub, githubSource } from './github.mjs';
 
 const runtime = path.dirname(fileURLToPath(import.meta.url));
 const config = JSON.parse(await readFile(path.join(runtime, 'config.json'), 'utf8'));
@@ -48,11 +49,18 @@ async function ask(task, text) {
   });
 }
 async function perform(task) {
-  const currentBlob = (await git(config, ['rev-parse', `HEAD:${task.file}`])).trim();
-  if (currentBlob !== task.blob) { task.status = 'stale'; await save(); return; }
-  const read = await source(config, task.commit, task.file);
+  if (!task.sourceKind) {
+    const currentBlob = (await git(config, ['rev-parse', `HEAD:${task.file}`])).trim();
+    if (currentBlob !== task.blob) { task.status = 'stale'; await save(); return; }
+  }
+  let read;
+  try { read = task.sourceKind ? await githubSource(config, task) : await source(config, task.commit, task.file); }
+  catch (error) {
+    if (!task.sourceKind) throw error;
+    task.nextAttempt = Date.now() + 900000; status.githubError = 'GitHub-Stand nicht erreichbar; spaeter erneut lesen.'; await save(); return;
+  }
   if (read.skip) { task.status = 'stale'; await save(); return; }
-  const piece = chunks(read.content).find(p => p.startLine === task.startLine && p.contentHash === task.contentHash);
+  const piece = read.piece ?? chunks(read.content).find(p => p.startLine === task.startLine && p.contentHash === task.contentHash);
   if (!piece) throw new Error('Quellausschnitt stimmt nicht mehr mit dem Auftrag ueberein.');
   task.status = 'running'; task.startedAt = new Date().toISOString();
   status.phase = 'prueft'; status.currentTask = { file: task.file, startLine: task.startLine, endLine: task.endLine };
@@ -64,7 +72,11 @@ async function perform(task) {
     task.attempts++; counted = true; state.modelCalls++;
     state.inputTokens += Number(answer.prompt_eval_count) || 0; state.outputTokens += Number(answer.eval_count) || 0;
     task.result = validateResponse(answer, task, piece.text);
-    task.syntax = await syntaxCheck(task, piece.text, piece.startLine === 1 && piece.endLine === read.content.replace(/\r\n/g, '\n').split('\n').length);
+    task.syntax = task.sourceKind ? { status: 'not_run', reason: 'GitHub-Inhalte nur gelesen.' } : await syntaxCheck(task, piece.text, piece.startLine === 1 && piece.endLine === read.content.replace(/\r\n/g, '\n').split('\n').length);
+    if (task.sourceKind) {
+      try { task.freshness = (await githubSource(config, task)).skip ? 'changed' : 'verified'; }
+      catch { task.freshness = 'not_verified'; }
+    }
     task.status = 'done'; task.completedAt = new Date().toISOString();
     enqueueFeedback(state, task.id, feedback(task));
   } catch (error) {
@@ -95,7 +107,8 @@ try {
   // A stable setup report is the first actual WhatsApp message after QR linking.
   enqueueFeedback(state, hash('shownight-qa-setup-v1'), 'ShowNight – lokale KI eingerichtet. Ich pruefe gespeicherte Quelltextstaende auf der lokalen GPU und sende nach jedem Auftrag eine Rueckmeldung. Ergebnisse bleiben ungeprueft; Code wird nicht automatisch geaendert.');
   await save();
-  let nextScan = 0, nextCycle = 0, cycleTasks = 0;
+  if (config.githubEnabled && (!config.ghPath || !Number.isInteger(config.githubIntervalSeconds) || config.githubIntervalSeconds < 300)) throw new Error('GitHub-Konfiguration ungueltig.');
+  let nextScan = 0, nextGitHubScan = 0, nextCycle = 0, cycleTasks = 0;
   while (!stopping) {
     const command = await control();
     if (command.action === 'stop') break;
@@ -108,16 +121,29 @@ try {
         const found = await discover(config, state); status.commit = found.commit; status.scanId = command.scanId;
         nextScan = Date.now() + config.scanIntervalSeconds * 1000; await save();
       }
+      if (config.githubEnabled && (Date.now() >= nextGitHubScan || (command.scanId && command.scanId !== status.githubScanId))) {
+        try {
+          await discoverGitHub(config, state); delete status.githubError;
+          status.github = state.github; status.githubScanId = command.scanId;
+        } catch { status.githubError = 'GitHub-Abruf fehlgeschlagen; vorhandene lokale Aufgaben laufen weiter.'; }
+        nextGitHubScan = Date.now() + config.githubIntervalSeconds * 1000; await save();
+      }
       const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
       if (state.day !== day) { state.day = day; state.dayTasks = 0; await save(); }
       if (Date.now() >= nextCycle) { cycleTasks = 0; nextCycle = Date.now() + config.scanIntervalSeconds * 1000; }
-      const task = nextTask(state);
+      const eligible = config.githubEnabled ? state : { tasks: Object.fromEntries(Object.entries(state.tasks).filter(([, t]) => !t.sourceKind)) };
+      let task = nextTask(eligible);
+      // Alternate the two GitHub input types instead of exhausting all Issues first.
+      if (task?.sourceKind === 'github-issue' && state.lastSourceKind === 'github-issue') {
+        task = nextTask({ tasks: Object.fromEntries(Object.entries(state.tasks).filter(([, t]) => t.sourceKind === 'github-pr')) }) ?? task;
+      }
       if (state.dayTasks >= config.dailyTaskLimit) status.phase = 'tageslimit';
       else if (cycleTasks >= 2) status.phase = 'wartezeit';
       else if (!task) status.phase = 'wartet_auf_aenderungen';
       else {
         const before = task.attempts;
         try { await perform(task); } catch { task.status = 'failed'; task.error = 'Quellstand konnte nicht gelesen werden.'; enqueueFeedback(state, task.id, feedback(task)); }
+        if (task.status === 'done') state.lastSourceKind = task.sourceKind ?? 'local';
         if (task.attempts > before || task.status === 'failed') { state.dayTasks++; cycleTasks++; }
         await save();
       }

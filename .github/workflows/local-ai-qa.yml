@@ -14,11 +14,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: "24.19.0" }
-      - run: node --test scripts/local-ai/qa/core.test.mjs scripts/local-ai/qa/dashboard.test.mjs
+      - run: node --test scripts/local-ai/qa/core.test.mjs scripts/local-ai/qa/dashboard.test.mjs scripts/local-ai/qa/github.test.mjs
       - name: PowerShell syntax
         shell: pwsh
         run: |
-          $files = @('scripts/local-ai/Install-ShowNightLocalQA.ps1', 'scripts/local-ai/ShowNightLocalQA.ps1', 'scripts/local-ai/qa/Invoke-ShowNightQARequest.ps1', 'scripts/local-ai/Get-ShowNightLocalFindings.ps1', 'scripts/local-ai/Get-ShowNightGitHubInbox.ps1', 'scripts/local-ai/Enable-ShowNightCodexReview.ps1', 'scripts/local-ai/Test-ShowNightCodexReview.ps1')
+          $files = @('scripts/local-ai/Install-ShowNightLocalQA.ps1', 'scripts/local-ai/ShowNightLocalQA.ps1', 'scripts/local-ai/qa/Invoke-ShowNightQARequest.ps1', 'scripts/local-ai/Get-ShowNightLocalFindings.ps1', 'scripts/local-ai/Get-ShowNightGitHubInbox.ps1', 'scripts/local-ai/Enable-ShowNightCodexReview.ps1', 'scripts/local-ai/Test-ShowNightCodexReview.ps1', 'scripts/local-ai/Enable-ShowNightGitHubBot.ps1')
           foreach ($file in $files) {
             $tokens = $null; $errors = $null
             [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null

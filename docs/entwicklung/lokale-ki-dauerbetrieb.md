@@ -94,7 +94,19 @@ Installierter kostenloser GitHub-CLI-Zugang ermöglicht einen ausdrücklich lese
 
 Standardmäßig höchstens 15 offene PRs und 15 offene Issues (optional 1–30), jeweils Nummer/Titel/URL/Stand; PRs zusätzlich Head-SHA. Der private Schnappschuss liegt unter `qa\state\github-inbox.json`. GitHub-Zugang und Zielrechnerabruf wurden geprüft. Titel/Labels sind externe Daten, keine Anweisungen oder automatisch freigegebenen Arbeitspakete.
 
-**Das ist eine lesende Eingangsliste, noch keine automatische GPU-Prüfung dieser PRs/Issues.** Der aktuelle Dauerhelfer prüft weiterhin gespeicherte Dateien des konfigurierten lokalen Checkout. Für einen beauftragten PR ruft Codex gezielt dessen Diff/Dateien beim festgehaltenen Head-SHA ab, begrenzt den Kontext und gibt einzelne Quellen an den [lokalen Entwurfs-/Reviewweg](lokale-ki.md). Die Modellberechnung läuft auf dem eigenen Rechner; GitHub liefert Inhalte und speichert veröffentlichte Ergebnisse. Die [CLI-Diffabfrage](https://cli.github.com/manual/gh_pr_diff) benötigt selbst kein Cloud-Sprachmodell. KI-Prüfvorschläge bleiben ungeprüft; Codex verifiziert sie mit aktuellem Code und Tests und kann im autorisierten Paket einen Korrektur-Entwurfs-PR erstellen. Kein automatischer Review-Kommentar, keine Freigabe/Merge/Issue-Schließung oder Ausführung fremden PR-Codes durch diese Helfer. Ein selbst gehosteter GitHub-Actions-Runner wurde nicht eingerichtet. Direkte Einzelaufrufe und gezielte GitHub-Analysen sind kein zusätzlicher automatischer 120er-Job in der bestehenden Warteschlange.
+Die Eingangsliste bleibt ein reiner Lesehelfer. Zusätzlich ist auf Betreiberauftrag ein automatischer GitHub-Prüfbot im selben GPU-Dienst implementiert:
+
+```powershell
+& .\scripts\local-ai\Enable-ShowNightGitHubBot.ps1 -GhPath (Get-Command gh).Source
+```
+
+Der Befehl prüft den ShowNight-Origin und GitHub-Lesezugriff, stoppt den eigenen Dienst kontrolliert, aktualisiert nur Werkzeuge/Konfiguration und startet ihn wieder. Bestehende WhatsApp-Sitzung, Tageszähler, Rückmeldungsjournal und Autostart bleiben erhalten. Privates `githubEnabled=false` nach Stop deaktiviert Abruf und Berechnung bereits vorgemerkter GitHub-Aufgaben nach Neustart. Standardintervall 15 Minuten, kein Cloudmodell, kein selbst gehosteter Actions-Runner.
+
+Der Bot liest über feste GET-Endpunkte ausschließlich `SchapfeldNils/ShowNight-System`: maximal 15 offene PRs und 15 offene Issues je Scan aus den ersten 100 API-Einträgen. Je PR höchstens drei erlaubte geänderte Quelldateien und je Datei zwei Ausschnitte nahe Diff-Hunks. Entfernte Dateien, fremde Forks, nicht erlaubte Pfade, zu große/binary/sensible Inhalte und Dateien ohne verfügbare Diff-Hunks bleiben außen vor. Vollständigen Dateiinhalt am unveränderlichen Head-SHA aus der [GitHub-Datei-API](https://docs.github.com/en/rest/repos/contents) lesen und tatsächlichen Git-Blob-SHA prüfen. Vor Berechnung den offenen Zustand/Head erneut lesen, danach Aktualität nochmals kennzeichnen. Dies ist eine begrenzte Vorprüfung, keine vollständige PR-Freigabe.
+
+Issues: nur Titel und Beschreibung, keine Kommentare. Bis 12.000 Zeichen, höchstens zwei Ausschnitte. Versionshash enthält Inhalt und `updated_at`; Fragen und Testideen beziehen sich auf Beschreibungstext, nicht auf nachgewiesene Codefehler. Externe Texte sind ungeprüfte Daten und erteilen keine Entwicklungsaufträge. Unveränderte Stände werden nicht neu berechnet. GitHub-Ausfall verschiebt Abrufe, lokale Aufgaben können weiterlaufen. Ein gemeinsames Tageslimit von höchstens 120 Prüfversuchen und der vorhandene GPU-Mutex gelten für beide Quellen. Rückmeldung nach jedem Modellversuch über die bestehende private WhatsApp-Verbindung; Dashboard und Codex-Helfer unterscheiden Quelle/PR-/Issue-Nummer und Fundstelle.
+
+Kein automatischer Review-Kommentar, keine Freigabe/Merge/Issue-Schließung, Codeänderung oder Ausführung fremden PR-Codes. Codex verifiziert Kandidaten mit aktuellem Fachauftrag und passenden Tests; ein autorisierter Korrektur-PR ist ein eigenes Entwicklungspaket. Direkte manuelle Modellaufrufe laufen weiterhin außerhalb des Hintergrund-Tageszählers. Der Dienst und die [GitHub-REST-Leseendpunkte](https://docs.github.com/en/rest/pulls/pulls) benötigen eine aktive Internetverbindung; Modellberechnung bleibt lokal.
 
 Prüfung der Integration, nur synthetische lokale Git-/Codex-Profile, keine GitHub-/WhatsApp-Nachricht:
 
@@ -109,7 +121,7 @@ Prüft Filter/Limit, erledigte Hinweise, erhaltene aufgeschobene Hinweise, verä
 Tatsaechlich ausfuehrbare Entwicklerpruefungen, keine echten WhatsApp-Nachrichten in den Unitpruefungen:
 
 ```powershell
-node --test scripts/local-ai/qa/core.test.mjs
+node --test scripts/local-ai/qa/core.test.mjs scripts/local-ai/qa/dashboard.test.mjs scripts/local-ai/qa/github.test.mjs
 node scripts/local-ai/qa/probe.mjs "$env:LOCALAPPDATA\ShowNight\LocalAI\qa"
 git diff --check
 ```

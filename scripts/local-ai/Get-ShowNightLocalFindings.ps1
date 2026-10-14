@@ -18,6 +18,7 @@ $blobs=@{}
 foreach($task in ($state.tasks.PSObject.Properties.Value|Where-Object status -eq 'done'|Sort-Object completedAt -Descending)){
     if($PathPrefix.Count -and !($PathPrefix|Where-Object{$task.file.StartsWith($_,[StringComparison]::Ordinal)})){continue}
     if($task.file -match '(^|/)\.|\\|[\r\n]' -or $task.commit -notmatch '^[0-9a-f]{40,64}$'){continue}
+    if($task.freshness -eq 'changed'){continue}
     if(!$blobs.ContainsKey($task.file)){
         $value=& $config.gitPath -C $workspacePath rev-parse "HEAD:$($task.file)" 2>$null
         $blobs[$task.file]=if($LASTEXITCODE-eq 0){[string]$value}else{''}
@@ -29,7 +30,7 @@ foreach($task in ($state.tasks.PSObject.Properties.Value|Where-Object status -eq
             $id=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($identity))).ToLowerInvariant()
             $decision=$triage[$id]
             if($decision.status -in @('fixed','rejected','stale') -and $decision.blob -eq $task.blob){continue}
-            $candidates.Add([pscustomobject]@{id=$id;kind=$kind;file=$task.file;line=$item.line;commit=$task.commit;blob=$task.blob;sameCommittedFile=($blobs[$task.file]-eq $task.blob);text=$text;suggestion=$item.suggestion;evidence=$item.evidence;modelStatus='ungeprueft';previousDecision=$decision})
+            $candidates.Add([pscustomobject]@{id=$id;kind=$kind;file=$task.file;line=$item.line;commit=$task.commit;blob=$task.blob;sameCommittedFile=($task.sourceKind -ne 'github-issue' -and $blobs[$task.file]-eq $task.blob);sourceKind=$task.sourceKind;sourceURL=$task.sourceURL;githubNumber=$task.number;freshness=$task.freshness;lineContext=$(if($task.sourceKind -eq 'github-issue'){'Issue-Beschreibung, kein Quellcode'}else{'Quelldatei'});text=$text;suggestion=$item.suggestion;evidence=$item.evidence;modelStatus='ungeprueft';previousDecision=$decision})
         }
     }
 }
