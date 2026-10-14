@@ -12,3 +12,5 @@ Diese Anleitung beschreibt den neuen gemeinsamen Kandidaten. Sie ist noch kein N
 Vorhandener Vorbereitungsablauf: Veranstaltung anlegen → Teams und Rechte zuordnen → Shows anlegen/bearbeiten → Medien hochladen und Prüfung abwarten → Inhaltspaket exportieren. Onlinevorbereitung ist keine Bühnenausgabe.
 
 Noch nicht als fertige Funktion vorhanden: Ticketshop, vollständiger Stage Timer und vollständiger Livebetrieb. Diese Themen bleiben im vereinbarten Umfang und werden nicht durch leere Menüpunkte als fertig dargestellt. Lokale Installation und reale Geräte-/Mehrrechnerabnahmen sind getrennte Schritte.
+
+Geprüfte synthetische Ansichten: [Desktop-Konto](nachweise/online-konto-desktop.png), [Mobil-Konto](nachweise/online-konto-mobil.png), [ShowNight-Passwortmail](nachweise/passwort-mail-desktop.png). Diese Ansichten stammen aus dem tatsächlich ausgeführten Browser-/Vorlagentest, enthalten keine echten Zugangsdaten und sind kein behaupteter Produktivstand.

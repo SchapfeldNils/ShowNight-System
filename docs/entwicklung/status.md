@@ -1,3 +1,9 @@
+# Aktueller Abschlussnachweis – 15. Oktober 2026
+
+Gemeinsamer Kandidat `f232483fd04f47dfa8c973fe1892859a3e84d27b`, [PR #38](https://github.com/SchapfeldNils/ShowNight-System/pull/38): alle vier CI-Workflows erfolgreich (S1 Windows/AMD64/ARM64, Schema4→6 mit Rückkehr AMD64/ARM64, Native, Installer). Lokal Konto-/E-Mailbrowser 2/2, Kontointegration 14/14, Szenenintegration5/5, Build/Typprüfung und gezielte Windows-/Socket-/Vorlagenprüfungen bestanden. Gesamtcode unabhängig geprüft; bestätigte Recovery-/Timeoutfehler behoben und erneut geprüft. Finale CI-, Artefakt-, Dokumentations- und Bildnachweise unabhängig geprüft, keine bestätigten Blocker. Echte SMTP-Verbindung/TLS/Anmeldung bestätigt, keine Nachricht versendet. Codezusammenführung ist beauftragt; produktive Bereitstellung ist nicht erfolgt.
+
+[Benutzbarer Ablauf](online-bedienablauf.md), [Zusammenführung und exakte Nachweise](online-konsolidierung.md), [maschinenlesbarer Nachweis](nachweise/online-konsolidierung.json). Ältere In-Arbeit-Absätze unten dokumentieren den Weg und sind keine aktuelle Sperre. Ticketshop, Stage Timer, reale Zustellung und vollständige Veranstaltungs-/Hardwarefreigabe bleiben offen. Automatische Fortsetzung bleibt pausiert.
+
 # Entwicklungsstatus
 
 ## Sichtbare Online-Version und gemeinsame Basis – 15. Oktober 2026

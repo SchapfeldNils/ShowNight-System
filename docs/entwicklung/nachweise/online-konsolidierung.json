@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-15",
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/38",
+  "branch": "codex/online-visible-release",
+  "runtimeCommit": "f232483fd04f47dfa8c973fe1892859a3e84d27b",
+  "featureCommit": "9fa1fe9f6d2d636d091888d6cb2df0bfbbe14428",
+  "integrated": {
+    "main": "cd71423d2757989c342b6b2d54e4f47cd5e348d1",
+    "pr30": "3cdcc3760fc0450d39d29e515d74596c5c4d5433",
+    "mergeCommits": [
+      "b492b8c",
+      "336a0d0"
+    ],
+    "pr37": "d88a891c3c2da15256dca88203ca95bc12038e60"
+  },
+  "scope": [
+    "F30/A18 online account and verified email recovery",
+    "existing F01/F05/F12/F25 preparation flows",
+    "F28/A03/A04 integrated regression protection"
+  ],
+  "local": {
+    "targetedOps": {
+      "includes": "Windows CER/PFX/private key, offline collision preservation, WELCOME and heartbeat reconnect, escaped HTML/Text templates",
+      "failed": 0,
+      "passed": 6
+    },
+    "typecheck": "passed",
+    "accountIntegration": {
+      "includes": "real CLI recovery subprocess; concurrent password/MFA/reset; pending confirmation revocation",
+      "failed": 0,
+      "passed": 14
+    },
+    "environment": "Windows x64, Node24.19.0, real isolated PostgreSQL17.9 and Chromium",
+    "accountBrowsers": {
+      "includes": "clicked logout, password change, admin MFA, desktop/mobile, email confirmation, forgotten password/reset; actual queues in test mode",
+      "failed": 0,
+      "passed": 2
+    },
+    "build": "passed",
+    "scenesIntegration": {
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "independentReview": {
+    "finalCiAndDocumentation": "complete; independently checked CI, artifact hashes, documentation and screenshots; no confirmed findings",
+    "reviewer": "non-implementing netcup_github_audit",
+    "scope": "complete consolidated diff against origin/main and new account/mail/agent/local changes",
+    "codeStatus": "complete, confirmed findings corrected and independently re-reviewed",
+    "remainingConfirmedCodeBlockers": 0
+  },
+  "smtp": {
+    "messageSent": false,
+    "productionConfigurationChanged": false,
+    "configurationComplete": true,
+    "tlsAndLoginVerified": true
+  },
+  "ci": {
+    "rehearsal": {
+      "baselineSchema": 4,
+      "status": "success",
+      "runId": 38654029557,
+      "rollbackSchema": 4,
+      "targetSchema": 6
+    },
+    "native": {
+      "status": "success",
+      "runId": 38654029528
+    },
+    "s1": {
+      "status": "success",
+      "runId": 38654029540
+    },
+    "initial": {
+      "result": "failed old schemaVersion=5 assertion; corrected to6 and local scene suite5/5 passed",
+      "s1Run": 38653624821
+    },
+    "installer": {
+      "status": "success",
+      "runId": 38654029597
+    }
+  },
+  "limits": [
+    "No production deployment or actual mail; operator approval still required",
+    "No local installation or certificate trust change",
+    "Verified email required for recovery; MFA retained",
+    "Existing offline exports have independent credentials",
+    "Ticketshop F38-F43/A24-A27 and stage timer F20/A10 remain open",
+    "No real hardware/event acceptance"
+  ],
+  "arm64Delivery": {
+    "source": "exact schema-6 rehearsal-tested image",
+    "artifactId": 11936087834,
+    "artifactZipSHA256": "84b467dc7fa557b7a74bd33424413ed6887c953645d6c619615d4ebc9f2ab320",
+    "imageArchiveSHA256": "bab305c3032d558770efa57bf19a488565548698bb0a7a5b6d627f54077a56e5",
+    "imageArchiveBytes": 239339727,
+    "imageID": "sha256:d0736b5ceb95ff4b4a33d6e43d24cbd87e0e37e0e0bc7bb44cce3af88eae44b7",
+    "ignoredLocalPath": ".local/artifacts/online-f232/candidate-arm64/shownight-arm64.tar.gz",
+    "outerAndInnerHashesVerified": true,
+    "installed": false
+  }
+}

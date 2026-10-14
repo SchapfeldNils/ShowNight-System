@@ -4,7 +4,7 @@
 
 15. Oktober 2026: Ein gemeinsamer Releasebranch `codex/online-visible-release` führt die bisher geprüften Online-, Agenten- und lokalen Entwicklungsstände zusammen. Nutzerpriorität: zuerst eine sichtbare, benutzbare Online-Version, danach weitere lokale Entwicklung. Kein neues Hintergrundpaket vor diesem Lieferpunkt.
 
-Neu in Arbeit: gut erreichbares **Mein Konto / Abmelden** und eigene **Passwortänderung** einschließlich erneuter Anmeldung und unveränderter MFA. Vor Merge werden der gesamte integrierte Stand unabhängig überprüft und die passenden Prüfungen auf genau diesem Kandidaten ausgeführt. Merge geeigneter geprüfter Entwicklungsstände ist durch den aktuellen Nutzerauftrag autorisiert; ein Produktivupdate ist damit noch nicht ausgeführt.
+Im geprüften gemeinsamen Kandidaten: gut erreichbares **Mein Konto / Abmelden** und eigene **Passwortänderung** einschließlich erneuter Anmeldung und unveränderter MFA. Der integrierte Stand ist unabhängig geprüft; alle vier neuen CI-Workflows einschließlich Schema4→6/Rückkehr und der sichtbaren Browserabläufe sind erfolgreich. Merge geeigneter geprüfter Entwicklungsstände ist durch den aktuellen Nutzerauftrag autorisiert; ein Produktivupdate ist damit noch nicht ausgeführt.
 
 - [Aktueller Stand, Nachweise und Grenzen](docs/entwicklung/status.md)
 - [Zusammenführung und Lieferkriterien](docs/entwicklung/online-konsolidierung.md)
