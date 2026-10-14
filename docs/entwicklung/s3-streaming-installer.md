@@ -2,7 +2,7 @@
 
 Stand: 14. Oktober 2026. Betreiberanforderung: Das Anwenderpaket muss eine Windows-Installationsanwendung sein. Umsetzung auf Branch codex/s3-renderer-foundation, [PR #13](https://github.com/SchapfeldNils/ShowNight-System/pull/13), [Issue #12](https://github.com/SchapfeldNils/ShowNight-System/issues/12).
 
-Aktueller Paketstand: Setup mit nativer Renderer-Grundlage tatsächlich gebaut und geprüft, [Lauf 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652), [Nachweis/Prüfsumme](nachweise/s3-renderer.json). Lokal bereitgestellte ShowNight-Streaming-Setup-x64.exe enthält jetzt den Renderer; reine Softwarediagnose mit synthetischen Medien. Das folgende Server-Vorabpaket bleibt ein historischer/separater Buildstand. Noch keine vollständige Streaming-/Show-/Gerätefreigabe.
+Aktueller Paketstand S3-05: Setup 0.3.5 mit nativer Paketmedien-Diagnose und direktem Paketimport tatsächlich gebaut und geprüft, [Lauf 38599883983](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38599883983), [Nachweis/Prüfsummen](nachweise/s3-paketmedien.json), [PR #16](https://github.com/SchapfeldNils/ShowNight-System/pull/16). Lokal unter dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe bereitgestellt, 30.015.618 Bytes. PNG-/VP8-WebM-Diagnose aus vorbereiteten Paketen ist stumm; synthetische Assets bleiben als Testgrundlage vorhanden. Das Server-Vorabpaket bleibt ein separater Buildstand. Noch keine vollständige Streaming-/Show-/Gerätefreigabe.
 
 ## Paket und Einrichtung
 

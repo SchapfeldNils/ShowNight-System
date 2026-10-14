@@ -1,5 +1,11 @@
 # Entwicklungs- und Prüfprotokoll
 
+## 14. Oktober 2026 · S3-05 Abschlussnachweis
+
+Finale Runtime 5d3c34e: Native renderer 38599883983 vollständig erfolgreich, native Suite 5/5 und portable Suite 6/6. Tatsächliche PNG-/VP8-Dekodierung, Windows-Dateisperren, unveränderte geladene Kopie, Videoende, ungültige PNG-Signatur/Decoderfehler mit Freigabe, echter Edge-Desktop-/Mobilbrowser und gebündelter CLI-Paketimport bestanden. Setup 0.3.5 einschließlich zusätzlichem Import-Startmenüeintrag, Installation, aktiver Updatesperre, Update und datenerhaltender Deinstallation bestanden. S1 checks 38599883927 auf Windows/AMD64/ARM64 und Server-Installer 38599884010 ebenfalls vollständig grün.
+
+Artefakte 11913209209 (Paket/Setup) und 11912394442 (native Bilder/Buildnachweise) heruntergeladen; Archiv-, Paket- und Setuphash lokal bestätigt. Finalen Desktop-/Mobilnachweis visuell geprüft: korrekte Paketbild-/Softwarediagnose-Beschriftung und native Bilder, mobile Diagnose ohne horizontalen Überlauf. Setup lokal unter dist/streaming-installer bereitgestellt, Renderer enthalten, 30.015.618 Bytes, SHA256 de18fe6cdd039d02bfac146264ee2a1b422b716b7c37185cfed96ed981f94781. [Strukturierter Nachweis](nachweise/s3-paketmedien.json). Abschließender vierter erfolgreicher LocalAI-Aufruf vergleicht versionierte Anwenderanleitung/Startmenü, selbst nachgeprüft; kein Testersatz. Nachweiscommit ändert ausschließlich Dokumentation und verwendet CI-Skip; geprüfte Runtime bleibt 5d3c34e. Kein Merge, keine Installation auf dem DJ-Rechner und kein Produktivupdate. Vollständige Szenen/Show-GO/HDMI/Ton und Geräteabnahme bleiben offen.
+
 ## 14. Oktober 2026 · S3-05 Paketmedien und lokale KI
 
 Auslieferungsprüfung ergänzt den vorhandenen Paketimport direkt im Server-CLI (import-package), eigenen Startmenüeintrag und kurze Anwenderanleitung im Rendererpaket. Vorher verlangte der dokumentierte Ablauf das separate S3-01-Werkzeug. Import benutzt unverändert den vorhandenen strikten PackageStore und aktiviert weder Rechte noch Liveausgabe. Portable Prüfung verwendet jetzt den tatsächlich gebündelten CLI-Import; Installerprüfung kontrolliert den neuen Startmenüpfad. Diese Ergänzung benötigt eigene abschließende CI-/Artefaktnachweise.
