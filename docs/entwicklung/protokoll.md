@@ -1,5 +1,10 @@
 # Entwicklungs- und Prüfprotokoll
 
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
 ## 9. Oktober 2026 – Rückmeldung zur Erreichbarkeit
 
 Betreiber meldet vom Mobiltelefon eine Netcup-Platzhalterseite; der Screenshot zeigt die vollständige aufgerufene Adresse nicht eindeutig. Systemadresse bleibt `https://eventmanagement.jungschuetzen-flueren.de`. Öffentliche DNS-Abfragen bei Google und Cloudflare zeigen für die Systemsubdomain die bestätigte VM, während Hauptdomain/`www` weiterhin das bisherige Webhosting adressieren. Der lokale Windows-Resolver liefert für die Systemsubdomain noch die alte Webhosting-IP mit verbleibender TTL 77341 Sekunden. Daher ist auch bei korrekter Adresse ein veralteter Resolvercache als Ursache belegt; der Mobiltelefon-Resolver wurde nicht direkt ausgelesen.

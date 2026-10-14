@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 import { build as viteBuild } from "vite";
-import { mkdir, copyFile } from "node:fs/promises";
+import { mkdir, copyFile, readdir, unlink } from "node:fs/promises";
 await mkdir("dist/api", { recursive: true });
 await build({
   entryPoints: [
@@ -15,5 +15,10 @@ await build({
   packages: "external",
   format: "esm",
 });
-await copyFile("apps/api/migrations/001_core.sql", "dist/api/001_core.sql");
+// Remove only previously generated SQL files in this fixed build directory.
+for (const file of await readdir("dist/api"))
+  if (/^\d{3}_[a-z_]+\.sql$/.test(file)) await unlink("dist/api/" + file);
+for (const file of await readdir("apps/api/migrations"))
+  if (/^\d{3}_[a-z_]+\.sql$/.test(file))
+    await copyFile("apps/api/migrations/" + file, "dist/api/" + file);
 await viteBuild({ configFile: "apps/web/vite.config.ts" });

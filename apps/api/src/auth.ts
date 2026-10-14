@@ -258,6 +258,17 @@ export function authRoutes(app: FastifyInstance, db: DB, cfg: Config) {
     async (req) => {
       const input = inviteInput.parse(req.body);
       await transaction(db, async (c) => {
+        const owner = (
+          await c.query(
+            "SELECT user_id FROM invitations WHERE token_hash=$1 AND expires_at>now()",
+            [hash(input.token)],
+          )
+        ).rows[0];
+        if (!owner) throw denied();
+        // Lock order matches renewal: user first, then its invitation tokens.
+        await c.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
+          owner.user_id,
+        ]);
         const r = await c.query(
           "DELETE FROM invitations WHERE token_hash=$1 AND expires_at>now() RETURNING user_id",
           [hash(input.token)],

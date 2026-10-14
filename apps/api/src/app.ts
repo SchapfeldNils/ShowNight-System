@@ -21,7 +21,7 @@ import {
   inviteInput,
 } from "../../../packages/contracts/src/index.js";
 import type { Config } from "./config.js";
-import type { DB } from "./db.js";
+import { migrationVersions, type DB } from "./db.js";
 import { authRoutes, actor } from "./auth.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
@@ -108,16 +108,14 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
           : "Ungültige oder zu häufige Anfrage.";
     }
     app.log.warn({ correlationId: req.id, code, status }, "Anfrage abgewiesen");
-    reply
-      .code(status)
-      .send({
-        error: {
-          code,
-          message,
-          correlationId: req.id,
-          ...(details ? { details } : {}),
-        },
-      });
+    reply.code(status).send({
+      error: {
+        code,
+        message,
+        correlationId: req.id,
+        ...(details ? { details } : {}),
+      },
+    });
   });
   app.get("/health/live", async () => ({
     status: "alive",
@@ -129,8 +127,15 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       const r = await db.query(
         "SELECT version FROM schema_migrations ORDER BY version",
       );
-      if (r.rows.map((r) => r.version).join(",") !== "1") throw new Error();
-      return { status: "ready", schemaVersion: 1 };
+      if (
+        r.rows.map((r) => r.version).join(",") !==
+        (await migrationVersions()).join(",")
+      )
+        throw new Error();
+      return {
+        status: "ready",
+        schemaVersion: Math.max(...(await migrationVersions())),
+      };
     } catch {
       return reply.code(503).send({ status: "not_ready" });
     }
@@ -191,7 +196,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
     if (!req.actor.admin) forbidden();
     return (
       await db.query(
-        'SELECT id,business_key AS "businessKey",status,attempts,last_error AS "lastError",created_at AS "createdAt" FROM mail_jobs ORDER BY created_at DESC LIMIT 100',
+        'SELECT id,business_key AS "businessKey",delivery_mode AS "deliveryMode",status,attempts,last_error AS "lastError",created_at AS "createdAt" FROM mail_jobs ORDER BY created_at DESC LIMIT 100',
       )
     ).rows;
   });
@@ -206,7 +211,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
     const input = mailInput.parse(req.body);
     const job = (
       await db.query(
-        "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status) VALUES($1,$2,$3,$4,$5,'queued') ON CONFLICT(business_key) DO NOTHING RETURNING id,status",
+        "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status,delivery_mode) VALUES($1,$2,$3,$4,$5,'queued','test') ON CONFLICT(business_key) DO NOTHING RETURNING id,status",
         [
           randomUUID(),
           input.businessKey,
