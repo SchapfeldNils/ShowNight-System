@@ -2,7 +2,7 @@
 
 ## Netcup-Priorität: vollständiger Releasekandidat, 15. Oktober 2026
 
-Issue #36: vollständige Basis PR #35 mit Worker-Korrektur #34 konsolidieren und Schema-4→5-/Backup-/Restore-/Rückkehrprüfung isoliert vorbereiten. Tatsächlicher Netcup-Bestand lesend bestätigt, keine Dienständerung. Implementierung/Tests/CI/Review noch in Arbeit. [Bestand, Basis und Übergabe](netcup-release-preflight.md).
+Issue #36: vollständige Basis PR #35 mit Worker-Korrektur #34 konsolidieren und Schema-4→5-/Backup-/Restore-/Rückkehrprüfung isoliert vorbereiten. Tatsächlicher Netcup-Bestand lesend bestätigt, keine Dienständerung. Implementiert, lokal Typprüfung/Claimregression11/11/Probeunits2/2 und vollständige S1-CI38649908576 sowie neue Rehearsal-CI38649908680 bestanden. Unabhängiger vollständiger Codereview ohne Befund; finaler Nachweisreview einschließlich Artefakt-/Hash-/Commitbindung ebenfalls bestanden, keine bestätigten Befunde. [Bestand, Basis und Übergabe](netcup-release-preflight.md).
 
 ## Netcup-Priorität: Sicherungshärtung, 15. Oktober 2026
 
