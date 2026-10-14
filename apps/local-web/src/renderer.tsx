@@ -3,9 +3,17 @@ import type {
   RendererAction,
   RendererReport,
   RendererState,
+  RendererPackageAction,
 } from "../../../packages/contracts/src/renderer.js";
+import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
 type Api = <T>(path: string, body?: unknown) => Promise<T>;
-export function RendererPanel({ api }: { api: Api }) {
+export function RendererPanel({
+  api,
+  selected,
+}: {
+  api: Api;
+  selected: TransferManifest | null;
+}) {
   const currentApi = useRef(api);
   currentApi.current = api;
   const [report, setReport] = useState<RendererReport | null>(null);
@@ -13,12 +21,18 @@ export function RendererPanel({ api }: { api: Api }) {
     [error, setError] = useState("");
   const [pictures, setPictures] = useState<string[]>([]);
   const urls = useRef<string[]>([]);
+  const alive = useRef(true);
+  const [mediaId, setMediaId] = useState("");
+  useEffect(() => {
+    setMediaId("");
+  }, [selected?.id]);
   const clearPictures = () => {
     for (const url of urls.current) URL.revokeObjectURL(url);
     urls.current = [];
     setPictures([]);
   };
   useEffect(() => {
+    alive.current = true;
     let mounted = true;
     const refresh = async () => {
       try {
@@ -39,6 +53,7 @@ export function RendererPanel({ api }: { api: Api }) {
     const timer = setInterval(() => void refresh(), 3000);
     return () => {
       mounted = false;
+      alive.current = false;
       clearInterval(timer);
       for (const url of urls.current) URL.revokeObjectURL(url);
     };
@@ -55,7 +70,9 @@ export function RendererPanel({ api }: { api: Api }) {
           throw new Error(
             "Diagnosebild nicht bestätigt. Anmeldung und Rendererstatus prüfen.",
           );
-        next.push(URL.createObjectURL(await r.blob()));
+        const blob = await r.blob();
+        if (!alive.current) throw new Error("Ansicht geschlossen.");
+        next.push(URL.createObjectURL(blob));
       }
       clearPictures();
       urls.current = next;
@@ -65,18 +82,24 @@ export function RendererPanel({ api }: { api: Api }) {
       throw e;
     }
   };
-  const run = async (action: RendererAction) => {
+  const run = async (
+    action: RendererAction | RendererPackageAction,
+    path = "/renderer/test",
+  ) => {
     setBusy(true);
     setError("");
     try {
-      await currentApi.current<RendererState>("/renderer/test", action);
+      await currentApi.current<RendererState>(path, action);
+      if (!alive.current) return;
       setReport(await currentApi.current<RendererReport>("/renderer"));
       await images();
     } catch (e) {
-      setError((e as Error).message);
-      clearPictures();
+      if (alive.current) {
+        setError((e as Error).message);
+        clearPictures();
+      }
     } finally {
-      setBusy(false);
+      if (alive.current) setBusy(false);
     }
   };
   return (
@@ -107,20 +130,85 @@ export function RendererPanel({ api }: { api: Api }) {
       {error && <p role="alert">{error}</p>}
       {state && (
         <>
+          <fieldset disabled={busy || !state.packageMediaSupported}>
+            <legend>Paketmedium · Softwarediagnose</legend>
+            <p>
+              PNG oder WebM mit VP8 bis 32 MiB · stumm. Dies bereitet ein
+              einzelnes Medium vor, keine vollständige Szene und keinen Show-GO.
+            </p>
+            {!selected ? (
+              <p>Zuerst unten ein vorbereitetes Paket ansehen.</p>
+            ) : (
+              <>
+                <label>
+                  Medium aus {selected.event.name}
+                  <select
+                    value={mediaId}
+                    onChange={(e) => setMediaId(e.target.value)}
+                  >
+                    <option value="">Medium wählen</option>
+                    {selected.media.map((m) => (
+                      <option
+                        key={m.id}
+                        value={m.id}
+                        disabled={
+                          !["image/png", "video/webm"].includes(m.mime) ||
+                          m.sizeBytes > 32 * 1024 * 1024
+                        }
+                      >
+                        {m.name} · {m.mime}
+                        {!["image/png", "video/webm"].includes(m.mime) ||
+                        m.sizeBytes > 32 * 1024 * 1024
+                          ? " · noch nicht unterstützt"
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  disabled={!mediaId}
+                  onClick={() =>
+                    void run(
+                      {
+                        commandId: crypto.randomUUID(),
+                        expectedRevision: state.revision,
+                        action: "prepare-package",
+                        packageId: selected.id,
+                        mediaId,
+                      },
+                      "/renderer/package-media",
+                    )
+                  }
+                >
+                  Paketmedium vorbereiten
+                </button>
+              </>
+            )}
+          </fieldset>
+          {!state.packageMediaSupported && (
+            <p>Dieses Rendererpaket unterstützt noch keine Paketmedien.</p>
+          )}
           <p>
             Diagnoserevision {state.revision} · Vorschau:{" "}
+            {state.preview?.packageMedia ? "Paketmedium · " : ""}
             {state.preview
               ? state.preview.kind === "video"
                 ? "Video mit Grafik"
                 : "Bild, Text und Form"
               : "Leer"}{" "}
-            · Programm:{" "}
+            · Programm: {state.program?.packageMedia ? "Paketmedium · " : ""}
             {state.program
               ? state.program.kind === "video"
                 ? "Video mit Grafik"
                 : "Bild, Text und Form"
               : "Sicherer Hintergrund"}
           </p>
+          {(state.preview?.ended || state.program?.ended) && (
+            <p>
+              Wiedergabeende erreicht · letzter Diagnoseframe bleibt stehen.
+              Keine automatische Folgeaktion.
+            </p>
+          )}
           <div className="row">
             <button
               disabled={busy}

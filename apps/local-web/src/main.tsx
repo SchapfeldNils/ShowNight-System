@@ -286,7 +286,7 @@ function App() {
                 <button onClick={() => setCodes([])}>Codes gesichert</button>
               </section>
             )}
-            {me.admin && <RendererPanel api={api} />}
+            {me.admin && <RendererPanel api={api} selected={selected} />}
             <section>
               <h2>Vorbereitete Pakete</h2>
               {!packages.length && (

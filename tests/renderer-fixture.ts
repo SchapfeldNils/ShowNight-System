@@ -1,14 +1,16 @@
-import { mkdtemp, mkdir } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes, randomUUID, createHash } from "node:crypto";
 import { LocalAccounts } from "../apps/local/src/accounts.js";
 import { PackageStore } from "../apps/local/src/store.js";
 import { hashPassword, totpSecret, totp } from "../apps/api/src/security.js";
 import { offlineSnapshot } from "../packages/contracts/src/offline.js";
 import { transferManifest } from "../packages/contracts/src/transfer.js";
 import { packageHeader } from "../packages/transfer/src/archive.js";
-export async function rendererFixture() {
+export async function rendererFixture(
+  media: { name: string; mime: string; bytes: Buffer }[] = [],
+) {
   const root = await mkdtemp(join(tmpdir(), "shownight-renderer-test-")),
     accountsRoot = join(root, "accounts"),
     packageRoot = join(root, "packages");
@@ -32,7 +34,17 @@ export async function rendererFixture() {
       modules: ["shows"],
     },
     shows: [],
-    media: [],
+    media: media.map((file) => {
+      const id = randomUUID();
+      return {
+        id,
+        name: file.name,
+        mime: file.mime,
+        sizeBytes: file.bytes.length,
+        sha256: createHash("sha256").update(file.bytes).digest("hex"),
+        downloadPath: "/api/v1/media/" + id + "/content",
+      };
+    }),
     status: "valid",
     errors: [],
     liveActivationSupported: false,
@@ -74,6 +86,17 @@ export async function rendererFixture() {
   const accounts = new LocalAccounts(accountsRoot, key),
     packages = new PackageStore(packageRoot);
   accounts.importSnapshot(snapshot);
+  if (media.length) {
+    const archive = join(root, "test.snpkg");
+    await writeFile(
+      archive,
+      Buffer.concat([
+        packageHeader(manifest).bytes,
+        ...media.map((m) => m.bytes),
+      ]),
+    );
+    await packages.importArchive(archive);
+  }
   async function loginAdmin() {
     const login = await accounts.login("admin", password);
     if (!("challenge" in login)) throw new Error("MFA-Herausforderung fehlt.");

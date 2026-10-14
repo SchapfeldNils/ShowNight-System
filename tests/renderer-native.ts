@@ -7,7 +7,14 @@ import {
   X509Certificate,
 } from "node:crypto";
 import { resolve, join } from "node:path";
-import { readFile, writeFile, mkdir, mkdtemp } from "node:fs/promises";
+import {
+  readFile,
+  writeFile,
+  mkdir,
+  mkdtemp,
+  readdir,
+  unlink,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { setTimeout as pause } from "node:timers/promises";
 import { createConnection } from "node:net";
@@ -173,6 +180,160 @@ test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", a
           });
         });
         assert.equal((await client.status()).state!.program?.id, id);
+      },
+    );
+    await t.test(
+      "Paketmedien: native PNG-/VP8-Diagnose, unveränderliche Kopie und bewusstes Ende",
+      async () => {
+        const png = await readFile(join(output, "grafik.png"));
+        const video = await readFile(
+          resolve("dist/renderer-windows/assets/test.webm"),
+        );
+        const local = await rendererFixture([
+          { name: "Synthetisches Paketbild", mime: "image/png", bytes: png },
+          {
+            name: "Synthetisches Paketvideo",
+            mime: "video/webm",
+            bytes: video,
+          },
+        ]);
+        const app = await localServer(
+          local.accounts,
+          local.packages,
+          "https://localhost:3443",
+          undefined,
+          undefined,
+          false,
+          client,
+        );
+        try {
+          const login = await local.loginAdmin();
+          const headers = {
+            origin: "https://localhost:3443",
+            "content-type": "application/json",
+            cookie: "sn_local_session=" + login.session,
+            "x-csrf-token": login.csrfToken,
+          };
+          const post = (url: string, payload: unknown) =>
+            app.inject({
+              method: "POST",
+              url: "/api/local/renderer/" + url,
+              headers,
+              payload: JSON.stringify(payload),
+            });
+          let state = (await client.status()).state!;
+          assert.equal(state.packageMediaSupported, true);
+          state = await client.command({
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            action: "clear",
+          });
+          const prepare = {
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            action: "prepare-package",
+            packageId: local.manifest.id,
+            mediaId: local.manifest.media[0].id,
+          };
+          let response = await post("package-media", prepare);
+          assert.equal(response.statusCode, 200, response.body);
+          state = response.json();
+          assert.equal(
+            state.preview?.packageMedia?.packageId,
+            local.manifest.id,
+          );
+          assert.equal(
+            state.preview?.packageMedia?.sha256,
+            local.manifest.media[0].sha256,
+          );
+          const picture = await client.frame("preview");
+          await writeFile(join(output, "paketbild.png"), picture);
+          const dir = (await readdir(join(f.root, "frames"))).find((n) =>
+            n.startsWith("session-"),
+          )!;
+          const locked = join(
+            f.root,
+            "frames",
+            dir,
+            "input-" + state.preview!.packageMedia!.inputId + ".png",
+          );
+          await assert.rejects(writeFile(locked, Buffer.alloc(png.length)));
+          await assert.rejects(unlink(locked));
+          const original = local.packages.file(
+            local.manifest.id,
+            prepare.mediaId,
+          );
+          await writeFile(original.path, Buffer.alloc(png.length, 8));
+          response = await post("test", {
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            action: "take",
+            expectedSceneId: state.preview!.id,
+          });
+          assert.equal(response.statusCode, 200, response.body);
+          state = response.json();
+          assert.equal(sha(await client.frame("program")), sha(picture));
+          assert.equal(
+            (
+              await post("package-media", {
+                ...prepare,
+                commandId: randomUUID(),
+                expectedRevision: state.revision,
+              })
+            ).statusCode,
+            409,
+          );
+          assert.equal((await client.status()).state!.revision, state.revision);
+          await writeFile(original.path, png);
+          assert.equal((await post("package-media", prepare)).statusCode, 200);
+          assert.equal((await client.status()).state!.revision, state.revision);
+          response = await post("package-media", {
+            ...prepare,
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            mediaId: local.manifest.media[1].id,
+          });
+          assert.equal(response.statusCode, 200, response.body);
+          state = response.json();
+          const first = state.preview!.videoFrames;
+          await pause(120);
+          assert.ok(
+            (await client.status()).state!.preview!.videoFrames > first,
+          );
+          assert.equal(sha(await client.frame("program")), sha(picture));
+          response = await post("test", {
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            action: "take",
+            expectedSceneId: state.preview!.id,
+          });
+          assert.equal(response.statusCode, 200, response.body);
+          state = response.json();
+          await writeFile(
+            join(output, "paketvideo.png"),
+            await client.frame("program"),
+          );
+          await pause(4400);
+          state = (await client.status()).state!;
+          assert.equal(state.program?.ended, true);
+          const finalFrames = state.program!.videoFrames;
+          await pause(150);
+          assert.equal(
+            (await client.status()).state!.program!.videoFrames,
+            finalFrames,
+          );
+          state = await client.command({
+            commandId: randomUUID(),
+            expectedRevision: state.revision,
+            action: "clear",
+          });
+          assert.equal(state.preview, null);
+          assert.equal(state.program, null);
+          await assert.rejects(readFile(locked));
+        } finally {
+          await app.close();
+          local.close();
+        }
       },
     );
     await t.test(

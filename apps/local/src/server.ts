@@ -18,7 +18,11 @@ import { HttpError } from "../../api/src/errors.js";
 import type { LocalAccounts } from "./accounts.js";
 import type { Actor } from "../../api/src/auth.js";
 import type { PackageStore } from "./store.js";
-import { rendererAction } from "../../../packages/contracts/src/renderer.js";
+import {
+  rendererAction,
+  rendererPackageAction,
+  rendererMediaDescriptor,
+} from "../../../packages/contracts/src/renderer.js";
 import {
   disabledRenderer,
   RendererFault,
@@ -46,7 +50,7 @@ export async function localServer(
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'"],
-        imgSrc: ["'self'"],
+        imgSrc: ["'self'", "blob:"],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
@@ -210,6 +214,54 @@ export async function localServer(
     try {
       const state = await renderer.command(action, () => rendererAdmin(req));
       rendererAdmin(req);
+      return state;
+    } catch (e) {
+      return rendererError(e);
+    }
+  });
+  app.post("/api/local/renderer/package-media", async (req) => {
+    rendererAdmin(req);
+    const action = rendererPackageAction.parse(req.body);
+    const manifest = available(req.actor, action.packageId);
+    if (!manifest.media.some((m) => m.id === action.mediaId))
+      throw new HttpError(404, "MEDIA", "Medium nicht im vorbereiteten Paket.");
+    const file = packages.file(action.packageId, action.mediaId);
+    const checked = rendererMediaDescriptor.safeParse({
+      inputId: action.commandId,
+      packageId: action.packageId,
+      mediaId: action.mediaId,
+      manifestSha256: packageHeader(manifest).hash,
+      sha256: file.media.sha256,
+      mime: file.media.mime,
+      sizeBytes: file.media.sizeBytes,
+    });
+    if (!checked.success)
+      throw new HttpError(
+        422,
+        "FORMAT",
+        "Paketdiagnose unterstützt PNG und VP8-WebM bis 32 MiB.",
+      );
+    const { inputId: _, ...media } = checked.data;
+    const guard = () => {
+      rendererAdmin(req);
+      const current = accounts.actor(req.cookies.sn_local_session)!;
+      if (
+        packageHeader(available(current, action.packageId)).hash !==
+        media.manifestSha256
+      )
+        throw new HttpError(
+          409,
+          "PACKAGE_CHANGED",
+          "Paketzuordnung inzwischen verändert.",
+        );
+    };
+    try {
+      const state = await renderer.prepareMedia(
+        action,
+        { root: packages.root, path: file.path, media },
+        guard,
+      );
+      guard();
       return state;
     } catch (e) {
       return rendererError(e);

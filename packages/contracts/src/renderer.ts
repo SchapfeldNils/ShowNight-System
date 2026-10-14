@@ -1,10 +1,31 @@
 import { z } from "zod";
 import { id } from "./index.js";
 export const rendererScene = z.enum(["grafik", "video"]);
+export const rendererMediaLimit = 32 * 1024 * 1024;
+export const rendererPackageAction = z.strictObject({
+  commandId: id,
+  expectedRevision: z.number().int().nonnegative(),
+  action: z.literal("prepare-package"),
+  packageId: id,
+  mediaId: id,
+});
+export type RendererPackageAction = z.infer<typeof rendererPackageAction>;
+export const rendererMediaDescriptor = z.strictObject({
+  inputId: id,
+  packageId: id,
+  mediaId: id,
+  manifestSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  mime: z.enum(["image/png", "video/webm"]),
+  sizeBytes: z.number().int().positive().max(rendererMediaLimit),
+});
+export type RendererMediaDescriptor = z.infer<typeof rendererMediaDescriptor>;
 const sceneState = z.strictObject({
   id,
   kind: rendererScene,
   videoFrames: z.number().int().nonnegative(),
+  packageMedia: rendererMediaDescriptor.nullable().optional(),
+  ended: z.boolean().optional(),
 });
 export const rendererState = z.strictObject({
   protocolVersion: z.literal(1),
@@ -18,6 +39,7 @@ export const rendererState = z.strictObject({
   preview: sceneState.nullable(),
   program: sceneState.nullable(),
   mediaError: z.boolean(),
+  packageMediaSupported: z.boolean().optional(),
   gstreamerVersion: z.string().max(40),
   skiaRevision: z.string().regex(/^[0-9a-f]{40}$/),
 });

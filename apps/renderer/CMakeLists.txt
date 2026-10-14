@@ -20,3 +20,4 @@ target_include_directories(shownight-renderer PRIVATE "${SKIA_ROOT}" "${JSON_INC
 target_link_directories(shownight-renderer PRIVATE "${GSTREAMER_ROOT}/lib")
 target_link_libraries(shownight-renderer PRIVATE "${SKIA_ROOT}/out/ShowNight/skia.lib" "${SKIA_ROOT}/out/ShowNight/libpng.lib" "${SKIA_ROOT}/out/ShowNight/zlib.lib" gstreamer-1.0 gstapp-1.0 gstvideo-1.0 gobject-2.0 glib-2.0 advapi32 dwrite gdi32 ole32 user32 usp10)
 set_target_properties(shownight-renderer PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+target_link_libraries(shownight-renderer PRIVATE windowscodecs uuid)

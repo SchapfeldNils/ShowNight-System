@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## In Arbeit: S3-05 Paketmedien
+
+14. Oktober 2026, Branch codex/s3-package-renderer, [Issue #15](https://github.com/SchapfeldNils/ShowNight-System/issues/15), abhängig von PR #13. Strikte Paketmedienaktion, aktuelle Paket-/Admin-/MFA-/CSRF-Prüfung, hashgeprüfte private Kopie, native Windows-Dateisperre und PNG-/VP8-Diagnose implementiert. Deutsche Auswahl und sichtbares Diagnoseende. Lokal neue Vertrags-/Dateiprüfungen und insgesamt 13 Unitprüfungen bestanden; native Erweiterung noch nicht gebaut/geprüft. Vollständige Szenen, Show-GO und reale Ausgabe bleiben offen. [Ablauf und Grenzen](s3-paketmedien.md).
+
 ## Aktuell: Setup mit nativer Renderer-Grundlage geprüft
 
 Runtime d101808: [Native renderer 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) vollständig erfolgreich. Echter MSVC-/GStreamer-1.28.8-/Skia-Build, native Softwareprüfung 4/4, portabler Server-/Renderer-HTTPS-Ablauf einschließlich nativer Prüfungen 5/5 sowie Setup mit Renderer und Installations-/Update-/Deinstallationsprüfung bestanden. Leerer sicherer Start, tatsächliche Skia-PNGs, lokale Videodekodierung, Vorschau-/Programmtrennung, konkurrierende/identische Diagnosebefehle, Pipe-Wiederverbindung ohne Replay und aktuelle Admin-/MFA-/CSRF-/Sperrprüfungen sind Softwarebelege.

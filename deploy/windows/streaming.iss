@@ -7,7 +7,7 @@
 [Setup]
 AppId={{91B460DA-7153-4619-9B7D-DC6EAD45982B}
 AppName=ShowNight Streaming
-AppVersion=0.3.4
+AppVersion=0.3.5
 AppPublisher=ShowNight
 AppPublisherURL=https://github.com/SchapfeldNils/ShowNight-System
 DefaultDirName={localappdata}\Programs\ShowNight\Streaming

@@ -63,18 +63,21 @@ std::string gstVersion() {
   guint a,b,c,d; gst_version(&a,&b,&c,&d);
   return std::to_string(a)+"."+std::to_string(b)+"."+std::to_string(c);
 }
+#include "package_media.h"
 
 // No physical video/audio sink: the only endpoint is an in-process appsink.
 class Video {
   GstElement* pipeline = nullptr;
   GstAppSink* sink = nullptr;
+  bool loop = true;
 public:
   std::vector<unsigned char> pixels;
   uint64_t frames = 0;
   bool error = false;
-  explicit Video(const fs::path& file) {
+  bool ended = false;
+  explicit Video(const fs::path& file,bool repeat = true):loop(repeat) {
     GError* e = nullptr;
-    pipeline = gst_parse_launch("filesrc name=source ! matroskademux ! vp8dec ! videoconvert ! video/x-raw,format=BGRA,width=320,height=180 ! appsink name=frames sync=true max-buffers=1 drop=true",&e);
+    pipeline = gst_parse_launch("filesrc name=source ! matroskademux ! video/x-vp8,width=(int)[1,1920],height=(int)[1,1080] ! vp8dec ! videoconvert ! videoscale ! video/x-raw,format=BGRA,width=320,height=180 ! appsink name=frames sync=true max-buffers=1 drop=true",&e);
     if (e || !pipeline) { if (e) g_error_free(e); if (pipeline) gst_object_unref(pipeline); pipeline = nullptr; throw std::runtime_error("MEDIA"); }
     auto source = gst_bin_get_by_name(GST_BIN(pipeline),"source");
     std::string location = utf8(file.wstring());
@@ -107,13 +110,14 @@ public:
     gst_video_frame_unmap(&frame); ++frames;
   }
   void tick() {
-    if (error) return;
+    if (error || ended) return;
     auto sample = gst_app_sink_try_pull_sample(sink,0);
     if (sample) { try { accept(sample); } catch (...) { error = true; } gst_sample_unref(sample); }
     auto bus = gst_element_get_bus(pipeline);
     auto msg = gst_bus_pop_filtered(bus,static_cast<GstMessageType>(GST_MESSAGE_ERROR|GST_MESSAGE_EOS));
     if (msg) {
       if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) error = true;
+      else if (!loop) ended = true;
       else if (!gst_element_seek_simple(pipeline,GST_FORMAT_TIME,static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH|GST_SEEK_FLAG_KEY_UNIT),0)) error = true;
       gst_message_unref(msg);
     }
@@ -122,8 +126,11 @@ public:
 };
 struct Scene {
   std::string id,kind;
+  std::shared_ptr<PackageInput> input;
+  sk_sp<SkImage> picture;
   std::unique_ptr<Video> video;
-  json state() const { return {{"id",id},{"kind",kind},{"videoFrames",video ? video->frames : 0}}; }
+  json state() const { return {{"id",id},{"kind",kind},{"videoFrames",video ? video->frames : 0},
+    {"packageMedia",input ? input->media : json(nullptr)},{"ended",video ? video->ended : false}}; }
 };
 class Renderer {
   std::mutex mutex;
@@ -138,6 +145,7 @@ class Renderer {
   json stateUnlocked() const {
     return {{"protocolVersion",1},{"epoch",epoch},{"revision",revision},{"mode","software-diagnostics"},
       {"width",width},{"height",height},{"physicalOutputEnabled",false},{"audioOutputEnabled",false},
+      {"packageMediaSupported",true},
       {"preview",preview ? preview->state() : json(nullptr)},{"program",program ? program->state() : json(nullptr)},
       {"mediaError",(preview && preview->video && preview->video->error)||(program && program->video && program->video->error)},
       {"gstreamerVersion",gstVersion()},{"skiaRevision",SKIA_REVISION}};
@@ -145,6 +153,18 @@ class Renderer {
   std::unique_ptr<Scene> makeScene(const std::string& id,const std::string& kind) {
     auto scene = std::make_unique<Scene>(); scene->id = id; scene->kind = kind;
     if (kind == "video") scene->video = std::make_unique<Video>(assets/"test.webm"); return scene;
+  }
+  std::unique_ptr<Scene> makePackageScene(const std::string& id,const json& media) {
+    auto scene = std::make_unique<Scene>();
+    scene->id = id;
+    scene->input = std::make_shared<PackageInput>(frames,media);
+    scene->kind = media.at("mime") == "image/png" ? "grafik" : "video";
+    if (scene->kind == "video") scene->video = std::make_unique<Video>(scene->input->path,false);
+    else {
+      scene->picture = scene->input->decodePng();
+      if (!scene->picture) throw std::runtime_error("MEDIA");
+    }
+    return scene;
   }
   void paint(const Scene* scene,const fs::path& file) {
     auto surface = SkSurfaces::Raster(SkImageInfo::MakeN32Premul(width,height));
@@ -157,13 +177,19 @@ class Renderer {
         auto data = SkData::MakeWithCopy(scene->video->pixels.data(),scene->video->pixels.size());
         auto videoImage = SkImages::RasterFromData(SkImageInfo::Make(320,180,kBGRA_8888_SkColorType,kOpaque_SkAlphaType),data,320*4);
         canvas->drawImageRect(videoImage,SkRect::MakeXYWH(40,80,560,220),SkSamplingOptions(SkFilterMode::kLinear));
+      } else if (scene->picture) {
+        float scale = std::min(560.0f/scene->picture->width(),220.0f/scene->picture->height());
+        float w = scene->picture->width()*scale,h = scene->picture->height()*scale;
+        canvas->drawImageRect(scene->picture,SkRect::MakeXYWH(40+(560-w)/2,80+(220-h)/2,w,h),SkSamplingOptions(SkFilterMode::kLinear));
       } else { p.setColor(SkColorSetRGB(21,144,158)); canvas->drawRoundRect(SkRect::MakeXYWH(40,80,560,220),18,18,p); }
-      canvas->drawImageRect(image,SkRect::MakeXYWH(52,96,96,96),SkSamplingOptions(SkFilterMode::kNearest));
+      if (!scene->input) canvas->drawImageRect(image,SkRect::MakeXYWH(52,96,96,96),SkSamplingOptions(SkFilterMode::kNearest));
       p.setColor(SK_ColorWHITE);
       SkFont title(font,28),body(font,20);
-      const char* text = scene->kind == "video" ? "ShowNight - Video und Grafik" : "ShowNight - Bild, Text und Form";
+      const char* text = scene->input ? "ShowNight - Paketmedium" : scene->kind == "video" ? "ShowNight - Video und Grafik" : "ShowNight - Bild, Text und Form";
       canvas->drawSimpleText(text,strlen(text),SkTextEncoding::kUTF8,40,48,title,p);
-      const char* sub = "Synthetische Testszene"; canvas->drawSimpleText(sub,strlen(sub),SkTextEncoding::kUTF8,168,134,body,p);
+      if (!scene->input) {
+        const char* sub = "Synthetische Testszene"; canvas->drawSimpleText(sub,strlen(sub),SkTextEncoding::kUTF8,168,134,body,p);
+      }
     }
     p.setColor(SkColorSetRGB(250,193,60)); SkFont footer(font,15);
     const char* mark = "SOFTWAREDIAGNOSE - KEINE BILDSCHIRM-/TONAUSGABE";
@@ -208,11 +234,18 @@ public:
     if (action == "prepare") {
       exact(c,{"commandId","expectedRevision","action","scene"});
       const std::string kind = c.at("scene"); if (kind != "grafik" && kind != "video") throw std::runtime_error("INVALID");
+    } else if (action == "prepare-package") {
+      exact(c,{"commandId","expectedRevision","action","packageId","mediaId","media"});
+      if (!identifier(c.at("packageId")) || !identifier(c.at("mediaId")) ||
+          c.at("media").at("packageId") != c.at("packageId") ||
+          c.at("media").at("mediaId") != c.at("mediaId")) throw std::runtime_error("INVALID");
     } else if (action == "take") { exact(c,{"commandId","expectedRevision","action","expectedSceneId"}); if (!identifier(c.at("expectedSceneId"))) throw std::runtime_error("INVALID"); }
     else if (action == "clear") exact(c,{"commandId","expectedRevision","action"});
     else throw std::runtime_error("INVALID");
     if (type != "command" || !identifier(c.at("commandId")) || !c.at("expectedRevision").is_number_unsigned()) throw std::runtime_error("INVALID");
-    const std::string id = c.at("commandId"),fingerprint = c.dump();
+    auto stable = c;
+    if (action == "prepare-package") stable.at("media").erase("inputId");
+    const std::string id = c.at("commandId"),fingerprint = stable.dump();
     auto previous = receipts.find(id);
     if (previous != receipts.end()) {
       if (previous->second.first != fingerprint) return reply("conflict","COMMAND_ID");
@@ -225,7 +258,9 @@ public:
     else {
       try {
         if (action == "prepare") preview = makeScene(id,c.at("scene").get<std::string>());
-        else if (action == "take") program = makeScene(preview->id,preview->kind);
+        else if (action == "prepare-package") preview = makePackageScene(id,c.at("media"));
+        else if (action == "take") program = preview->input ?
+          makePackageScene(preview->id,preview->input->media) : makeScene(preview->id,preview->kind);
         else { preview.reset(); program.reset(); }
         ++revision; out = reply("completed","OK");
       } catch (...) { out = reply("failed","MEDIA"); }
@@ -281,7 +316,8 @@ int wmain() {
     wchar_t module[32768]; DWORD size = GetModuleFileNameW(nullptr,module,32768); if (!size || size >= 32768) return 2;
     fs::path root = fs::path(std::wstring(module,size)).parent_path();
     SetDllDirectoryW((root/L"bin").c_str());
-    SetEnvironmentVariableW(L"GST_PLUGIN_PATH_1_0",L"");
+    SetEnvironmentVariableW(L"GST_PLUGIN_PATH_1_0",(root/L"plugins").c_str());
+    SetEnvironmentVariableW(L"GST_PLUGIN_PATH",(root/L"plugins").c_str());
     SetEnvironmentVariableW(L"GST_PLUGIN_SYSTEM_PATH_1_0",(root/L"plugins").c_str());
     SetEnvironmentVariableW(L"GST_REGISTRY_1_0",(frames/L"gst-registry.bin").c_str());
     SetEnvironmentVariableW(L"GST_REGISTRY_FORK",L"no");

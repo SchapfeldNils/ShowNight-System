@@ -10,10 +10,16 @@ import {
   rendererHello,
   rendererReply,
   rendererAction,
+  rendererPackageAction,
+  type RendererPackageAction,
   type RendererAction,
   type RendererState,
   type RendererReport,
 } from "../../../packages/contracts/src/renderer.js";
+import {
+  stageRendererMedia,
+  type RendererMediaSource,
+} from "./renderer-media.js";
 export class RendererFault extends Error {
   constructor(
     public readonly status: number,
@@ -25,6 +31,11 @@ export class RendererFault extends Error {
 export interface RendererControl {
   status(): Promise<RendererReport>;
   command(action: RendererAction, guard: () => void): Promise<RendererState>;
+  prepareMedia(
+    action: RendererPackageAction,
+    source: RendererMediaSource,
+    guard: () => void,
+  ): Promise<RendererState>;
   frame(channel: "preview" | "program", guard: () => void): Promise<Buffer>;
   close(): Promise<void>;
 }
@@ -42,6 +53,9 @@ export const disabledRenderer: RendererControl = {
     throw new RendererFault(503, "DISABLED");
   },
   async frame() {
+    throw new RendererFault(503, "DISABLED");
+  },
+  async prepareMedia() {
     throw new RendererFault(503, "DISABLED");
   },
   async close() {},
@@ -70,6 +84,24 @@ export class RendererClient implements RendererControl {
   private queued = 0;
   private closed = false;
   private last: RendererState | null = null;
+  private readonly staged = new Map<string, string>();
+  private async cleanupInputs() {
+    if (!this.last) return; // An unconfirmed request may still be in use.
+    const keep = new Set([
+      this.last.preview?.packageMedia?.inputId,
+      this.last.program?.packageMedia?.inputId,
+    ]);
+    for (const [id, path] of this.staged) {
+      if (keep.has(id)) continue;
+      try {
+        await unlink(path);
+        this.staged.delete(id);
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code === "ENOENT")
+          this.staged.delete(id);
+      }
+    }
+  }
   constructor(
     private readonly folder: string,
     private readonly root: string,
@@ -300,9 +332,53 @@ export class RendererClient implements RendererControl {
   }
   command(action: RendererAction, guard = () => {}) {
     const command = rendererAction.parse(action);
-    return this.queue(
-      async () => (await this.request("command", { command }, guard)).state,
-    );
+    return this.queue(async () => {
+      try {
+        return (await this.request("command", { command }, guard)).state;
+      } finally {
+        await this.cleanupInputs();
+      }
+    });
+  }
+  prepareMedia(
+    action: RendererPackageAction,
+    source: RendererMediaSource,
+    guard = () => {},
+  ) {
+    const command = rendererPackageAction.parse(action);
+    if (
+      command.packageId !== source.media.packageId ||
+      command.mediaId !== source.media.mediaId
+    )
+      throw new RendererFault(400, "MEDIA");
+    return this.queue(async () => {
+      await this.request("query", {}, guard);
+      if (!this.last?.packageMediaSupported)
+        throw new RendererFault(503, "UNSUPPORTED");
+      await this.cleanupInputs();
+      if (this.staged.size >= 4) throw new RendererFault(409, "LIMIT");
+      const inputId = randomUUID();
+      let staged;
+      try {
+        staged = await stageRendererMedia(source, this.frames, inputId, guard);
+      } catch (e) {
+        // Preserve authentication errors from the caller's guard.
+        if ((e as { status?: number }).status) throw e;
+        throw new RendererFault(409, "MEDIA");
+      }
+      this.staged.set(inputId, staged.path);
+      try {
+        return (
+          await this.request(
+            "command",
+            { command: { ...command, media: staged.media } },
+            guard,
+          )
+        ).state;
+      } finally {
+        await this.cleanupInputs();
+      }
+    });
   }
   frame(channel: "preview" | "program", guard = () => {}) {
     if (channel !== "preview" && channel !== "program")
@@ -360,6 +436,11 @@ export class RendererClient implements RendererControl {
           resolve();
         });
       });
+    }
+    if (!child || child.exitCode !== null) {
+      for (const path of this.staged.values())
+        await unlink(path).catch(() => {});
+      this.staged.clear();
     }
   }
 }
