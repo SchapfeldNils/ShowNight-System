@@ -1,5 +1,7 @@
 # Show Night – Technische Architektur
 
+S3-Szenenkomposition, 14. Oktober 2026: vorhandene Manifest-v2-Text-/Rechteck-/Bildebenen werden über serveraufgelöste, begrenzte und gehashte private Snapshots an den bestehenden C++-/Skia-Prozess angebunden. Stumme Offscreen-Diagnose; keine Browser-Publikumsausgabe, neue Fachrechte oder geänderten Ausfallregeln. [Umfang und tatsächliche Nachweise](entwicklung/s3-native-szenen.md). Frühere fehlende native Szenenanbindung in den folgenden Absätzen beschreibt den damaligen Stand.
+
 S3-06, 14. Oktober 2026: showbezogene Szenenentwürfe im vorhandenen PostgreSQL-Kern mit eigener Revision und exklusiver Lease; versionierte Paketübertragung an SQLite. SVG dient nur der ausdrücklich gekennzeichneten Browsergestaltung dieses ersten Bausteins. Geplanter Konva-Editor und C++/GStreamer/Skia-Ausgabe bleiben Zielarchitektur. Keine Browser-Publikumsausgabe oder neue Rechte-/Ausfallarchitektur. [Teilumfang](entwicklung/s3-szenenentwuerfe.md).
 
 S3-04, 14. Oktober 2026: erster separater Windows-C++-Prozess integriert GStreamer und Skia in einen ausdrücklich auf Softwarediagnose begrenzten Offscreen-Weg. CPU-Raster und lokale VP8-Testdatei statt physischer Sinks; Named-Pipe mit ACL/Token/Epoch, native PNG-Auslieferung über lokale Admin-API. Direct3D11, HDMI, WebRTC, persönliche Regievorschau und echte Tonwege bleiben bestehende Ziele. Keine neue Fach-/Live-/Ausfallarchitektur oder Leistungszusage. [Ablauf/Build/Prüfgrenzen](entwicklung/s3-renderer.md).

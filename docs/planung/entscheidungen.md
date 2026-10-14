@@ -153,6 +153,10 @@
 
 ## Weitere Entscheidungen nach D017
 
+### Native Szenenkomposition – technische Konkretisierung, 14. Oktober 2026
+
+Status: Umsetzungsteil des fortgesetzten Betreiberauftrags, keine neue Fachentscheidung. Bestehende Szenendefinition und Manifest v2 werden im vorhandenen nativen Prozess als stumme 640×360-Softwarediagnose komponiert. Gehashter privater Snapshot bis 1 MiB statt erweiterter IPC-Nachricht, explizite WIC-PNG-/JPEG-Decoder und begrenzte Bildbudgets. Globale Admin-Diagnose bleibt von persönlichen Vorschauen, Liveaktivierung, Show-GO und Geräteausgabe getrennt. Keine Rechte-/Ausfalländerung; [Bedienung und Grenzen](../entwicklung/s3-native-szenen.md).
+
 ### S3-06 – technische Konkretisierung, 14. Oktober 2026
 
 Status: Umsetzungsteil des fortgesetzten Betreiberauftrags, keine neue Fachentscheidung. Erste Szenenentwürfe speichern Text/Rechteck/Bild getrennt von Livezuständen. Exklusive Lease je Szene/Sitzung (90 Sekunden, Heartbeat 20 Sekunden), eigene Revision, ausdrückliche lokale Entwurfswiederherstellung und versionierte Paketübertragung konkretisieren D006/D008/D010. Browser-SVG ist nur Entwurfsdarstellung; Konva und nativer Renderer bleiben Ziel. Keine geänderte Regie-, Rechte-, Aktivierungs- oder Ausfallregel. [Vertrag/Grenzen](../entwicklung/s3-szenenentwuerfe.md).

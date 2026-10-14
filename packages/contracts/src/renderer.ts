@@ -16,15 +16,29 @@ export const rendererMediaDescriptor = z.strictObject({
   mediaId: id,
   manifestSha256: z.string().regex(/^[0-9a-f]{64}$/),
   sha256: z.string().regex(/^[0-9a-f]{64}$/),
-  mime: z.enum(["image/png", "video/webm"]),
+  mime: z.enum(["image/png", "image/jpeg", "video/webm"]),
   sizeBytes: z.number().int().positive().max(rendererMediaLimit),
 });
 export type RendererMediaDescriptor = z.infer<typeof rendererMediaDescriptor>;
+export const rendererSceneDescriptor = z.strictObject({
+  inputId: id,
+  packageId: id,
+  sceneId: id,
+  sceneRevision: z.int().positive(),
+  manifestSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sizeBytes: z
+    .int()
+    .positive()
+    .max(1024 * 1024),
+});
+export type RendererSceneDescriptor = z.infer<typeof rendererSceneDescriptor>;
 const sceneState = z.strictObject({
   id,
-  kind: rendererScene,
+  kind: z.enum(["grafik", "video", "szene"]),
   videoFrames: z.number().int().nonnegative(),
   packageMedia: rendererMediaDescriptor.nullable().optional(),
+  packageScene: rendererSceneDescriptor.nullable().optional(),
   ended: z.boolean().optional(),
 });
 export const rendererState = z.strictObject({
@@ -40,6 +54,7 @@ export const rendererState = z.strictObject({
   program: sceneState.nullable(),
   mediaError: z.boolean(),
   packageMediaSupported: z.boolean().optional(),
+  packageScenesSupported: z.boolean().optional(),
   gstreamerVersion: z.string().max(40),
   skiaRevision: z.string().regex(/^[0-9a-f]{40}$/),
 });

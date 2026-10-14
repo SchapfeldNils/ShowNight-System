@@ -1,5 +1,7 @@
 # ShowNight-System
 
+Aktuell in Arbeit: [native Komposition vorbereiteter Paket-v2-Szenen](docs/entwicklung/s3-native-szenen.md), Issue #29. Text/Rechteck/PNG-/JPEG-Bild als stumme Softwarediagnose; Nachweise vor Abschluss. Keine Veranstaltungsfreigabe oder Betreiberaktualisierung.
+
 Aktuelles Korrekturpaket: [lokale Technikrollenvergabe nur durch Admin](docs/entwicklung/s3-offline-kontenrechte.md), F05/F30/A18, Issue #27. Setupquellen 0.3.9; laufende Installationen werden durch die Entwicklung nicht aktualisiert.
 
 S3-08: [lokale Serverübersicht und lesendes Windows-Inventar](docs/entwicklung/s3-serveruebersicht.md), [PR #25](https://github.com/SchapfeldNils/ShowNight-System/pull/25). Windows-Startoberfläche, sichtbare Datenpfade und MFA-geschützte Systemübersicht als Software implementiert; erkannte Geräte bleiben von nutzbarer Ausgabe getrennt. Setupquellen 0.3.8; tatsächlichen CI-/Auslieferungsstand in der Anleitung beachten. Die folgenden Absätze dokumentieren frühere Teilstände.

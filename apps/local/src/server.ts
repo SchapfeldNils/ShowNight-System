@@ -14,6 +14,12 @@ import {
   inviteInput,
 } from "../../../packages/contracts/src/index.js";
 import { packageHeader } from "../../../packages/transfer/src/archive.js";
+import { sceneMediaIds } from "../../../packages/contracts/src/scene.js";
+import {
+  rendererSceneAction,
+  rendererSceneLimits,
+} from "../../../packages/contracts/src/renderer-scene.js";
+import type { RendererSceneSource } from "./renderer-scene.js";
 import { HttpError } from "../../api/src/errors.js";
 import type { LocalAccounts } from "./accounts.js";
 import type { Actor } from "../../api/src/auth.js";
@@ -272,7 +278,10 @@ export async function localServer(
       mime: file.media.mime,
       sizeBytes: file.media.sizeBytes,
     });
-    if (!checked.success)
+    if (
+      !checked.success ||
+      !["image/png", "video/webm"].includes(checked.data.mime)
+    )
       throw new HttpError(
         422,
         "FORMAT",
@@ -302,6 +311,82 @@ export async function localServer(
       return state;
     } catch (e) {
       return rendererError(e);
+    }
+  });
+  app.post("/api/local/renderer/package-scene", async (req) => {
+    rendererAdmin(req);
+    const action = rendererSceneAction.parse(req.body);
+    const manifest = available(req.actor, action.packageId);
+    const scene =
+      manifest.schemaVersion === 2
+        ? manifest.scenes?.find((item) => item.id === action.sceneId)
+        : undefined;
+    if (!scene)
+      throw new HttpError(404, "SCENE", "Szene nicht im vorbereiteten Paket.");
+    const manifestSha256 = packageHeader(manifest).hash;
+    const imageIds = [...new Set(sceneMediaIds(scene.definition))];
+    const images: RendererSceneSource["images"] = imageIds.map((mediaId) => {
+      if (!manifest.media.some((media) => media.id === mediaId))
+        throw new HttpError(
+          404,
+          "MEDIA",
+          "Szenenmedium nicht im vorbereiteten Paket.",
+        );
+      const file = packages.file(action.packageId, mediaId);
+      const parsed = rendererMediaDescriptor.safeParse({
+        inputId: action.commandId,
+        packageId: action.packageId,
+        mediaId,
+        manifestSha256,
+        sha256: file.media.sha256,
+        mime: file.media.mime,
+        sizeBytes: file.media.sizeBytes,
+      });
+      if (
+        !parsed.success ||
+        !["image/png", "image/jpeg"].includes(parsed.data.mime)
+      )
+        throw new HttpError(
+          422,
+          "FORMAT",
+          "Szenendiagnose unterstützt PNG/JPEG bis 32 MiB je Bild.",
+        );
+      const { inputId: _, ...media } = parsed.data;
+      return { root: packages.root, path: file.path, media };
+    });
+    if (
+      images.length > rendererSceneLimits.images ||
+      images.reduce((total, image) => total + image.media.sizeBytes, 0) >
+        rendererSceneLimits.totalBytes
+    )
+      throw new HttpError(
+        422,
+        "LIMIT",
+        "Szenendiagnose überschreitet das Bild- oder Gesamtlimit.",
+      );
+    const guard = () => {
+      rendererAdmin(req);
+      const current = accounts.actor(req.cookies.sn_local_session)!;
+      if (
+        packageHeader(available(current, action.packageId)).hash !==
+        manifestSha256
+      )
+        throw new HttpError(
+          409,
+          "PACKAGE_CHANGED",
+          "Paketzuordnung inzwischen verändert.",
+        );
+    };
+    try {
+      const state = await renderer.prepareScene(
+        action,
+        { packageId: action.packageId, manifestSha256, scene, images },
+        guard,
+      );
+      guard();
+      return state;
+    } catch (error) {
+      return rendererError(error);
     }
   });
   app.get<{ Params: { channel: string } }>(

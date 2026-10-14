@@ -6,17 +6,20 @@ import type {
   RendererPackageAction,
 } from "../../../packages/contracts/src/renderer.js";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
+import type { RendererSceneAction } from "../../../packages/contracts/src/renderer-scene.js";
 type Api = <T>(path: string, body?: unknown) => Promise<T>;
 const sceneName = (scene: RendererState["preview"], empty = "Leer") =>
   !scene
     ? empty
-    : scene.packageMedia
-      ? scene.kind === "video"
-        ? "Paketvideo"
-        : "Paketbild"
-      : scene.kind === "video"
-        ? "Video mit Grafik"
-        : "Bild, Text und Form";
+    : scene.packageScene
+      ? "Paketszene · Revision " + scene.packageScene.sceneRevision
+      : scene.packageMedia
+        ? scene.kind === "video"
+          ? "Paketvideo"
+          : "Paketbild"
+        : scene.kind === "video"
+          ? "Video mit Grafik"
+          : "Bild, Text und Form";
 export function RendererPanel({
   api,
   selected,
@@ -33,8 +36,10 @@ export function RendererPanel({
   const urls = useRef<string[]>([]);
   const alive = useRef(true);
   const [mediaId, setMediaId] = useState("");
+  const [sceneId, setSceneId] = useState("");
   useEffect(() => {
     setMediaId("");
+    setSceneId("");
   }, [selected?.id]);
   const clearPictures = () => {
     for (const url of urls.current) URL.revokeObjectURL(url);
@@ -93,7 +98,7 @@ export function RendererPanel({
     }
   };
   const run = async (
-    action: RendererAction | RendererPackageAction,
+    action: RendererAction | RendererPackageAction | RendererSceneAction,
     path = "/renderer/test",
   ) => {
     setBusy(true);
@@ -140,6 +145,60 @@ export function RendererPanel({
       {error && <p role="alert">{error}</p>}
       {state && (
         <>
+          <fieldset disabled={busy || !state.packageScenesSupported}>
+            <legend>Paketszene · Softwarediagnose</legend>
+            <p>
+              Vorbereitete Text-, Rechteck- und PNG-/JPEG-Bildebenen. Stummes
+              Diagnosebild, keine Bühnenausgabe und kein Show-GO.
+            </p>
+            {!state.packageScenesSupported ? (
+              <p>Dieses Rendererpaket unterstützt noch keine Paketszenen.</p>
+            ) : !selected ? (
+              <p>Zuerst unten ein vorbereitetes Paket ansehen.</p>
+            ) : !selected.scenes?.length ? (
+              <p>Dieses Paket enthält keine vorbereiteten Szenen.</p>
+            ) : (
+              <>
+                <label>
+                  Szene aus {selected.event.name}
+                  <select
+                    value={sceneId}
+                    onChange={(e) => setSceneId(e.target.value)}
+                  >
+                    <option value="">Szene wählen</option>
+                    {selected.scenes.map((scene) => (
+                      <option key={scene.id} value={scene.id}>
+                        {scene.definition.name} · Revision {scene.revision}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  disabled={!sceneId}
+                  onClick={() =>
+                    void run(
+                      {
+                        commandId: crypto.randomUUID(),
+                        expectedRevision: state.revision,
+                        action: "prepare-scene",
+                        packageId: selected.id,
+                        sceneId,
+                      },
+                      "/renderer/package-scene",
+                    )
+                  }
+                >
+                  Paketszene vorbereiten
+                </button>
+                <p>
+                  Bis 64 Ebenen; Bilder zusammen bis 64 MiB Dateidaten und
+                  16.777.216 decodierte Pixel. Mehrzeiliger Text mit Windows-
+                  Standardschrift; kein Richtext oder vollständiger
+                  Editorabgleich.
+                </p>
+              </>
+            )}
+          </fieldset>
           <fieldset disabled={busy || !state.packageMediaSupported}>
             <legend>Paketmedium · Softwarediagnose</legend>
             <p>

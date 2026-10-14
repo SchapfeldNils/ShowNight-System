@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Issue #29: native Komposition vorbereiteter Szenen
+
+14. Oktober 2026, `codex/s3-native-scene-composition`, auf PR #28 / `1ac7758`: Manifest-v2-Text-/Rechteck-/Bildebenen als stumme native Softwarediagnose. F07/F08/F09/F12/F17/F25/F28/F30; Teilnachweise A02/A04/A06/A18. Implementierung/Prüfungen in Arbeit, keine fertige Ausgabe behauptet. Setupquellen 0.3.10; installierte lokale 0.3.8 und Netcup unverändert. [Bedienung, Grenzen und Prüfstand](s3-native-szenen.md).
+
 ## Issue #27: lokale Technikvergabe nur durch Admin
 
 Abschluss: Runtime `7dba227`, [PR #28](https://github.com/SchapfeldNils/ShowNight-System/pull/28), lokale Units 35/35 und Browser 6/6; unabhängiger vollständiger Diff-Review samt Korrekturen/Nachtrag ohne verbleibende bestätigte Befunde. Neue S1-CI Windows/AMD64/ARM64, Server-Installer und nativer Renderer vollständig erfolgreich. ARM64-Dockerimage-Downloadtimeout im ersten Lauf dokumentiert, unveränderter Wiederholungslauf vollständig bestanden. Setup 0.3.9 mit Renderer tatsächlich heruntergeladen und Archiv-/Dateihashes sowie EXE-Produktversion bestätigt, nicht installiert. Laufender lokaler Betrieb 0.3.8 und Netcup unverändert, kein Merge oder Hardwarebeleg. [Nachweis](nachweise/s3-offline-kontenrechte.json). Nächstes Paket: native Komposition der vorbereiteten Paket-v2-Szenen. Die folgende Zwischenstandsangabe ist historisch.

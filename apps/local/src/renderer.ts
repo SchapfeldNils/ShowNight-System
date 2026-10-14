@@ -20,6 +20,16 @@ import {
   stageRendererMedia,
   type RendererMediaSource,
 } from "./renderer-media.js";
+import {
+  rendererSceneAction,
+  type RendererSceneAction,
+  type RendererSceneDescriptor,
+} from "../../../packages/contracts/src/renderer-scene.js";
+import {
+  stageRendererScene,
+  rendererSceneFingerprint,
+  type RendererSceneSource,
+} from "./renderer-scene.js";
 export class RendererFault extends Error {
   constructor(
     public readonly status: number,
@@ -34,6 +44,11 @@ export interface RendererControl {
   prepareMedia(
     action: RendererPackageAction,
     source: RendererMediaSource,
+    guard: () => void,
+  ): Promise<RendererState>;
+  prepareScene(
+    action: RendererSceneAction,
+    source: RendererSceneSource,
     guard: () => void,
   ): Promise<RendererState>;
   frame(channel: "preview" | "program", guard: () => void): Promise<Buffer>;
@@ -56,6 +71,9 @@ export const disabledRenderer: RendererControl = {
     throw new RendererFault(503, "DISABLED");
   },
   async prepareMedia() {
+    throw new RendererFault(503, "DISABLED");
+  },
+  async prepareScene() {
     throw new RendererFault(503, "DISABLED");
   },
   async close() {},
@@ -84,22 +102,42 @@ export class RendererClient implements RendererControl {
   private queued = 0;
   private closed = false;
   private last: RendererState | null = null;
-  private readonly staged = new Map<string, string>();
+  private readonly staged = new Map<string, Set<string>>();
+  private readonly sceneCommands = new Map<
+    string,
+    {
+      fingerprint: string;
+      descriptor: RendererSceneDescriptor;
+      sent: boolean;
+      outcome: "pending" | "completed" | "failed" | "unknown";
+      error?: unknown;
+    }
+  >();
+  private async discardInput(id: string) {
+    const paths = this.staged.get(id);
+    if (!paths) return;
+    for (const path of paths) {
+      try {
+        await unlink(path);
+        paths.delete(path);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT")
+          paths.delete(path);
+      }
+    }
+    if (!paths.size) this.staged.delete(id);
+  }
   private async cleanupInputs() {
     if (!this.last) return; // An unconfirmed request may still be in use.
     const keep = new Set([
       this.last.preview?.packageMedia?.inputId,
       this.last.program?.packageMedia?.inputId,
+      this.last.preview?.packageScene?.inputId,
+      this.last.program?.packageScene?.inputId,
     ]);
-    for (const [id, path] of this.staged) {
+    for (const id of this.staged.keys()) {
       if (keep.has(id)) continue;
-      try {
-        await unlink(path);
-        this.staged.delete(id);
-      } catch (e) {
-        if ((e as NodeJS.ErrnoException).code === "ENOENT")
-          this.staged.delete(id);
-      }
+      await this.discardInput(id);
     }
   }
   constructor(
@@ -366,7 +404,7 @@ export class RendererClient implements RendererControl {
         if ((e as { status?: number }).status) throw e;
         throw new RendererFault(409, "MEDIA");
       }
-      this.staged.set(inputId, staged.path);
+      this.staged.set(inputId, new Set([staged.path]));
       try {
         return (
           await this.request(
@@ -375,6 +413,86 @@ export class RendererClient implements RendererControl {
             guard,
           )
         ).state;
+      } finally {
+        await this.cleanupInputs();
+      }
+    });
+  }
+  prepareScene(
+    action: RendererSceneAction,
+    source: RendererSceneSource,
+    guard = () => {},
+  ) {
+    const command = rendererSceneAction.parse(action);
+    if (
+      command.packageId !== source.packageId ||
+      command.sceneId !== source.scene.id
+    )
+      throw new RendererFault(400, "SCENE");
+    let sourceFingerprint: string;
+    try {
+      sourceFingerprint = rendererSceneFingerprint(source);
+    } catch {
+      throw new RendererFault(409, "SCENE");
+    }
+    const fingerprint = JSON.stringify({ command, sourceFingerprint });
+    return this.queue(async () => {
+      guard();
+      const cached = this.sceneCommands.get(command.commandId);
+      if (cached && cached.fingerprint !== fingerprint)
+        throw new RendererFault(409, "COMMAND_ID");
+      await this.request("query", {}, guard);
+      guard();
+      if (!this.last?.packageScenesSupported)
+        throw new RendererFault(503, "UNSUPPORTED");
+      if (cached) {
+        if (cached.outcome === "completed") return this.last!;
+        if (cached.outcome === "failed") throw cached.error;
+        throw new RendererFault(503, "UNKNOWN");
+      }
+      // Never evict ambiguous receipts or silently recycle command identities.
+      if (this.sceneCommands.size >= 1024)
+        throw new RendererFault(409, "LIMIT");
+      await this.cleanupInputs();
+      guard();
+      if (this.staged.size >= 4) throw new RendererFault(409, "LIMIT");
+      const inputId = randomUUID();
+      let staged;
+      try {
+        staged = await stageRendererScene(source, this.frames, inputId, guard);
+      } catch (error) {
+        if ((error as { status?: number }).status) throw error;
+        throw new RendererFault(409, "SCENE");
+      }
+      this.staged.set(inputId, new Set(staged.paths));
+      const entry = {
+        fingerprint,
+        descriptor: staged.descriptor,
+        sent: false,
+        outcome: "pending" as "pending" | "completed" | "failed" | "unknown",
+        error: undefined as unknown,
+      };
+      this.sceneCommands.set(command.commandId, entry);
+      try {
+        const result = await this.request(
+          "command",
+          { command: { ...command, scene: entry.descriptor } },
+          () => {
+            guard();
+            entry.sent = true;
+          },
+        );
+        entry.outcome = "completed";
+        return result.state;
+      } catch (error) {
+        if (!entry.sent) {
+          this.sceneCommands.delete(command.commandId);
+          await this.discardInput(inputId);
+        } else {
+          entry.outcome = this.last ? "failed" : "unknown";
+          entry.error = error;
+        }
+        throw error;
       } finally {
         await this.cleanupInputs();
       }
@@ -438,9 +556,10 @@ export class RendererClient implements RendererControl {
       });
     }
     if (!child || child.exitCode !== null) {
-      for (const path of this.staged.values())
-        await unlink(path).catch(() => {});
+      for (const paths of this.staged.values())
+        for (const path of paths) await unlink(path).catch(() => {});
       this.staged.clear();
+      this.sceneCommands.clear();
     }
   }
 }

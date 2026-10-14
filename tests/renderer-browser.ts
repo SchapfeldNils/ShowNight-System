@@ -97,6 +97,56 @@ export async function rendererBrowserProof(
       path: join(output, "paketmedien-browser.png"),
       fullPage: true,
     });
+    if (manifest.scenes?.length) {
+      await page
+        .getByLabel("Szene aus " + manifest.event.name)
+        .selectOption(manifest.scenes[0].id);
+      await page
+        .getByRole("button", { name: "Paketszene vorbereiten", exact: true })
+        .click();
+      await expect(
+        page.getByRole("button", {
+          name: "Paketszene vorbereiten",
+          exact: true,
+        }),
+      ).toBeEnabled();
+      await expect(page.getByText(/Vorschau: Paketszene/)).toBeVisible();
+      await expect(page.getByRole("alert")).toHaveCount(0);
+      await expect
+        .poll(() =>
+          preview.evaluate(
+            (n: HTMLImageElement) => n.complete && n.naturalWidth === 640,
+          ),
+        )
+        .toBe(true);
+      await page
+        .getByRole("button", { name: "Diagnosebild übernehmen", exact: true })
+        .click();
+      await expect(
+        page.getByRole("button", {
+          name: "Paketszene vorbereiten",
+          exact: true,
+        }),
+      ).toBeEnabled();
+      await expect(page.getByText(/Programm: Paketszene/)).toBeVisible();
+      await expect
+        .poll(() =>
+          program.evaluate(
+            (n: HTMLImageElement) => n.complete && n.naturalWidth === 640,
+          ),
+        )
+        .toBe(true);
+      await page.screenshot({
+        path: join(output, "paketszene-browser.png"),
+        fullPage: true,
+      });
+    } else {
+      await expect(
+        page.getByText("Dieses Paket enthält keine vorbereiteten Szenen.", {
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
     await page.setViewportSize({ width: 390, height: 844 });
     expect(
       await page.evaluate(

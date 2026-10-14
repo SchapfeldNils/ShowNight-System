@@ -29,6 +29,7 @@ import { packageHeader } from "../packages/transfer/src/archive.js";
 import { encryptSnapshot, trustFor } from "../packages/transfer/src/offline.js";
 import { totp } from "../apps/api/src/security.js";
 import { rendererBrowserProof } from "./renderer-browser.js";
+import { nativeSceneProof } from "./renderer-scene-native.js";
 
 test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", async (t) => {
   assert.equal(
@@ -378,6 +379,17 @@ test("S3-04: echter Windows-C++-/GStreamer-/Skia-Prozess ohne Bildschirm/Ton", a
           await app.close();
           local.close();
         }
+      },
+    );
+    await t.test(
+      "Paketszenen: echte PNG-/JPEG-/Textkomposition, Budgetgrenzen und atomare Fehler",
+      async (sceneTest) => {
+        await nativeSceneProof(
+          sceneTest,
+          client,
+          join(f.root, "frames"),
+          output,
+        );
       },
     );
     await t.test(

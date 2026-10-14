@@ -27,7 +27,13 @@ export async function stageRendererMedia(
   if (!actual.startsWith(root + sep)) throw new Error("MEDIA_CHANGED");
   const path = join(
     folder,
-    "input-" + inputId + (media.mime === "image/png" ? ".png" : ".webm"),
+    "input-" +
+      inputId +
+      (media.mime === "image/png"
+        ? ".png"
+        : media.mime === "image/jpeg"
+          ? ".jpg"
+          : ".webm"),
   );
   if (
     resolve(path).slice(0, resolve(folder).length + 1) !==

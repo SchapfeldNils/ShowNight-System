@@ -7,6 +7,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkData.h"
 #include "include/core/SkFont.h"
+#include "include/core/SkFontMetrics.h"
 #include "include/core/SkFontMgr.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
@@ -64,6 +65,7 @@ std::string gstVersion() {
   return std::to_string(a)+"."+std::to_string(b)+"."+std::to_string(c);
 }
 #include "package_media.h"
+#include "package_scene.h"
 
 // No physical video/audio sink: the only endpoint is an in-process appsink.
 class Video {
@@ -127,10 +129,12 @@ public:
 struct Scene {
   std::string id,kind;
   std::shared_ptr<PackageInput> input;
+  std::shared_ptr<PackageComposition> composition;
   sk_sp<SkImage> picture;
   std::unique_ptr<Video> video;
   json state() const { return {{"id",id},{"kind",kind},{"videoFrames",video ? video->frames : 0},
-    {"packageMedia",input ? input->media : json(nullptr)},{"ended",video ? video->ended : false}}; }
+    {"packageMedia",input ? input->media : json(nullptr)},
+    {"packageScene",composition ? composition->descriptor : json(nullptr)},{"ended",video ? video->ended : false}}; }
 };
 class Renderer {
   std::mutex mutex;
@@ -146,6 +150,7 @@ class Renderer {
     return {{"protocolVersion",1},{"epoch",epoch},{"revision",revision},{"mode","software-diagnostics"},
       {"width",width},{"height",height},{"physicalOutputEnabled",false},{"audioOutputEnabled",false},
       {"packageMediaSupported",true},
+      {"packageScenesSupported",true},
       {"preview",preview ? preview->state() : json(nullptr)},{"program",program ? program->state() : json(nullptr)},
       {"mediaError",(preview && preview->video && preview->video->error)||(program && program->video && program->video->error)},
       {"gstreamerVersion",gstVersion()},{"skiaRevision",SKIA_REVISION}};
@@ -158,21 +163,28 @@ class Renderer {
     auto scene = std::make_unique<Scene>();
     scene->id = id;
     scene->input = std::make_shared<PackageInput>(frames,media);
-    scene->kind = media.at("mime") == "image/png" ? "grafik" : "video";
+    scene->kind = media.at("mime") == "video/webm" ? "video" : "grafik";
     if (scene->kind == "video") scene->video = std::make_unique<Video>(scene->input->path,false);
     else {
-      scene->picture = scene->input->decodePng();
+      uint64_t remainingPixels = 16777216;
+      scene->picture = scene->input->decodeImage(remainingPixels);
       if (!scene->picture) throw std::runtime_error("MEDIA");
     }
+    return scene;
+  }
+  std::unique_ptr<Scene> makeComposition(const std::string& id,const json& descriptor) {
+    auto scene = std::make_unique<Scene>(); scene->id = id; scene->kind = "szene";
+    scene->composition = std::make_shared<PackageComposition>(frames,descriptor);
     return scene;
   }
   void paint(const Scene* scene,const fs::path& file) {
     auto surface = SkSurfaces::Raster(SkImageInfo::MakeN32Premul(width,height));
     if (!surface) throw std::runtime_error("MEDIA");
     auto canvas = surface->getCanvas();
-    canvas->clear(scene ? SkColorSetRGB(17,27,44) : SK_ColorBLACK);
+    canvas->clear(scene && !scene->composition ? SkColorSetRGB(17,27,44) : SK_ColorBLACK);
     SkPaint p; p.setAntiAlias(true);
-    if (scene) {
+    if (scene && scene->composition) scene->composition->paint(canvas,font);
+    else if (scene) {
       if (scene->video && !scene->video->pixels.empty()) {
         auto data = SkData::MakeWithCopy(scene->video->pixels.data(),scene->video->pixels.size());
         auto videoImage = SkImages::RasterFromData(SkImageInfo::Make(320,180,kBGRA_8888_SkColorType,kOpaque_SkAlphaType),data,320*4);
@@ -239,12 +251,18 @@ public:
       if (!identifier(c.at("packageId")) || !identifier(c.at("mediaId")) ||
           c.at("media").at("packageId") != c.at("packageId") ||
           c.at("media").at("mediaId") != c.at("mediaId")) throw std::runtime_error("INVALID");
+    } else if (action == "prepare-scene") {
+      exact(c,{"commandId","expectedRevision","action","packageId","sceneId","scene"});
+      if (!identifier(c.at("packageId")) || !identifier(c.at("sceneId")) ||
+          c.at("scene").at("packageId") != c.at("packageId") ||
+          c.at("scene").at("sceneId") != c.at("sceneId")) throw std::runtime_error("INVALID");
     } else if (action == "take") { exact(c,{"commandId","expectedRevision","action","expectedSceneId"}); if (!identifier(c.at("expectedSceneId"))) throw std::runtime_error("INVALID"); }
     else if (action == "clear") exact(c,{"commandId","expectedRevision","action"});
     else throw std::runtime_error("INVALID");
     if (type != "command" || !identifier(c.at("commandId")) || !c.at("expectedRevision").is_number_unsigned()) throw std::runtime_error("INVALID");
     auto stable = c;
     if (action == "prepare-package") stable.at("media").erase("inputId");
+    if (action == "prepare-scene") stable.at("scene").erase("inputId");
     const std::string id = c.at("commandId"),fingerprint = stable.dump();
     auto previous = receipts.find(id);
     if (previous != receipts.end()) {
@@ -259,8 +277,14 @@ public:
       try {
         if (action == "prepare") preview = makeScene(id,c.at("scene").get<std::string>());
         else if (action == "prepare-package") preview = makePackageScene(id,c.at("media"));
-        else if (action == "take") program = preview->input ?
-          makePackageScene(preview->id,preview->input->media) : makeScene(preview->id,preview->kind);
+        else if (action == "prepare-scene") preview = makeComposition(id,c.at("scene"));
+        else if (action == "take") {
+          if (preview->composition) {
+            auto taken = std::make_unique<Scene>(); taken->id = preview->id; taken->kind = preview->kind;
+            taken->composition = preview->composition; program = std::move(taken);
+          } else program = preview->input ?
+            makePackageScene(preview->id,preview->input->media) : makeScene(preview->id,preview->kind);
+        }
         else { preview.reset(); program.reset(); }
         ++revision; out = reply("completed","OK");
       } catch (...) { out = reply("failed","MEDIA"); }
