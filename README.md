@@ -1,5 +1,7 @@
 # ShowNight-System
 
+Aktuelles Korrekturpaket: [lokale Technikrollenvergabe nur durch Admin](docs/entwicklung/s3-offline-kontenrechte.md), F05/F30/A18, Issue #27. Setupquellen 0.3.9; laufende Installationen werden durch die Entwicklung nicht aktualisiert.
+
 S3-08: [lokale Serverübersicht und lesendes Windows-Inventar](docs/entwicklung/s3-serveruebersicht.md), [PR #25](https://github.com/SchapfeldNils/ShowNight-System/pull/25). Windows-Startoberfläche, sichtbare Datenpfade und MFA-geschützte Systemübersicht als Software implementiert; erkannte Geräte bleiben von nutzbarer Ausgabe getrennt. Setupquellen 0.3.8; tatsächlichen CI-/Auslieferungsstand in der Anleitung beachten. Die folgenden Absätze dokumentieren frühere Teilstände.
 
 S3-06: [Szenenentwürfe, Sperren und Paketübertragung](docs/entwicklung/s3-szenenentwuerfe.md) als Software umgesetzt und geprüft, [PR #18](https://github.com/SchapfeldNils/ShowNight-System/pull/18). Setup 0.3.6 mit lesender Szenenansicht und bestehender nativer Einzelmedien-Diagnose bereitgestellt; [Nachweise/Prüfsummen](docs/entwicklung/nachweise/s3-szenenentwuerfe.json). Native Szenenkomposition, vollständiger Editor und Showbetrieb bleiben offen. Kein Merge oder Produktivupdate. Die folgenden Absätze beschreiben frühere Teilstände.

@@ -378,9 +378,15 @@ export class LocalAccounts {
   createUser(a: Actor, eventId: string, input: unknown) {
     this.eventAllowed(a, eventId, true);
     const u = userCreate
-        .extend({ role: offlineRole.default("mitglied") })
-        .parse(input),
-      uid = randomUUID(),
+      .extend({ role: offlineRole.default("mitglied") })
+      .parse(input);
+    if (!a.admin && u.role === "technik")
+      throw new HttpError(
+        403,
+        "FORBIDDEN",
+        "Systemadministration für die Vergabe der Technikrolle erforderlich.",
+      );
+    const uid = randomUUID(),
       raw = token();
     this.tx(() => {
       this.db

@@ -1,5 +1,9 @@
 # Entwicklungsstatus
 
+## Issue #27: lokale Technikvergabe nur durch Admin
+
+14. Oktober 2026, `codex/s3-offline-account-rights`, auf PR #25 (`000f1a2`): bestehende Online-Regel lokal durchgesetzt (F05/F30/A18). Leitung erhält bei Technikvergabe 403 vor Datenänderungen; normale Veranstaltungskonten bleiben möglich. Technikoption nur für Admin. Synthetische SQLite-/MFA-/HTTP- und Browserregressionen ergänzt; Build und erste lokale Prüfungen bestanden. Vollständiger unabhängiger Review und neue CI werden vor Abschluss nachgetragen. Setupquellen 0.3.9, vorhandener Betrieb 0.3.8 und Netcup unverändert. [Ablauf, Grenzen und Nachweise](s3-offline-kontenrechte.md).
+
 ## Issue #24: lokale Serverübersicht und lesendes Windows-Inventar
 
 Abschluss: Runtime c0a1ec4, sämtliche GitHub-Prüfungen einschließlich nativer/portabler Diagnose und vollständigem Setup 0.3.8 erfolgreich. Setup mit Renderer heruntergeladen/hashgeprüft und tatsächlich lokal aktualisiert. Bestehendes Profil/Konten/Paketindex/Schemata erhalten, eigener Dienst regulär gestoppt, neuer `run-renderer`-Dienst HTTPS-erreichbar und bestehende Adminsitzung weiter nutzbar. Neue Windows-Oberfläche geöffnet und reale Webübersicht/Inventar bestätigt. Erster nativer CI-Schlüsselablage-Timeout durch unveränderten erfolgreichen Wiederholungslauf protokolliert. Keine Online-/Zertifikat-/Firewall-/Liveausgabeänderung, kein Merge. [Nachweis](nachweise/s3-serveruebersicht.json), [Ablauf](s3-serveruebersicht.md). Die zunächst offenen CI-/Auslieferungsangaben im folgenden Absatz sind historisch.

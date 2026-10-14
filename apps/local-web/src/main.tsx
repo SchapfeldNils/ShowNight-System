@@ -427,7 +427,7 @@ function App() {
                     Veranstaltungsrolle
                     <select name="role" defaultValue="mitglied">
                       <option value="mitglied">Mitglied</option>
-                      <option value="technik">Technik</option>
+                      {me.admin && <option value="technik">Technik</option>}
                       <option value="live">Live</option>
                       <option value="leitung">
                         Leitung (MFA erforderlich)

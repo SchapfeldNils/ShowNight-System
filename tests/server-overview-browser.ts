@@ -11,6 +11,7 @@ import {
   type Browser,
 } from "@playwright/test";
 import type { ServerStatus } from "../apps/local-web/src/server-overview.js";
+import type { TransferManifest } from "../packages/contracts/src/transfer.js";
 
 // Isolated browser proof with synthetic API data. This proves rendering and
 // request behavior, not Windows enumeration, actual authorization or hardware.
@@ -36,7 +37,32 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
     audioOutputEnabled: false as const,
     state: null,
   };
-  const requests: { path: string; method: string }[] = [];
+  const requests: {
+    path: string;
+    method: string;
+    body?: unknown;
+    csrf?: string;
+  }[] = [];
+  const eventId = "51ad0cfb-0cc6-459b-b811-e267f829c567";
+  const packageId = "bfb4eb69-b549-4699-a527-79d6d34ded83";
+  const accountPackage: TransferManifest = {
+    schemaVersion: 1,
+    id: packageId,
+    eventId,
+    createdAt: new Date().toISOString(),
+    eventRevision: 1,
+    event: {
+      name: "Synthetische Kontenveranstaltung",
+      date: null,
+      location: "Test",
+      modules: [],
+    },
+    shows: [],
+    media: [],
+    status: "valid",
+    errors: [],
+    liveActivationSupported: false,
+  };
   let fail = false;
   let old = false;
   const status = (): ServerStatus => {
@@ -74,7 +100,7 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
       },
     };
   };
-  async function fixture(admin = true) {
+  async function fixture(admin = true, eventAccounts = false) {
     const context: BrowserContext = await browser.newContext({
       viewport: { width: 1280, height: 900 },
     });
@@ -85,7 +111,17 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
       const path = new URL(route.request().url()).pathname.slice(
         "/api/local".length,
       );
-      requests.push({ path, method: route.request().method() });
+      const method = route.request().method();
+      requests.push({
+        path,
+        method,
+        ...(method === "POST"
+          ? {
+              body: route.request().postDataJSON(),
+              csrf: route.request().headers()["x-csrf-token"],
+            }
+          : {}),
+      });
       const body =
         path === "/me"
           ? {
@@ -93,19 +129,41 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
               displayName: "Synthetisches Testkonto",
               admin,
               csrfToken: "synthetic-csrf",
-              grants: [],
+              grants:
+                eventAccounts && !admin
+                  ? [{ eventId, roles: ["leitung"] }]
+                  : [],
               preparedAt: new Date().toISOString(),
               pendingSync: 0,
             }
           : path === "/packages"
-            ? []
-            : path === "/renderer"
-              ? disabledRenderer
-              : path === "/server-status"
-                ? status()
-                : {
-                    error: { message: "Unzulässige synthetische Testanfrage" },
-                  };
+            ? eventAccounts
+              ? [
+                  {
+                    id: packageId,
+                    eventId,
+                    name: accountPackage.event.name,
+                    eventRevision: 1,
+                    shows: 0,
+                    media: 0,
+                  },
+                ]
+              : []
+            : eventAccounts && path === "/packages/" + packageId
+              ? accountPackage
+              : eventAccounts && path === "/events/" + eventId + "/users"
+                ? method === "POST"
+                  ? { invitationToken: "synthetic-offline-invitation" }
+                  : []
+                : path === "/renderer"
+                  ? disabledRenderer
+                  : path === "/server-status"
+                    ? status()
+                    : {
+                        error: {
+                          message: "Unzulässige synthetische Testanfrage",
+                        },
+                      };
       await route.fulfill({
         status: path === "/server-status" && fail ? 503 : 200,
         contentType: "application/json",
@@ -291,6 +349,85 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
         }
       },
     );
+    for (const admin of [false, true]) {
+      await t.test(
+        admin
+          ? "Admin sieht Technik; normales Kontenformular sendet Mitglied an die ausgewählte Veranstaltung"
+          : "Leitung sieht keine Technikrolle; normale Mitgliedseinrichtung bleibt möglich",
+        async () => {
+          requests.length = 0;
+          const { context, page, errors } = await fixture(admin, true);
+          try {
+            await page
+              .getByRole("button", { name: "Paket ansehen", exact: true })
+              .click();
+            const accounts = page.locator("section").filter({
+              has: page.getByRole("heading", {
+                name: "Lokale Veranstaltungskonten",
+                exact: true,
+              }),
+            });
+            await expect(accounts).toBeVisible();
+            const role = accounts.getByRole("combobox", {
+              name: "Veranstaltungsrolle",
+              exact: true,
+            });
+            await expect(role).toHaveValue("mitglied");
+            await expect(role.locator('option[value="technik"]')).toHaveCount(
+              admin ? 1 : 0,
+            );
+            await expect(role.locator("option")).toHaveText(
+              admin
+                ? ["Mitglied", "Technik", "Live", "Leitung (MFA erforderlich)"]
+                : ["Mitglied", "Live", "Leitung (MFA erforderlich)"],
+            );
+            await accounts
+              .getByRole("textbox", { name: "Benutzername", exact: true })
+              .fill("synthetic-member");
+            await accounts
+              .getByRole("textbox", { name: "Name", exact: true })
+              .fill("Synthetisches Mitglied");
+            await accounts
+              .getByRole("button", { name: "Konto vorbereiten", exact: true })
+              .click();
+            await expect(
+              accounts.getByText(
+                "Persönlicher Einrichtungscode · 24 Stunden gültig",
+                { exact: true },
+              ),
+            ).toBeVisible();
+            const submits = requests.filter(
+              (request) => request.method === "POST",
+            );
+            assert.equal(
+              submits.length,
+              1,
+              "Ein Submit erzeugt genau eine Kontenanfrage",
+            );
+            assert.deepEqual(submits[0], {
+              path: "/events/" + eventId + "/users",
+              method: "POST",
+              body: {
+                login: "synthetic-member",
+                displayName: "Synthetisches Mitglied",
+                role: "mitglied",
+              },
+              csrf: "synthetic-csrf",
+            });
+            assert.ok(
+              requests.some(
+                (request) =>
+                  request.method === "GET" &&
+                  request.path === "/events/" + eventId + "/users",
+              ),
+            );
+            assert.deepEqual(errors, []);
+          } finally {
+            await context.close();
+          }
+        },
+      );
+    }
   } finally {
     await browser.close();
     await app.close();
