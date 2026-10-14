@@ -12,8 +12,6 @@ Modell: `shownight-local:8b`, 8.192 Kontexttokens, maximal 1.536 Ausgabetokens, 
 
 Das Modell liefert maximal drei Fehlerkandidaten und zwei Testideen. Jeder Kandidat braucht ein wortgetreues Zitat auf der angegebenen Quelltextzeile. Unbelegte Hinweise werden verworfen; abgebrochene oder ungueltige Antworten sind Fehler. Auch ein geprueftes Zitat beweist keinen fachlichen Fehler. JavaScript wird nur dann mit `node --check --input-type=module` geparst, wenn ein ganzer Modultext im Auftrag enthalten ist; keine Ausfuehrung, keine Imports und keine Produkt-/Hardwareabnahme. Andere Sprachen werden nicht automatisch gebaut oder getestet. Maximal ein Wiederholungsversuch nach fuenf Minuten; jeder Versuch erzeugt seine eigene Rueckmeldung.
 
-## Private WhatsApp-Verknuepfung
-
 ## Verständliche Übersicht für den Betreiber
 
 Die private Browserseite liegt unter der von `Connect` ausgegebenen lokalen URL mit angehängtem `/bericht`. Sie erklärt in Alltagssprache, was die KI gelesen hat, welche Vorschläge nur Vermutungen sind und welche Tests erst vorgeschlagen wurden. Abschnitte werden nach Datei zusammengefasst; technische Angaben und genaue Originalvorschläge lassen sich aufklappen. Beispiele: „Spielregeln für die Bildausgabe“ und „Bisherige Entwicklungsarbeit“. Tagesstand bis 120, abgeschlossene Aufträge im erhaltenen Verlauf und tatsächlich bestätigte WhatsApp-Zustellungen werden getrennt angezeigt. Eine Zustellung ohne echte Nachrichten-ID wird nicht gezählt.
