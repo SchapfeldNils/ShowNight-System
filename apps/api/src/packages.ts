@@ -66,12 +66,18 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
             [eventId],
           )
         ).rows.map(sceneDto);
+        const requiredMedia = new Set<string>([
+          ...shows.flatMap((s) =>
+            s.cues.flatMap((cue: { mediaIds: string[] }) => cue.mediaIds),
+          ),
+          ...scenes.flatMap((scene) => sceneMediaIds(scene.definition)),
+        ]);
         const media = (
           await c.query(
             "SELECT * FROM media WHERE event_id=$1 OR id IN (SELECT sm.media_id FROM show_media sm JOIN shows s ON s.id=sm.show_id WHERE s.event_id=$1)",
             [eventId],
           )
-        ).rows;
+        ).rows.filter((m) => m.status !== "failed" || requiredMedia.has(m.id));
         const errors = media
           .filter((m) => m.status !== "ready")
           .map((m) => `Datei ${m.name}: ${m.status}.`);

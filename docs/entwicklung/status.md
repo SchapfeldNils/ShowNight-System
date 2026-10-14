@@ -20,7 +20,30 @@ Finale Artefakte heruntergeladen, Archiv-/Paket-/Setup-SHA256 bestätigt und tat
 
 Softwarediagnose einzelner vorbereiteter Paketmedien, weiterhin 640 × 360 und stumm. Vollständige Szenen, persönliche Regievorschau, Show-GO, HDMI/Ton/WebRTC und Hardware-/Veranstaltungsabnahme bleiben offen. Kein Merge, keine Installation auf dem DJ-Rechner, kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
 
+
 ## Historisch: Setup mit nativer Renderer-Grundlage geprüft
+
+Runtime d101808: [Native renderer 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) vollständig erfolgreich. Echter MSVC-/GStreamer-1.28.8-/Skia-Build, native Softwareprüfung 4/4, portabler Server-/Renderer-HTTPS-Ablauf einschließlich nativer Prüfungen 5/5 sowie Setup mit Renderer und Installations-/Update-/Deinstallationsprüfung bestanden. Leerer sicherer Start, tatsächliche Skia-PNGs, lokale Videodekodierung, Vorschau-/Programmtrennung, konkurrierende/identische Diagnosebefehle, Pipe-Wiederverbindung ohne Replay und aktuelle Admin-/MFA-/CSRF-/Sperrprüfungen sind Softwarebelege.
+
+Renderer-Setup lokal aus GitHub-Artefakt 11908530393 materialisiert und Archiv-/Paket-/Setup-Prüfsummen bestätigt: dist/streaming-installer/ShowNight-Streaming-Setup-x64.exe, 29.999.071 Bytes, SHA256 13ead14a4791843156d80fa3f8c31eab03ceaae46f2cea7bd705730e2ce9c0fb. build-info.json bestätigt rendererIncluded=true. Tatsächliche Diagnosebilder heruntergeladen und visuell geprüft. [Maschinenlesbarer Nachweis](nachweise/s3-renderer.json), [Installation](s3-streaming-installer.md).
+
+Dies ist eine installierbare Softwarediagnose-Grundlage mit synthetischen Assets. Echte Showpakete/Szenen, persönliche Regievorschau, Ausgabefenster/Monitorwahl, HDMI/Full HD, Publikumston, WebRTC/OBS, vollständiges GO und Hardware-/Veranstaltungsabnahme bleiben offen. Nächster Softwarebaustein: verifizierte Paketmedien und Szenen an den Renderer anbinden. Kein Merge, keine Installation auf dem DJ-Rechner und kein Netcup-Update. Folgende Abschnitte sind historische Teilstände.
+
+
+## PR-Bug-Abnahme – 14. Oktober 2026
+
+Betreiberauftrag: zehn offene PRs und ihre vorhandenen Bugs/Prüfungen durcharbeiten. S1-Korrekturen für Mitverwaltung, MFA-Rollenwechsel, Medienwahl, erneuerte Einladungen und widerrufbare Teamrechte sowie Paket-/Mail-/Statuswiederverbindung umgesetzt. Lokale Typprüfung/Build und 3 Units, Kernintegration 14/14, zusätzliche Review-Integration 7/7 einschließlich konkurrierender Einladungsannahme/Erneuerung sowie Chromium 1/1 bestanden. Erste neue Testfixture verwendete fälschlich direkte Eventshowanlage statt des vorhandenen Kopiervertrags; korrigiert. Browser zunächst durch noch laufende eigene ältere Testdatenbank blockiert, diese regulär gestoppt; danach ein mehrdeutiger Quell-/Kopienselektor korrigiert. Die geprüften Abläufe bestehen ohne SQL-Aufräumen oder Rechteausweitung. Migration 5 reserviert die bestehende Szenenmigration 4; pro Branch werden nur dessen tatsächlich enthaltene Module migriert. Noch keine neue CI-/Merge-/Produktivfreigabe. [Details, Routen und Updategrenzen](pr-bug-abnahme.md).
+
+
+Stand: 9. Oktober 2026. Paket S1, Arbeitsbranch `feat/s1-online-server`, [Issue #1](https://github.com/SchapfeldNils/ShowNight-System/issues/1), [PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). S1 ist ein Entwicklungszwischenstand; erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
+Stand: 10. Oktober 2026. S1-Onlinevorbereitung und S2-Agentgrundlage; S2-Arbeitsbranch `feat/s2-windows-agent`, [Issue #4](https://github.com/SchapfeldNils/ShowNight-System/issues/4), [PR #5](https://github.com/SchapfeldNils/ShowNight-System/pull/5), abhängig von S1-[PR #2](https://github.com/SchapfeldNils/ShowNight-System/pull/2). Erste Veranstaltungsfreigabe bleibt F01–F50/A01–A30.
+
+
+
+
+## Aktuell: Setup mit nativer Renderer-Grundlage geprüft
 
 Runtime d101808: [Native renderer 38588768652](https://github.com/SchapfeldNils/ShowNight-System/actions/runs/38588768652) vollständig erfolgreich. Echter MSVC-/GStreamer-1.28.8-/Skia-Build, native Softwareprüfung 4/4, portabler Server-/Renderer-HTTPS-Ablauf einschließlich nativer Prüfungen 5/5 sowie Setup mit Renderer und Installations-/Update-/Deinstallationsprüfung bestanden. Leerer sicherer Start, tatsächliche Skia-PNGs, lokale Videodekodierung, Vorschau-/Programmtrennung, konkurrierende/identische Diagnosebefehle, Pipe-Wiederverbindung ohne Replay und aktuelle Admin-/MFA-/CSRF-/Sperrprüfungen sind Softwarebelege.
 

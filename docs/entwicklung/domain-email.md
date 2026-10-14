@@ -77,3 +77,8 @@ node --env-file=.env --env-file="$env:LOCALAPPDATA/ShowNight/secrets/smtp.env" -
 Eine reale Testnachricht benötigt ausdrücklich festgelegten erlaubten Absender/Testempfänger und passende Versandautorisierung. Anmeldetest erfüllt diese Zustellprüfung nicht.
 
 Nach Betreiberfreigabe zur Netcup-Freischaltung sind die Werte am 9. Oktober 2026 auch privat im tatsächlichen VM-Worker-/Stack-Environment hinterlegt. SMTP-Verbindung, TLS-Zertifikatsprüfung und Anmeldung direkt aus diesem Worker erfolgreich geprüft. `MAIL_MODE=test`, `MAIL_DELIVERY_ENABLED=false`; keine Nachricht gesendet. Zugangsdaten weder im öffentlichen Repository noch im Browser. [Zielabnahme](netcup-abnahme.md).
+
+
+## Einzelner Zustelltest – 14. Oktober 2026
+
+Auf ausdrücklichen Betreiberauftrag eine einzelne reale Testmail über die vorhandene private SMTP-Konfiguration vom Betreiberrechner gesendet. SMTP-Annahme bestätigt, Empfang anschließend vom Betreiber bestätigt. Private Versandkennung/Empfänger bleiben außerhalb des öffentlichen Repositorys. Allgemeiner Mailversand weiterhin ausgeschaltet; kein Nachweis des Produktivworkers, automatischer Fachmails, Bounces oder Massenversands. Die früheren Absätze dokumentieren die vorherigen reinen Verbindungsprüfungen.

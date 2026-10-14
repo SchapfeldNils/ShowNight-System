@@ -81,7 +81,7 @@ test("S3-06: PostgreSQL-Szenen, echte Leases, Rechte, Kopie und SQLite-Paketimpo
         await migrate(f.db);
         assert.equal(
           (await f.app.inject({ url: "/health/ready" })).json().schemaVersion,
-          4,
+          5,
         );
         show = await ok("/shows", "POST", {
           name: "Synthetische Szenenvorlage",
@@ -324,7 +324,39 @@ test("S3-06: PostgreSQL-Szenen, echte Leases, Rechte, Kopie und SQLite-Paketimpo
           scene.definition.layers[0].id,
         );
         assert.equal(copiedScene.definition.layers[0].mediaId, mediaId);
+        const failedUpload = multipartFile(
+          f.demoPng.subarray(0, 24),
+        );
+        const unused = await f.app.inject({
+          url: `/api/v1/media/uploads?eventId=${eventId}`,
+          method: "POST",
+          headers: {
+            origin: f.cfg.origin,
+            cookie,
+            "x-csrf-token": csrf,
+            "content-type": failedUpload.contentType,
+          },
+          payload: failedUpload.payload,
+        });
+        assert.equal(unused.statusCode, 200, unused.body);
+        await processMedia(f.db, f.cfg);
+        await processMedia(f.db, f.cfg);
+        assert.equal((await ok(`/media/${unused.json().id}`)).status, "failed");
         const m = await ok(`/events/${eventId}/packages`, "POST");
+        assert.ok(m.media.some((asset: any) => asset.id === mediaId));
+        assert.ok(!m.media.some((asset: any) => asset.id === unused.json().id));
+        await f.db.query("UPDATE media SET status='failed' WHERE id=$1", [
+          mediaId,
+        ]);
+        const blocked = await req(`/events/${eventId}/packages`, "POST");
+        assert.equal(
+          blocked.json().status,
+          "invalid",
+          "Referenced scene media must block packaging",
+        );
+        await f.db.query("UPDATE media SET status='ready' WHERE id=$1", [
+          mediaId,
+        ]);
         assert.equal(m.schemaVersion, 2);
         assert.equal(m.status, "valid");
         assert.equal(m.scenes.length, 2);
