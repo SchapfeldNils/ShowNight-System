@@ -65,6 +65,23 @@ export const loginInput = z.strictObject({
   login: z.string().max(120),
   password: z.string().max(256),
 });
+export const passwordChangeInput = z.strictObject({
+  currentPassword: z.string().min(1).max(256),
+  newPassword: password,
+});
+export const accountEmailInput = z.strictObject({
+  email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
+  currentPassword: z.string().min(1).max(256),
+});
+export const accountTokenInput = z.strictObject({
+  token: z.string().min(20).max(100),
+});
+export const passwordResetRequestInput = z.strictObject({
+  identifier: z.string().trim().toLowerCase().min(1).max(254),
+});
+export const passwordResetInput = accountTokenInput.extend({
+  newPassword: password,
+});
 export const mfaInput = z.strictObject({
   challenge: z.string().min(20).max(100),
   code: z.string().min(6).max(40),

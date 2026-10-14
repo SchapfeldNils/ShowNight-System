@@ -2,6 +2,7 @@ import { networkInterfaces } from "node:os";
 import { X509Certificate } from "node:crypto";
 import { checkServerIdentity } from "node:tls";
 import { z } from "zod";
+import { powershell } from "../../agent/src/identity.js";
 
 // A chosen interface, never a wildcard or a publicly routable listener.
 export const privateIPv4 = z.string().refine((value) => {
@@ -41,4 +42,22 @@ export function certificateInfo(
   if (Date.parse(c.validFrom) > now || Date.parse(c.validTo) <= now)
     throw new Error("Zertifikat ist noch nicht gültig oder abgelaufen.");
   return { fingerprintSha256: c.fingerprint256, validUntil: c.validTo, host };
+}
+// Inspect the exact PFX bytes used by the listener without importing any key into
+// a Windows certificate store or changing client trust.
+export async function certificatePairInfo(
+  certificate: Buffer,
+  pfx: Buffer,
+  password: string,
+  origin: string,
+) {
+  const info = certificateInfo(certificate, origin);
+  const encoded = await powershell(
+    "$v=[Console]::In.ReadToEnd()|ConvertFrom-Json;$cert=$null;try{$cert=New-Object Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList @([Convert]::FromBase64String($v.pfx),$v.password,[Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet);if(!$cert.HasPrivateKey){throw 'Private key missing'};[Convert]::ToBase64String($cert.RawData)}finally{if($cert){$cert.Dispose()}}",
+    JSON.stringify({ pfx: pfx.toString("base64"), password }),
+  );
+  const presented = new X509Certificate(Buffer.from(encoded, "base64"));
+  if (!presented.raw.equals(new X509Certificate(certificate).raw))
+    throw new Error("CER und PFX enthalten unterschiedliche Zertifikate.");
+  return info;
 }

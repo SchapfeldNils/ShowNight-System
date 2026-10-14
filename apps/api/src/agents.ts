@@ -253,7 +253,7 @@ export function agentRoutes(app: FastifyInstance, db: DB) {
       let chain = Promise.resolve();
       const timer = setInterval(() => {
         if (Date.now() - lastMessage > 15000)
-          socket.close(1008, "Heartbeat fehlt");
+          socket.close(1011, "Heartbeat fehlt");
       }, 1000);
       const cleanup = () => {
         if (closed) return;

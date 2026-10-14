@@ -26,6 +26,13 @@ const deny = () =>
     "AUTH_FAILED",
     "Anmeldung oder Bestätigung fehlgeschlagen.",
   );
+export class OfflineLoginConflict extends Error {
+  constructor() {
+    super(
+      "Anmeldestand nicht importiert: Eine Anmeldekennung gehört bereits zu einem anderen vorbereiteten oder lokalen Konto. Getrennte Konten benötigen unterschiedliche Kennungen. Vorhandene Konten und Anmeldestand bleiben erhalten; keine automatische Zusammenführung.",
+    );
+  }
+}
 export class LocalAccounts {
   private db: DatabaseSync;
   constructor(
@@ -117,6 +124,13 @@ export class LocalAccounts {
         return { status: "already_present" };
       if (s.sequence <= seq)
         throw new Error("Veralteter oder bereits abgelöster Anmeldestand.");
+      for (const user of s.users) {
+        const existing = this.db
+          .prepare("SELECT id FROM users WHERE login=?")
+          .get(user.login);
+        if (existing && existing.id !== user.id)
+          throw new OfflineLoginConflict();
+      }
       this.db
         .prepare("UPDATE users SET enabled=0 WHERE provenance=?")
         .run(s.serverOrigin);

@@ -184,3 +184,7 @@ Status: ausdrücklich beauftragte Fehlerbehebung, keine neue Fachentscheidung. B
 ## S3-08 – lokale Übersicht, technische Umsetzung, 14. Oktober 2026
 
 Status: ausdrücklich beauftragt, keine neue Fachentscheidung. Bestehende lokale Weboberfläche um MFA-geschützte Systemübersicht ergänzen, vorgeschalteter kleiner Windows-PowerShell-/Forms-Launcher für vorhandene Startbefehle und Datenpfade. Read-only DisplayConfig/CoreAudio-Inventar ist keine Ausgabezuordnung oder Hardwarefreigabe. Kein neues Desktopframework, keine geänderten Rechte/Regie-/Ausfallregeln. Fehlende Kameras/Streams/physische Ausgabe bleiben offen. [Ablauf und Nachweise](../entwicklung/s3-serveruebersicht.md).
+
+## Online-Kontowiederherstellung – 15. Oktober 2026
+
+Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit gestalteter Mail; auf Rückfrage erhält jedes Konto eine eigene bestätigte E-Mail-Adresse, auch bei reinem Benutzernamen. Bestätigung bleibt Voraussetzung für Wiederherstellung. MFA und Rollen bleiben erhalten. Geeignete Entwicklungsstände sollen zu einer sichtbaren Online-Version zusammengeführt/mergt werden; weitere lokale Fachentwicklung folgt danach. Ticketshop und Stage Timer bleiben offen und im Gesamtumfang. Keine Produktionsbereitstellung oder echte E-Mail durch die Softwareprüfungen.

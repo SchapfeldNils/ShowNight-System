@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   upgrade:
-    name: Schema 4 to 5 and return (${{ matrix.arch }})
+    name: Schema 4 to 6 and return (${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:

@@ -42,7 +42,9 @@ export function startAgent(
     let epoch: string | undefined,
       heartbeat: ReturnType<typeof setInterval> | undefined;
     const welcomeTimeout = setTimeout(
-      () => socket.close(1008, "Serverantwort fehlt"),
+      // Missing WELCOME is a transport timeout, not a terminal policy rejection.
+      // Termination also bounds a peer that never completes a close handshake.
+      () => socket.terminate(),
       12000,
     );
     socket.on("open", async () => {

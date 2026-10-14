@@ -1,3 +1,18 @@
+# Aktuelle Lieferliste – gemeinsame Online-Version
+
+15. Oktober 2026. Betreiber priorisiert einen sichtbaren Onlineablauf und autorisiert geeignete Merges. Keine weitere lokale Fachentwicklung vor diesem Lieferpunkt.
+
+| Lieferung | Tatsächlicher Stand | Nächster Nachweis |
+| --- | --- | --- |
+| Gemeinsamer Stand | PR30 + PR37 + aktuelles main auf eigenem Branch integriert | Gesamtprüfung, CI, ein neuer PR und geprüfter Merge |
+| Konto / Abmelden / Passwort | Implementierung plus erste echte Backendtests; alter Abmeldefehler reproduziert und korrigiert | Vollständiger Desktop-/Mobilbrowsernachweis |
+| E-Mail / Passwort vergessen | Eigene bestätigte Mail je Konto beauftragt, Backend und gestaltete Vorlage umgesetzt, SMTP-Verbindung ohne Versand bestätigt | Browser, Sicherheitsreview und echte Zustellung erst nach Freigabe |
+| Ticketshop F38–F43 | Offen, weiterhin Zielumfang | Eigenes sichtbares Fachpaket nach nutzbarer Onlinegrundlage |
+| Stage Timer F20 | Offen, weiterhin Zielumfang | Vorbereitung/Anzeige/Steuerung und spätere tatsächliche Bühnensicht getrennt abnehmen |
+| Lokaler Betrieb / Geräte | Vorhandene Codebausteine erhalten | Weiterentwicklung erst nach sichtbarer Online-Version; Hardwarebelege bleiben offen |
+
+[Zusammenführung](online-konsolidierung.md), [Bedienablauf](online-bedienablauf.md). Frühere Tabellen unten sind historische Einzelstände und ersetzen keinen aktuellen Liefernachweis.
+
 # Offene GitHub-Issues – bearbeitbarer Stand
 
 Neuer Szenenstand, 15. Oktober 2026: [Issue #29 / PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30) komponiert vorbereitete Text-/Rechteck-/PNG-/JPEG-Szenen nativ als stumme Softwarediagnose. Finale CI für `f807645` vollständig erfolgreich (Windows/AMD64/ARM64, native Pixel-/Browser-/Paketprüfungen und Installer). Setup 0.3.10 mit Renderer tatsächlich hash-/versionsgeprüft bereitgestellt, nicht installiert. Unabhängiger vollständiger Review sowie Nachprüfung der bestätigten UUID-Korrektur ohne verbleibende Befunde abgeschlossen. [Aktueller Nachweis und Grenzen](s3-native-szenen.md). Nächster Baustein: vorbereiteter Showablauf; reale Geräte-/Full-HD-/Audio-/Mehrclientabnahmen bleiben offen. Folgende Paketstände sind historische Momentaufnahmen.

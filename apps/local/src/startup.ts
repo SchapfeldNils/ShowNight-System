@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { userInfo } from "node:os";
 import { DatabaseSync } from "node:sqlite";
 import { loadVault } from "./vault.js";
-import { assignedAddress, certificateInfo } from "./network.js";
+import { assignedAddress, certificatePairInfo } from "./network.js";
 
 export class StartupError extends Error {}
 export const onlinePreparation =
@@ -166,16 +166,19 @@ export async function startupStatus(
     );
   }
   try {
-    certificateInfo(await readFile(join(root, "server.cer")), v.origin);
-    if ((await pathState(join(root, "server.pfx"))) !== "present")
-      throw new Error();
+    await certificatePairInfo(
+      await readFile(join(root, "server.cer")),
+      await readFile(join(root, "server.pfx")),
+      v.pfxPassword,
+      v.origin,
+    );
     lines.push(
-      "HTTPS-Zertifikat: Adress-/Gültigkeitsprüfung bestanden. Vertrauen auf jedem Client anhand Anleitung.md separat prüfen.",
+      "HTTPS-Zertifikat: Adress-/Gültigkeitsprüfung bestanden; CER und PFX samt privatem Schlüssel stimmen überein. Vertrauen auf jedem Client anhand Anleitung.md separat prüfen.",
     );
   } catch {
     ready = false;
     lines.push(
-      "HTTPS-Zertifikat: fehlt, ungültig oder passt nicht zur Adresse. 'Netzwerk prüfen' und Anleitung.md öffnen; vorhandene Schlüssel erhalten.",
+      "HTTPS-Zertifikat: fehlt, ungültig, passt nicht zur Adresse oder CER/PFX/Schlüssel widersprüchlich. 'Netzwerk prüfen' und Anleitung.md öffnen; vorhandene Schlüssel erhalten.",
     );
   }
   if (!ready) lines.push(onlinePreparation);

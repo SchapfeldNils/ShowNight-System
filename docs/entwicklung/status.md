@@ -1,5 +1,17 @@
 # Entwicklungsstatus
 
+## Sichtbare Online-Version und gemeinsame Basis – 15. Oktober 2026
+
+Aktueller Betreiberauftrag: geeignete Entwicklungsstände zusammenführen/mergen und eine benutzbare, vorzeigbare Online-Version liefern. Eigene Kontofunktionen fehlen als sichtbarer Ablauf und werden vor weiterem lokalen Funktionsausbau ergänzt. Ticketshop und Stage Timer bleiben ausdrücklich im Zielumfang offen.
+
+Arbeitsbranch `codex/online-visible-release`: PR30-Spitze `3cdcc376`, vollständiger Netcup-Kandidat PR37 `d88a891` und aktuelles main `cd71423` bewusst integriert. Nur drei Dokumentationskonflikte, beide Nachweisstände erhalten; keine Auswahl einer unvollständigen S1-Basis. Neue Kontofunktionen und bestätigte kleine Restkorrekturen werden auf diesem gemeinsamen Stand geprüft. Noch kein GitHub-Gesamtmerge oder Produktivupdate durchgeführt. Automatische Fortsetzung bleibt pausiert; dieser manuelle Nutzerauftrag wird bearbeitet. Bestehende lokale Installation und produktive Netcup-Dienste bleiben unverändert.
+
+Neue API: `POST /api/v1/account/password` mit aktuellem/neuem Kennwort. Geplant/implementiert im Kandidaten: alle eigenen Online-Sitzungen und Loginchallenges widerrufen, erneute Anmeldung, MFA/Rollen unverändert, Origin/CSRF und Nebenläufigkeit prüfen. UI: Konto und Abmelden oben erreichbar; Formular mit Wiederholung, vollständiges Verwerfen des privaten Anwendungszustands bei Abmeldung. Aktuelle Integration/Browser/CI und Gesamtprüfung noch in Arbeit; keine alte CI auf diesen neuen Stand übertragen.
+
+[Zusammenführung und Nachweise](online-konsolidierung.md), [Bedienablauf](online-bedienablauf.md). Historische Absätze unten gelten jeweils für ihre benannten Einzelstände.
+
+# Entwicklungsstatus
+
 ## Issue #29: native Komposition vorbereiteter Szenen
 
 Abschluss 15. Oktober 2026: Runtime `f807645`, [PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30). TS-Build/Typen und 45/45 Units, vorhandener Browser 6/6 bestanden; finale CI Windows/AMD64/ARM64, MSVC-/Skia-/GStreamer, native Regression 6/6 inklusive echter Szenenpixel und UUID-Korrektur, portable Prüfung 7/7 sowie vollständiger Installerlebenszyklus erfolgreich. Unabhängiger Full-Diff-Review mit einem bestätigten P2 (Großbuchstaben-Ebenenkennungen), gezielt behoben und unabhängig nachgeprüft, keine verbleibenden bestätigten Befunde. Setup 0.3.10 mit Renderer aus finaler CI heruntergeladen, Hashes/EXE-Produktversion bestätigt, zusätzlich in Downloads abgelegt, nicht installiert. Natives synthetisches Beispielbild im Nachweis. Bestehende lokale 0.3.8 und Netcup unverändert; kein Merge, keine Geräte-/Veranstaltungsfreigabe. PNG-Quellalpha-Zwischenwerte nicht gesondert pixelgeprüft; weitere Grenzen und [Nachweis](nachweise/s3-native-szenen.json). Nächster Schritt: vorbereiteter Showablauf mit serverseitiger Ordnung/Deduplizierung. Die folgende Zwischenstandsangabe ist historisch.

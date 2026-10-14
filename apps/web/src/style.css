@@ -118,6 +118,7 @@ aside {
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -156,6 +157,25 @@ header {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.account-actions button {
+  margin: 0;
+}
+.account-card {
+  max-width: 720px;
+}
+.account-card fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 .badge {
   background: #243225;

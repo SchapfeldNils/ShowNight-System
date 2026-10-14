@@ -1,5 +1,29 @@
 # ShowNight-System
 
+## Aktueller Lieferstand
+
+15. Oktober 2026: Ein gemeinsamer Releasebranch `codex/online-visible-release` führt die bisher geprüften Online-, Agenten- und lokalen Entwicklungsstände zusammen. Nutzerpriorität: zuerst eine sichtbare, benutzbare Online-Version, danach weitere lokale Entwicklung. Kein neues Hintergrundpaket vor diesem Lieferpunkt.
+
+Neu in Arbeit: gut erreichbares **Mein Konto / Abmelden** und eigene **Passwortänderung** einschließlich erneuter Anmeldung und unveränderter MFA. Vor Merge werden der gesamte integrierte Stand unabhängig überprüft und die passenden Prüfungen auf genau diesem Kandidaten ausgeführt. Merge geeigneter geprüfter Entwicklungsstände ist durch den aktuellen Nutzerauftrag autorisiert; ein Produktivupdate ist damit noch nicht ausgeführt.
+
+- [Aktueller Stand, Nachweise und Grenzen](docs/entwicklung/status.md)
+- [Zusammenführung und Lieferkriterien](docs/entwicklung/online-konsolidierung.md)
+- [Bedienablauf der Online-Version](docs/entwicklung/online-bedienablauf.md)
+- [Offene Arbeit und nächste sichtbare Lieferungen](docs/entwicklung/issue-arbeitsliste.md)
+
+Veranstaltungen, Shows, Teams/Rechte, Medien und Inhaltspakete haben bereits implementierte Vorbereitungsabläufe. **Ticketshop (F38–F43/A24–A27) und Stage Timer (F20/A10) sind noch nicht vollständig umgesetzt.** Sie bleiben Teil des vereinbarten Gesamtsystems. Bühnenausgabe und Geräte-/Hardwarefreigabe werden nicht durch einen Online-Softwaretest bestätigt. Keine echten Käuferdaten oder Geheimnisse im öffentlichen Repository.
+
+## Entwicklung starten
+
+Node 24 und die im Lockfile festgelegte pnpm-Version verwenden. Tatsächliche Befehle und private Ersteinrichtung: [S1-Start](docs/entwicklung/s1-start.md). `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`; Datenbank-/Browser-/Agentenprüfungen siehe Paketbefehle und Status. Keine Produktivvariablen für lokale Tests verwenden.
+
+<details>
+<summary>Historische Entwicklungsstände und frühere Einzelpakete</summary>
+
+Diese folgenden Angaben bleiben als historische Nachweise erhalten. Sie beschreiben ihre jeweiligen Einzelcommits, nicht automatisch den aktuellen gemeinsamen Kandidaten oder dessen tatsächliche Bereitstellung.
+
+# ShowNight-System
+
 Als Software geprüft: [native Komposition vorbereiteter Paket-v2-Szenen](docs/entwicklung/s3-native-szenen.md), [PR #30](https://github.com/SchapfeldNils/ShowNight-System/pull/30). Text/Rechteck/PNG-/JPEG-Bild als stumme Softwarediagnose, vollständige CI und unabhängiger Review samt Korrekturprüfung bestanden. Setup 0.3.10 mit Renderer bereitgestellt, nicht installiert. Keine Veranstaltungsfreigabe oder Betreiberaktualisierung. Folgende Angaben beschreiben frühere Teilstände.
 
 Aktuelles Korrekturpaket: [lokale Technikrollenvergabe nur durch Admin](docs/entwicklung/s3-offline-kontenrechte.md), F05/F30/A18, Issue #27. Setupquellen 0.3.9; laufende Installationen werden durch die Entwicklung nicht aktualisiert.
@@ -100,3 +124,5 @@ Neue Fragen und Vorschläge werden zunächst als **offen** festgehalten. Erst au
 Änderungen erhalten nachvollziehbare Git-Commits. GitHub Issues können später für einzelne Aufgaben genutzt werden; Fragen und Entscheidungen bleiben auch in den Dokumenten auffindbar.
 
 **Hinweis:** Das Repository ist öffentlich. Keine Zugangsdaten, echten Käuferdaten, Ticketcodes oder internen personenbezogenen Listen einchecken.
+
+</details>

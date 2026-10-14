@@ -98,15 +98,15 @@ make_env rollback shownight:netcup-release-schema4
 compose source stop app worker
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/target.env" "$private/restored"
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5
+versions target 1,2,3,4,5,6
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5
+versions target 1,2,3,4,5,6
 mail_default=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='mail_jobs' AND column_name='delivery_mode'")
 [ "$mail_default" = "'test'::text" ] || { echo 'Testversand-Default fehlt.' >&2; exit 1; }
 old_mail=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT count(*) FROM mail_jobs WHERE business_key='release-existing-test' AND delivery_mode='test' AND status='simulated'")
 [ "$old_mail" = 1 ] || { echo 'Bestehender Testauftrag verändert.' >&2; exit 1; }
 compose target up -d --wait app worker
-probe target check 5 "$private/target-check.json"
+probe target check 6 "$private/target-check.json"
 compose target stop app worker
 # Return uses the SAME original snapshot in another fresh stack, never SQL downgrade.
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/rollback.env" "$private/restored"
@@ -126,8 +126,8 @@ const read=async name=>JSON.parse(await readFile(`${root}/${name}`, 'utf8'));
 const old=await read('baseline-image.json'), current=await read('candidate-image.json');
 const target=await read('target-check.json'), rollback=await read('rollback-check.json');
 // Deliberate allowlist: private MFA/password/fixture/config data never enters proof.
-const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'1c983fc01c98916fc782422f19e67567821bdaaa',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:4,targetSchema:5,rollbackSchema:4,targetMigrations:[1,2,3,4,5],rollbackMigrations:[1,2,3,4],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
+const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'1c983fc01c98916fc782422f19e67567821bdaaa',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:4,targetSchema:6,rollbackSchema:4,targetMigrations:[1,2,3,4,5,6],rollbackMigrations:[1,2,3,4],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
 assert.equal(target.passed,true);assert.equal(rollback.passed,true);
 await writeFile('test-results/netcup-release/result.json',JSON.stringify(result,null,2)+'\n');
-console.log('Isolierter Schema-4→5- und Rückkehrnachweis bestanden; keine Produktivänderung.');
+console.log('Isolierter Schema-4→6- und Rückkehrnachweis bestanden; keine Produktivänderung.');
 PROOF

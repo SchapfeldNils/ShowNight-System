@@ -9,7 +9,7 @@ import { keyFingerprint } from "../../../packages/transfer/src/offline.js";
 import { packageHeader } from "../../../packages/transfer/src/archive.js";
 import { secureDirectory } from "../../agent/src/identity.js";
 import { PackageStore } from "./store.js";
-import { LocalAccounts } from "./accounts.js";
+import { LocalAccounts, OfflineLoginConflict } from "./accounts.js";
 import {
   initVault,
   loadVault,
@@ -18,7 +18,7 @@ import {
   importAccounts,
 } from "./vault.js";
 import { localServer } from "./server.js";
-import { lanSetup, assignedAddress, certificateInfo } from "./network.js";
+import { lanSetup, assignedAddress, certificatePairInfo } from "./network.js";
 import { RendererClient, disabledRenderer } from "./renderer.js";
 import { StartupError, startupStatus, printStartupStatus } from "./startup.js";
 import { createWindowsIoProvider } from "./windows-io.js";
@@ -179,8 +179,10 @@ async function main() {
           origin: v.origin,
           bindAddress: v.network?.address ?? "127.0.0.1",
           addressAssigned: assignedAddress(v.network?.address ?? "127.0.0.1"),
-          certificate: certificateInfo(
+          certificate: await certificatePairInfo(
             await readFile(join(root, "server.cer")),
+            await readFile(join(root, "server.pfx")),
+            v.pfxPassword,
             v.origin,
           ),
           firewall: "manuell prüfen",
@@ -265,7 +267,13 @@ async function main() {
         throw new Error(
           "Eingerichtete Netzwerkadresse ist diesem Rechner nicht zugewiesen.",
         );
-      certificateInfo(await readFile(join(root, "server.cer")), v.origin);
+      const serverPfx = await readFile(join(root, "server.pfx"));
+      await certificatePairInfo(
+        await readFile(join(root, "server.cer")),
+        serverPfx,
+        v.pfxPassword,
+        v.origin,
+      );
       if (!a.meta("snapshot_id"))
         throw new StartupError(
           "Anmeldestand fehlt. '3 - Anmeldestand importieren' öffnen.",
@@ -309,7 +317,7 @@ async function main() {
         v.origin,
         webRoot,
         {
-          pfx: await readFile(join(root, "server.pfx")),
+          pfx: serverPfx,
           passphrase: v.pfxPassword,
           minVersion: "TLSv1.2",
         },
@@ -346,7 +354,8 @@ async function main() {
   }
 }
 main().catch((error: unknown) => {
-  if (error instanceof StartupError) console.error(error.message);
+  if (error instanceof StartupError || error instanceof OfflineLoginConflict)
+    console.error(error.message);
   else if ((error as NodeJS.ErrnoException)?.code === "EADDRINUSE")
     console.error(
       "Dienst nicht gestartet: Port 3443 bereits belegt. Vorhandenes Serverfenster prüfen; keinen fremden Prozess beenden.",

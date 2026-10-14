@@ -149,6 +149,7 @@ export async function processMail(db: DB, cfg: Config) {
       to: job.recipient,
       subject: job.subject,
       text: job.body,
+      html: job.body_html ?? undefined,
       disableFileAccess: true,
       disableUrlAccess: true,
     });
