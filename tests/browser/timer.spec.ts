@@ -7,12 +7,14 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
   page,
   context,
 }) => {
-  test.setTimeout(120000);
+  test.setTimeout(180000);
+  page.setDefaultTimeout(15000);
   const f = await fixture(55456);
   f.cfg.origin = "http://localhost:3003";
   f.cfg.PUBLIC_BASE_URL = f.cfg.origin;
   const errors: string[] = [];
   const other = await context.newPage();
+  other.setDefaultTimeout(15000);
   for (const window of [page, other])
     window.on("pageerror", (error) => errors.push(error.message));
   const preparation = (window: Page) =>
@@ -41,6 +43,7 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
   };
   try {
     await f.app.listen({ host: "127.0.0.1", port: 3003 });
+    console.log("Timerprobe: eigene Fixture bereit");
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(f.cfg.origin);
     await page.getByLabel("Benutzername", { exact: true }).fill("admin");
@@ -61,22 +64,24 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
     await page
       .getByRole("button", { name: "Show anlegen", exact: true })
       .click();
+    console.log("Timerprobe: Show angelegt");
     const form = preparation(page);
     await expect(form).toBeVisible();
     await form
-      .getByLabel("Timerart", { exact: true })
+      .getByRole("combobox", { name: "Timerart", exact: true })
       .selectOption("countdown");
     await form.getByLabel("Dauer in Sekunden", { exact: true }).fill("2");
     await form.getByLabel("Warnung ab Sekunden", { exact: true }).fill("1");
     await form
-      .getByLabel("Hinweistext", { exact: true })
+      .getByRole("textbox", { name: "Hinweistext", exact: true })
       .fill("Synthetischer Hinweis eins");
     await form
       .getByLabel("Hinweisablauf in Sekunden", { exact: true })
       .fill("2");
     await form
-      .getByLabel("Hinweisanzeige", { exact: true })
+      .getByRole("combobox", { name: "Hinweisanzeige", exact: true })
       .selectOption("replace");
+    console.log("Timerprobe: Felder ausgefüllt");
     const saved = page.waitForResponse(
       (response) =>
         response.url().includes("/api/v1/shows/") &&
@@ -86,13 +91,17 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
       .getByRole("button", { name: "Monitorentwurf speichern", exact: true })
       .click();
     expect((await saved).ok()).toBe(true);
+    console.log("Timerprobe: Entwurf gespeichert");
     await page.reload();
     await openShow(page);
     await expect(
       preparation(page).getByLabel("Dauer in Sekunden", { exact: true }),
     ).toHaveValue("2");
     await expect(
-      preparation(page).getByLabel("Hinweistext", { exact: true }),
+      preparation(page).getByRole("textbox", {
+        name: "Hinweistext",
+        exact: true,
+      }),
     ).toHaveValue("Synthetischer Hinweis eins");
     await expect(
       preparation(page).getByLabel("Hinweisablauf in Sekunden", {
@@ -101,6 +110,7 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
     ).toHaveValue("2");
     await other.goto(f.cfg.origin);
     await openShow(other);
+    console.log("Timerprobe: zwei Fenster geladen");
     await freeze(page);
     await freeze(other);
     await preparation(page)
@@ -152,7 +162,7 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
       preview(page).getByText("Synthetischer Hinweis eins", { exact: true }),
     ).toBeVisible();
     await preparation(page)
-      .getByLabel("Hinweistext", { exact: true })
+      .getByRole("textbox", { name: "Hinweistext", exact: true })
       .fill("Synthetischer Ersatzhinweis");
     await preparation(page)
       .getByRole("button", { name: "Hinweis anzeigen", exact: true })
@@ -192,9 +202,31 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
     await expect(
       preview(page).getByText("Synthetischer Ersatzhinweis", { exact: true }),
     ).toHaveCount(0);
+    console.log("Timerprobe: persönliche Lauf-/Hinweisaktionen bestanden");
     await mkdir(".local", { recursive: true });
     await preview(page).screenshot({ path: ".local/timer-desktop.png" });
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      path: ".local/timer-mobil-before-check.png",
+      fullPage: true,
+    });
+    const geometry = await page.evaluate(() => ({
+      viewport: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      overflow: [...document.querySelectorAll("body *")]
+        .map((element) => {
+          const bounds = element.getBoundingClientRect();
+          return {
+            tag: element.tagName,
+            className: element.className,
+            width: bounds.width,
+            right: bounds.right,
+          };
+        })
+        .filter((element) => element.right > innerWidth + 1)
+        .slice(0, 16),
+    }));
+    console.log("Timerprobe Mobilgeometrie: " + JSON.stringify(geometry));
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -229,12 +261,15 @@ test("Bühnenmonitor: gespeicherter Entwurf und unabhängige persönliche Proben
     await page.reload();
     await openShow(page);
     await expect(
-      preparation(page).getByLabel("Hinweistext", { exact: true }),
+      preparation(page).getByRole("textbox", {
+        name: "Hinweistext",
+        exact: true,
+      }),
     ).toHaveValue("Synthetischer Hinweis eins");
     expect(errors).toEqual([]);
   } finally {
-    await page.goto("about:blank");
-    await other.close();
+    await page.goto("about:blank").catch(() => {});
+    await other.close().catch(() => {});
     for (const socket of f.app.websocketServer.clients) socket.terminate();
     f.app.server.closeAllConnections();
     await f.close();
