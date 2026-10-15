@@ -21,14 +21,15 @@ Ein Server, der noch mit Version 0.3.10 oder älter gestartet wurde, besitzt den
 
 ## Technik
 
-- Beim Start öffnet der Server nach dem HTTPS-Listener eine Windows Named Pipe mit zufälligem Namen und schreibt `run-state.json` (PID, Startzeit, Pipe, zufälliges 256-Bit-Token, Modus, Adresse) atomar in den privaten Datenordner `%LOCALAPPDATA%\ShowNight\local-server` (ACL: aktueller Benutzer und SYSTEM). Scheitert der Steuerkanal, wird der Server wieder geschlossen.
-- `stop` liest diesen Laufzustand, verbindet sich mit der Pipe und sendet das Token. Der Server antwortet, schließt Steuerkanal, HTTPS-Server, Renderer und Datenbanken und beendet sich. `stop` wartet auf das Ende der PID.
-- Es wird nie ein Prozess per PID beendet. Ein fremder Prozess, auch auf Port 3443, kennt weder Pipe noch Token und bleibt unberührt. Die Pipe ist nicht über das Netzwerk erreichbar; auch bei LAN-Einrichtung entsteht kein zusätzlicher Netzwerkzugang.
-- Der Laufzustand wird nur vom eigenen Prozess entfernt; ein veralteter Zustand (PID existiert nicht mehr) wird von `stop` erkannt und entfernt.
+- Beim Start öffnet der Server nach dem HTTPS-Listener einen Steuerkanal ausschließlich auf `127.0.0.1` mit zufälligem Port und schreibt `run-state.json` (PID, Startzeit, Port, zufälliges 256-Bit-Token, Modus, Adresse) atomar in den privaten Datenordner `%LOCALAPPDATA%\ShowNight\local-server` (ACL: aktueller Benutzer und SYSTEM). Scheitert das Schreiben, wird der Kanal wieder geschlossen und der Server beendet.
+- Loopback ist von anderen Rechnern nicht erreichbar, auch bei LAN-Einrichtung. Eine zunächst verwendete Windows Named Pipe wurde nach Review ersetzt, weil Node.js dafür weder `PIPE_REJECT_REMOTE_CLIENTS` noch eine eigene Zugriffsliste setzen kann. Gleichzeitige Verbindungen sind auf 8 begrenzt, jede Verbindung auf 3 Sekunden und 512 Byte.
+- `stop` liest den Laufzustand, verbindet sich mit dem Port und sendet das Token. Der Server antwortet, schließt Steuerkanal, HTTPS-Server, Renderer und Datenbanken und beendet sich. Nach 8 Sekunden werden verbliebene Verbindungen geschlossen, spätestens nach weiteren 2 Sekunden endet der Prozess. `stop` wartet bis zu 20 Sekunden auf das Ende der PID.
+- Es wird nie ein Prozess per PID beendet. Ein fremder Prozess, auch auf Port 3443, kennt weder Port noch Token und bleibt unberührt.
+- Der Laufzustand wird nur entfernt, wenn PID, Port und Startzeit noch zum erwarteten Start gehören; ein zwischenzeitlicher neuer Start bleibt sichtbar.
 
 ## Prüfungen
 
-- `tests/local-control.test.ts` (Linux und Windows): Start mit echtem Kindprozess, Laufzustand, geordneter Stopp mit Exitcode 0, entfernter Laufzustand, zweiter Stopp „läuft nicht“, erneuter Start; falsches Token beendet nichts; veralteter und unlesbarer Laufzustand; fremder Dienst ohne Laufzustand bleibt unberührt.
+- `tests/local-control.test.ts` (Linux und Windows): fehlgeschlagene Veröffentlichung hinterlässt keinen offenen Kanal, ersetzter Laufzustand bleibt erhalten; Start mit echtem Kindprozess, Laufzustand, geordneter Stopp mit Exitcode 0, entfernter Laufzustand, zweiter Stopp „läuft nicht“, erneuter Start; falsches Token beendet nichts; veralteter und unlesbarer Laufzustand; fremder Dienst ohne Laufzustand bleibt unberührt.
 - `tests/offline-integration.ts` (Windows-CI): gepacktes `main.js run` mit echtem HTTPS-Listener, `status-json`/`status` zeigen „läuft“, `stop` beendet mit Exitcode 0, Listener ist frei, Status „gestoppt“, zweiter Stopp „läuft nicht“, Konten erhalten, erneuter Start und Stopp.
 - `scripts/streaming-installer-test.mjs` (Windows-CI): Startmenüeintrag „Server stoppen“, `stop` ohne Server, Oberfläche mit gesperrter Stopp-Schaltfläche ohne laufenden Server, Update mit einem nicht zuordenbaren Prozess der eigenen Laufzeit wird abgebrochen, der Prozess bleibt unberührt und der Stoppversuch steht im Setup-Log.
 
