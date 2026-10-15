@@ -153,7 +153,7 @@
 
 ## D019 – Ticketshop S8-01: Bearbeitung durch Admin und Leitung
 
-- Status: vom Betreiber in der Claude-Unterhaltung ausgewählt; direkte Bestätigung des Betreibers in Issue #43 ausstehend
+- Status: bestätigt durch Betreiber in [Issue #43, Kommentar vom 15. Oktober 2026, 10:01 Uhr](https://github.com/SchapfeldNils/ShowNight-System/issues/43#issuecomment-6187406279); laut Betreiber selbst verfasst (Hinweis: Claude und Codex schreiben über dasselbe GitHub-Konto)
 - Datum: 15. Oktober 2026
 - Nachweis: Auf die Rückfrage „Wer darf im ersten Ticketshop-Paket Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung bearbeiten?“ wählte der Betreiber „Admin + Leitung“ statt „Neue Einzelrechte sofort“. Diese Unterhaltung ist für Codex nicht einsehbar; Git-Autorenschaft ist kein Nachweis.
 - Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung lesen und bearbeiten im ersten Ticketshop-Paket ausschließlich Systemadmin und Veranstaltungsleitung, mit bestehender MFA-Pflicht.
