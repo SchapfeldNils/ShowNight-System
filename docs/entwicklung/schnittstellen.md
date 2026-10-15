@@ -1,5 +1,7 @@
 # Schnittstellen und Zustandsprotokoll – Entwicklungsstart
 
+15. Oktober 2026, Issue #41: `GET/PUT /api/v1/shows/:id/timer-preparation`, PUT `{expectedRevision,preset}` unter bestehenden Showbearbeitungsrechten mit aktuellem Session-/MFA-/Origin-/CSRF-/Revisionsschutz. GET liefert Defaultrevision0 ohne Mutation. PUT gibt neue Timerrevision und vorherige/neue Showrevision zurück. Nur gespeicherte Vorbereitung; persönliche Browserprobe besitzt keine gemeinsamen Befehle/Livezustände. Kein Offlineexport. [Vertrag/Grenzen](stage-timer-vorbereitung.md).
+
 S3-Szenenkomposition (14. Oktober 2026): Admin-Diagnoseauftrag `prepare-scene` referenziert nur Paket/Szene. Server bindet Manifest-/Szenenrevision und übergibt höchstens 1 MiB großen gehashten UUID-Dateisnapshot; IPC bleibt auf 16 KiB begrenzt. `packageScenesSupported` und `packageScene` kennzeichnen Fähigkeit/geladenen Stand. Keine neue GO-/Live-/Rechtearchitektur. [Vertrag und Grenzen](s3-native-szenen.md).
 
 S3-06: GET/POST /api/v1/shows/:id/scenes, POST/PATCH/DELETE /api/v1/scenes/:id/lease, PATCH /api/v1/scenes/:id. Bestehende Show-/Medienrechte, Origin/CSRF, eigene Szenenrevision und 90-Sekunden-Lease mit Token/Sitzung; Heartbeat 20 Sekunden. Manifestversion 2 trägt scenes und cue.sceneId, v1 weiter lesbar. Keine neue native Nachricht, Liveaktivierung oder Show-GO. [Schemas/Bedienung/Grenzen](s3-szenenentwuerfe.md).

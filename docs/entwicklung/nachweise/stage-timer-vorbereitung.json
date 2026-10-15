@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-15",
+  "issue": "https://github.com/SchapfeldNils/ShowNight-System/issues/41",
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/42",
+  "base": "e183cf591d9e64e05f059d10d0faff69dfc9d0a3",
+  "runtimeCommit": "890779bf3cc5d5a2b78c106d7d6af7e44cef7724",
+  "status": "complete; ready for review; not merged or deployed",
+  "local": {
+    "typecheck": "passed",
+    "build": "passed",
+    "unitTests": {
+      "passed": 55,
+      "failed": 0,
+      "includesTimerCore": 4
+    },
+    "timerPostgres": {
+      "passed": 6,
+      "failed": 0
+    },
+    "scenesPackagesPostgres": {
+      "passed": 5,
+      "failed": 0
+    },
+    "browser": "passed 1/1: persistence, two independent probes, pause/resume/correction/overrun/hints/expiry/conflict; width390=scrollWidth390",
+    "environment": "Windows x64, Node24.19.0, isolated PostgreSQL17.9 and Chromium",
+    "initialRestrictedRun": "socket test timeout under restricted sandbox; full identical suite passed with required host access"
+  },
+  "independentReview": {
+    "reviewer": "non-implementing netcup_github_audit",
+    "code": "complete; no confirmed P0-P2 findings",
+    "finalEvidence": "complete; exact commit/CI/images/limits independently checked; no confirmed findings"
+  },
+  "ci": {
+    "installer": 38686648112,
+    "status": "success",
+    "targetSchema": 7,
+    "sourceSchema": 6,
+    "s1": 38686648083,
+    "rollbackSchema": 6,
+    "runtime": "890779bf3cc5d5a2b78c106d7d6af7e44cef7724",
+    "native": 38686648053,
+    "rehearsal": 38686648107
+  },
+  "limits": {
+    "productionChanged": false,
+    "hardwareOutput": false,
+    "mailSent": false,
+    "sharedLiveTimer": false,
+    "offlineTransfer": false,
+    "targetClockTime": false,
+    "fullF20A10Acceptance": false,
+    "personalPreviewOnly": true
+  },
+  "initialCi": {
+    "runtime": "0a409c072986dd2855b10462e408de8c640e2df3",
+    "installer": "success",
+    "targetSchema": 7,
+    "rollbackSchema": 6,
+    "s1": "failed at browser; label locators corrected and mobile header overflow independently found/fixed",
+    "rehearsal": "success",
+    "sourceSchema": 6
+  }
+}

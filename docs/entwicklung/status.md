@@ -4,11 +4,18 @@
 
 - **Produktiv auf Netcup:** Runtime `f232483` (Merge PR #38), Datenbankschema 6, Kontofunktionen und E-Mail-Passwortreset; Mailversand aktiv. Durchführung und Grenzen: [online-produktivupdate.md](online-produktivupdate.md).
 - **In `main`:** S1-Onlineserver, S2-Windows-Agent sowie alle S3-Bausteine (Paketablage, Offlinekonten/MFA, LAN, Renderer, Paketmedien, Szenenentwürfe, Erststart, Serverübersicht, lokale Technikrechte, native Szenen) und die Sicherungshärtung. Die Einzel-PRs wurden über PR #37/#38 zusammengeführt und danach geschlossen.
-- **Offen als PR:** [#42 Stage-Timer-Vorbereitung](https://github.com/SchapfeldNils/ShowNight-System/pull/42) mit Migration 7, nicht gemergt, nicht produktiv.
-- **Fachlich offen:** Ticketshop (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), Szeneneditor (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
+- **In `main`, nicht produktiv:** Stage-Timer-Vorbereitung ([PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), gemergt als `c24d2cf`, Migration 7). Netcup läuft weiter auf Schema 6; ein Produktivupdate braucht eine eigene Freigabe.
+- **Offen als PR:** [#49 Ticketshop S8-01](https://github.com/SchapfeldNils/ShowNight-System/pull/49) mit Migration 8, Review durch Codex läuft.
+- **Fachlich offen:** Ticketshop über S8-01 hinaus (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), Szeneneditor (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
 - Lokale Installation: Setup 0.3.8 (Stand Issue #24). Neuere Setups 0.3.9/0.3.10 wurden gebaut und hashgeprüft, aber nicht installiert.
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
+
+## Stage-Timer-Vorbereitung vor dem Merge (PR #42) – 15. Oktober 2026
+
+Abschluss lokaler Umsetzung: Code `890779b` in [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), Typen/Build, Units55/55, Timer-PostgreSQL6/6, Szenen/Pakete5/5 und echter Timerbrowser1/1 bestanden. Mobiler Showheaderüberlauf behoben und bei390px erneut geprüft; Code und Fix unabhängig ohne bestätigte Befunde geprüft. Alle vier abschließenden CI-Workflows am neuen Code vollständig erfolgreich. Finaler unabhängiger Nachweisreview ohne bestätigte Befunde. PR reviewbereit; kein Merge/Produktivupdate. [Abschluss-/Übergabestand und Screenshots](stage-timer-vorbereitung.md). Ticketshopumfang jetzt zusätzlich in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) dokumentiert.
+
+Manuell fortgesetzt nach Betreiberauftrag, reguläres Kontingent verfügbar; keine bezahlte Fortsetzung autorisiert. Auf main `e183cf5` eigener Branch `codex/stage-timer-preparation`, [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41). Gespeicherter Bühnenmonitorentwurf je Show und persönliche stumme Browserprobe werden implementiert/geprüft. Kein gemeinsamer Live-Timer auf Netcup, kein Offlineexport oder Produktivupdate. Backend, eigenständige Tests und nicht implementierender Review sind getrennt zugeordnet. [Ablauf und Grenzen](stage-timer-vorbereitung.md). Softwareissues #31/#36 mit Nachweisen geschlossen; #3 bleibt für regelmäßigen Sicherungsbetrieb offen. Automatische Fortsetzung bleibt pausiert.
 
 ## Produktivstand – 15. Oktober 2026
 

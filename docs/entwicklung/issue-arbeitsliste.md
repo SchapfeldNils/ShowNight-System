@@ -1,6 +1,6 @@
 # Offene Arbeit und Issue-Stand
 
-Abgeglichen mit GitHub am 15. Oktober 2026 (nach Merge PR #38, #39, #40 und Issue-Aufräumen). Frühere Momentaufnahmen dieser Liste stehen unverändert in [historie.md](historie.md).
+Abgeglichen mit GitHub am 15. Oktober 2026 (nach Merge PR #38–#40, #42 und Issue-Aufräumen). Frühere Momentaufnahmen dieser Liste stehen unverändert in [historie.md](historie.md).
 
 ## Nächste sichtbare Lieferungen
 
@@ -10,19 +10,20 @@ Betreiberpriorität vom 15. Oktober 2026: zuerst sichtbare, benutzbare Online-Fu
 | --- | --- | --- |
 | Konto / Abmelden / Passwort | In `main` (PR #38) und produktiv auf Schema 6 (PR #39) | Erledigt als Software; persönliche Bedienprobe durch Betreiber |
 | E-Mail / Passwort vergessen | In `main` und produktiv, Mailversand aktiv, SMTP-Anmeldung geprüft | Eigene Adresse bestätigen und echte Zustellung einmal nachweisen |
-| Stage Timer F20/A10 – Vorbereitung | [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42) offen (Migration 7), CI grün laut PR | Review und Merge durch Betreiber, danach eigenes Produktivupdate Schema 7 |
+| Stage Timer F20/A10 – Vorbereitung | [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42) gemergt (`c24d2cf`, Migration 7), nicht produktiv | Produktivupdate nur mit eigener Freigabe |
 | Stage Timer – Live-Bühnenanzeige | Offen, [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41) | Gemeinsamer Livezustand, GO/Zieluhrzeit, echte Bühnenabnahme |
-| Ticketshop F38–F43/A24–A27 | Offen, [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) | Erstes sichtbares Fachpaket nach Merge des Stage-Timer-PR |
+| Ticketshop F38–F43/A24–A27 | S8-01 (Ticketarten, Preise, Kontingente, Verkaufszeiten) in [PR #49](https://github.com/SchapfeldNils/ShowNight-System/pull/49), Review durch Codex; Rest offen in [#43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) | Review/Korrektur, danach Merge-Entscheidung |
 | Regelmäßige Sicherung | Software in `main`; kein regelmäßiger Job, kein unabhängiges Ziel ([Issue #3](https://github.com/SchapfeldNils/ShowNight-System/issues/3)) | Providerbackup klären, Ziel/Zeitplan/Retention festlegen, echten Restore nachweisen |
 
 ## Pull Requests
 
 | PR | Stand |
 | --- | --- |
-| #2 (S1), #5 (S2), #38 (Zusammenführung), #39 (Produktivupdate-Doku), #40 (historische Nachweise) | Gemergt |
+| #2 (S1), #5 (S2), #38 (Zusammenführung), #39 (Produktivupdate-Doku), #40 (historische Nachweise), #42 (Stage-Timer-Vorbereitung) | Gemergt |
 | #7, #9, #11, #13, #16, #18, #21, #25, #28, #30, #22, #35, #34, #37 | Geschlossen ohne eigenen Merge – Inhalt über PR #38 (bzw. #37 → #38) in `main` übernommen |
 | #14, #19 (lokale GPU-KI), #23, #26 | Geschlossen ohne Merge; #23 und #34 als Nachweise über PR #40 erhalten, #26 überholt |
-| #42 Stage Timer | **Offen** |
+| #47 Doku-Bereinigung, #49 Ticketshop S8-01, #50 Zusammenarbeit | **Offen** |
+| #48 S8-01-Spezifikation | Offen, inhaltlich in #49 enthalten; Schließen empfohlen |
 
 ## Offene Issues
 

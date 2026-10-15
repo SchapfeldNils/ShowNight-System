@@ -92,3 +92,9 @@ Softwareänderungen je eigenem Branch/PR, keine eigenständigen Merges, keine pa
 Zusätzliche normale Windows-DNS-/HTTPS-Prüfung: öffentliche Systemdomain über IPv4/IPv6 aufgelöst, Readiness ohne Prozess-IP-Vorgabe und mit vollständiger TLS-Prüfung 200/Schema 4. Kein Server-/DNS-/Hostswechsel durch diese Arbeit. Echter Agentstart/WSS-Nachweis bleibt offen. Frühere Angaben zu Schema 2 beschreiben historische Teilstände. Die Herkunft des aktuellen produktiven Images wurde in dieser Nachprüfung nicht erhoben.
 
 Issue #20: vollständige CI und lokal hashgeprüftes Setup 0.3.7 jetzt in [Erststartnachweis](s3-erster-start.md) dokumentiert.
+
+## Aus der Issue-Arbeitsliste (Stand vor Merge PR #42)
+
+Aktualisierung 15. Oktober 2026: Gemeinsame Basis samt Konto/E-Mail über PR #38 gemergt; freigegebener Schema-6-Produktivwechsel über PR #39 dokumentiert und gemergt. Kein alter PRstau. #31 (Workerclaims) und #36 (Releaseprüfung) nach unabhängiger Nachweiskontrolle geschlossen. #3 bleibt für regelmäßige Sicherung/Verwahrung/Überwachung offen. Nächste Umsetzung [#41 Timer-/Hinweisvorbereitung](https://github.com/SchapfeldNils/ShowNight-System/issues/41) mit persönlicher Browserprobe; kein Hardware-/Liveabschluss. Frühere Tabellen unten sind historische Lieferstände.
+
+15\. Oktober 2026. Betreiber priorisiert einen sichtbaren Onlineablauf und autorisiert geeignete Merges. Keine weitere lokale Fachentwicklung vor diesem Lieferpunkt.

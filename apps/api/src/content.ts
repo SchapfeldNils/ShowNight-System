@@ -566,6 +566,19 @@ export function contentRoutes(app: FastifyInstance, db: DB, cfg: Config) {
         "INSERT INTO show_media(show_id,media_id) SELECT $1,media_id FROM show_media WHERE show_id=$2",
         [s.id, source.id],
       );
+      const copiedTimer = (
+        await c.query(
+          "INSERT INTO timer_preparations(show_id,preset,created_by,updated_by) SELECT $1,preset,$3,$3 FROM timer_preparations WHERE show_id=$2 RETURNING *",
+          [s.id, source.id, req.actor.id],
+        )
+      ).rows[0];
+      if (copiedTimer)
+        await remember(
+          c,
+          "timer-preparation",
+          { ...copiedTimer, id: s.id },
+          req.actor.id,
+        );
       for (const original of sourceScenes) {
         const definition = sceneRecord.shape.definition.parse(
           original.definition,

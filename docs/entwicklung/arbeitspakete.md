@@ -1,5 +1,7 @@
 # Entwicklungsplan – Server zuerst, danach Agenten
 
+15. Oktober 2026: [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41), nächstes sichtbares Onlinepaket: gespeicherte Timer-/Hinweisvorbereitung pro Show und persönliche stumme Browserprobe. Vorhandene Vorbereitungsrechte, Revisionen und unabhängige Showkopie; keine neuen Live-/Ausfallregeln. F20/A10 nur teilweise adressiert. [Ablauf und Grenzen](stage-timer-vorbereitung.md); Status/Prüfungen während Umsetzung führen. Ticketshop und vollständiger lokaler Showbetrieb bleiben Folgepakete.
+
 S3-08, 14. Oktober 2026: [lokale Serverübersicht/Windows-Inventar](s3-serveruebersicht.md), [Issue #24](https://github.com/SchapfeldNils/ShowNight-System/issues/24), [PR #25](https://github.com/SchapfeldNils/ShowNight-System/pull/25). Grafischer Launcher und geschützte Webdiagnose; drei Subagents für Startup/UI/IO. Keine Gerätezuordnung/-ausgabe oder geänderte Rechte. Praktische Hardwareabnahme bleibt offen.
 
 S3-06, 14. Oktober 2026: gespeicherte showbezogene Szenenentwürfe mit eigener Revision, exklusiver Sitzungssperre, Text/Rechteck/Bild, Einsatzreferenz, unabhängiger Kopie und Paket-v2-Übertragung. [Issue #17](https://github.com/SchapfeldNils/ShowNight-System/issues/17), [Ablauf/Grenzen](s3-szenenentwuerfe.md). Erster Gestaltungs-/Datenbaustein; native Szenenkomposition, vollständiger Konva-Editor und S4-Showablauf bleiben nachfolgende Arbeiten.
