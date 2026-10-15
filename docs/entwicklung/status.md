@@ -1,3 +1,7 @@
+# Produktivstand – 15. Oktober 2026
+
+Nach ausdrücklicher Betreiberfreigabe gemeinsame Runtime `f232483` tatsächlich auf Netcup bereitgestellt, öffentliche HTTPS-Readiness Schema 6. Frisches konsistentes Backup, verschlüsselte Windows-Kopie samt Entschlüsselungsprüfung und isolierter Schema4-Restore/Schema6-Migration mit Bestandsvergleich bestanden. Originalvolumes und altes Image erhalten. Kontomailversand aktiv, SMTP-TLS/Anmeldung aus Worker bestätigt; tatsächliche Zustellung und gewünschter Passwortreset warten noch auf persönliche Adressbestätigung. Kein Passwort-/MFA-Bypass. [Wartungsprotokoll und Grenzen](online-produktivupdate.md). Frühere Aussagen „noch nicht bereitgestellt“ unten sind historische Stände.
+
 # Aktueller Abschlussnachweis – 15. Oktober 2026
 
 Die [Schema-2→4-Durchführung und der lokale MFA-Erststart vom 14. Oktober](s3-netcup-durchfuehrung-20261014.md) sowie die [isolierte Medienworker-Claimkorrektur vom 15. Oktober](netcup-worker-claims.md) sind als datierte Nachweise aus PR #23 und #34 erhalten. Ihre damaligen Betriebs- und Übergabeangaben sind keine aktuellen Freigaben. Die Worker-Korrektur und ihr Regressionstest wurden über PR #37 in den gemeinsamen Stand übernommen; die alten PR-Branches sind keine zusätzlichen Updatekandidaten.
