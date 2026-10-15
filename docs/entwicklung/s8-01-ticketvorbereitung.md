@@ -80,8 +80,9 @@ Saalplan und Plätze, Holds, Bestellungen, Gastshop, Gruppen, Reservierungen, Za
 
 Wird nach jeder Korrekturrunde an den exakt geprüften Commit gebunden; ältere Ergebnisse gelten nicht für neue Commits.
 
-- Branch `claude/s8-01-ticketvorbereitung`, PR #49, tatsächliche Basis `codex/stage-timer-preparation` (PR #42, Migration 007). Umstellung auf `main` erst nach Entscheidung zu #42.
+- Branch `claude/s8-01-ticketvorbereitung`, PR #49, Basis `main` (nach Merge von #42 ausdrücklich umgestellt).
 - Korrekturrunde 1 nach Review 5529610473: Sitzung/Konto/Rechte werden nach der Eventsperre neu geladen; nicht existierende Berliner Uhrzeiten werden abgelehnt, doppelte Uhrzeiten verlangen eine Auswahl, unveränderte Zeitpunkte bleiben exakt erhalten; Preisgruppierung wird vor dem Entfernen der Punkte geprüft; Bearbeitungsentwürfe bleiben bei 409 erhalten und Speichern ist erst nach bewusster Entscheidung („Meine Fassung beibehalten“ / „Aktuellen Stand übernehmen“) möglich; doppelter D018-Eintrag entfernt.
+- Korrekturrunde 2 nach Review 5530223214 (Codex bestätigte Runde 1): Unveränderte Zeitpunkte bleiben exakt erhalten, auch mit Sekunden und bei doppelter Uhrzeit, solange die Zeitumstellungsauswahl nicht geändert wird; Vorbelegung der Auswahl minutengenau. Datenmodell, Schnittstellen, Status und Arbeitsliste nachgetragen; Basis jetzt `main` nach #42/#47/#50.
 - Ergebnisse: siehe PR #49, Kommentar zum jeweiligen Head.
 
 ## Grenzen

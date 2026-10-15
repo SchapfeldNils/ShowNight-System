@@ -329,22 +329,28 @@ function SettingsForm({
     Object.fromEntries(
       timeFields.map(([key]) => {
         const candidates = berlinLocalCandidates(isoToBerlinLocal(s[key]));
-        const stored = s[key] ? new Date(s[key]!).toISOString() : "";
-        const index = candidates.findIndex(
-          (c) => new Date(c).getTime() === Date.parse(stored),
-        );
+        // Minutengenau vergleichen: gespeicherte Sekunden ändern die Zuordnung nicht.
+        const minute = (iso: string) => Math.floor(Date.parse(iso) / 60000);
+        const index = s[key]
+          ? candidates.findIndex((c) => minute(c) === minute(s[key]!))
+          : -1;
         return [key, index === 0 ? "first" : index === 1 ? "second" : ""];
       }),
     ) as Record<TimeKey, DstChoice>;
   const [form, setForm] = useState(() => fromSettings(settings));
   const [choices, setChoices] = useState(() => choicesFrom(settings));
   const [base, setBase] = useState(settings);
+  // Review PR #49: ausdrücklich geänderte Zeitumstellungsauswahl je Feld.
+  const [choiceTouched, setChoiceTouched] = useState<Set<TimeKey>>(
+    () => new Set(),
+  );
   const [dirty, setDirty] = useState(false);
   const [problem, setProblem] = useState("");
   useEffect(() => {
     if (dirty) return;
     setForm(fromSettings(settings));
     setChoices(choicesFrom(settings));
+    setChoiceTouched(new Set());
     setBase(settings);
   }, [settings.revision, dirty]);
   const conflict = dirty && settings.revision !== base.revision;
@@ -356,6 +362,15 @@ function SettingsForm({
   function instant(key: TimeKey, label: string): string | null | Error {
     const value = form[key];
     if (!value) return null;
+    // Review PR #49: unveränderte Felder behalten ihren gespeicherten Zeitpunkt exakt
+    // (auch Sekunden und doppelte Uhrzeiten), solange die Auswahl nicht geändert wurde.
+    const original = base[key];
+    if (
+      original &&
+      value === isoToBerlinLocal(original) &&
+      !choiceTouched.has(key)
+    )
+      return original;
     const candidates = berlinLocalCandidates(value);
     if (candidates.length === 0)
       return new Error(
@@ -368,8 +383,6 @@ function SettingsForm({
         );
       return candidates[choices[key] === "first" ? 0 : 1];
     }
-    const original = base[key];
-    if (original && value === isoToBerlinLocal(original)) return original;
     return candidates[0];
   }
   return (
@@ -428,6 +441,7 @@ function SettingsForm({
                   value={choices[key]}
                   onChange={(e) => {
                     setDirty(true);
+                    setChoiceTouched((current) => new Set(current).add(key));
                     setChoices((current) => ({
                       ...current,
                       [key]: e.target.value as DstChoice,

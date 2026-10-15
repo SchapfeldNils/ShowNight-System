@@ -302,7 +302,7 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor â€
     ).toHaveText("9,50 â‚¬");
     console.log("Ticketprobe: Neuladen erhÃ¤lt den Stand");
 
-    // Review #49: doppelte Uhrzeit bleibt beim unverÃ¤nderten Speichern exakt erhalten, LÃ¼cke wird abgelehnt.
+    // Review #49: doppelte Uhrzeit (mit Sekunden) bleibt beim Speichern eines anderen Felds exakt erhalten, LÃ¼cke wird abgelehnt.
     const events = (await call(page, "/events")).json as any[];
     const eventId = events.find(
       (e) => e.name === "Synthetische Ticketnacht",
@@ -314,7 +314,7 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor â€
       saleStartsAt: stored.saleStartsAt,
       saleEndsAt: stored.saleEndsAt,
       maxTicketsPerOrder: stored.maxTicketsPerOrder,
-      admissionAt: "2026-10-25T00:30:00.000Z",
+      admissionAt: "2026-10-25T00:30:15.000Z",
       startsAt: stored.startsAt,
     });
     expect(ambiguous.status).toBe(200);
@@ -336,7 +336,7 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor â€
     await save(dst, "Verkaufszeiten speichern");
     await expect(page.getByText("Verkaufszeiten gespeichert.")).toBeVisible();
     const unchanged = (await call(page, ticketsPath)).json.settings;
-    expect(unchanged.admissionAt).toBe("2026-10-25T00:30:00.000Z");
+    expect(unchanged.admissionAt).toBe("2026-10-25T00:30:15.000Z");
     expect(unchanged.maxTicketsPerOrder).toBe(7);
     await dst
       .getByLabel("Verkaufsbeginn", { exact: true })
