@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-15",
+  "issue": 31,
+  "pullRequest": "https://github.com/SchapfeldNils/ShowNight-System/pull/34",
+  "branch": "codex/netcup-media-worker-claims",
+  "baseCommit": "cd71423d2757989c342b6b2d54e4f47cd5e348d1",
+  "runtimeCommit": "dd28868da5d483df85a43dda85809e0d16d78ce4",
+  "scope": "F12/F28; partial S1-07/A04",
+  "local": {
+    "environment": "Windows x64, Node 24.19.0, isolated PostgreSQL 17.9, real FFprobe/FFmpeg",
+    "typecheck": "passed",
+    "build": "passed",
+    "units": {
+      "passed": 3,
+      "failed": 0
+    },
+    "coreIntegration": {
+      "passed": 14,
+      "failed": 0,
+      "includes": "real database/media restore, rights/MFA, mail test mode, WSS, database failure"
+    },
+    "claimRegression": {
+      "passed": 11,
+      "failed": 0,
+      "databasePort": 55442,
+      "coordination": "barriers after real PostgreSQL claim query; SQL lease expiry; no sleeps or fake database results",
+      "beforeFix": "4 control cases passed; 6 race/status subcases and their parent failed"
+    }
+  },
+  "independentReview": {
+    "reviewer": "non-implementing subagent netcup_github_audit",
+    "scope": "complete eight-file implementation/test/CI/documentation diff",
+    "status": "complete; no confirmed findings",
+    "remainingConfirmedFindings": 0
+  },
+  "ci": {
+    "runId": 38647319730,
+    "status": "success",
+    "architectures": [
+      "amd64",
+      "arm64"
+    ],
+    "jobs": {
+      "amd64": 116137303636,
+      "arm64": 116137303907
+    }
+  },
+  "limits": [
+    "No production, local installation, device, mail or merge action",
+    "S1 image with migrations 001/005 cannot directly replace the full production schema-4 stack",
+    "Integrate this correction into the full release branch, then prove isolated restore/migration/rollback before operator approval",
+    "Do not run old unfenced and corrected workers together in a future release",
+    "No heartbeat or lease-duration change; unreclaimed expired claims may finish as before",
+    "No full event/hardware acceptance"
+  ],
+  "next": "Issue #3: atomic backup publication and private password-file validation before maintenance"
+}
