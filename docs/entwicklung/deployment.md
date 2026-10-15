@@ -166,4 +166,6 @@ Migration prüfen, Testinstanz starten, Benutzer/MFA/Eventrechte/Shows/Dateirefe
 
 ### 7. Update und Rückkehr
 
+Konkretes nächstes Update (Schema 6 → 8: Stage Timer, Ticketvorbereitung, Softwareupdates): [netcup-update-schema8.md](netcup-update-schema8.md).
+
 Vor Update Backup und isolierten Restore nachweisen. Geprüften neuen Image-Tag setzen, Dienste des eigenen Stacks stoppen, Migration bewusst ausführen, app/worker starten und Readiness/Browserfluss prüfen. In S1 existiert nur Migration 1; keine unbelegte Downmigration. Bei unverändertem Schema früheres Image starten; nach zukünftigen inkompatiblen Migrationen isolierte DB-/Medienwiederherstellung und bewusstes Umschalten statt blindem Image-Rollback. Während späteren Liveveranstaltungen keine automatischen Updates.
