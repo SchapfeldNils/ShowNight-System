@@ -94,3 +94,94 @@
   border: 1px solid #657385;
   margin: 12px 0;
 }
+/* Showablauf Paket 1 (#45) – vorläufige Gestaltung */
+.live-simulation {
+  border: 2px dashed #f3d27a;
+  color: #f3d27a;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.live-foreign {
+  border-left: 4px solid #8fb8ff;
+  padding: 6px 12px;
+  background: #1c2433;
+}
+.live-ok {
+  color: #cded84;
+}
+.live-stand,
+.live-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: end;
+}
+.live-confirm {
+  border: 1px solid #f3d27a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+.live-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+}
+.live-panel {
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 0;
+}
+.live-panel h4 {
+  margin: 0 0 8px;
+}
+.live-next {
+  border-color: #cded84;
+}
+.live-big {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 4px 0;
+}
+.live-go {
+  font-size: 1.3rem;
+  padding: 16px 28px;
+  width: 100%;
+}
+.live-cues {
+  padding-left: 1.4em;
+}
+.live-cues li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  margin: 6px 0;
+}
+.live-cues li button {
+  margin: 0;
+}
+.live-cues li.disabled button {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+.live-cues li.next button {
+  outline: 2px solid #cded84;
+}
+.live-cues li.on-air button {
+  outline: 2px solid #ff8a8a;
+}
+.live-tags span {
+  border: 1px solid #4a5568;
+  border-radius: 10px;
+  padding: 1px 8px;
+  margin-right: 6px;
+  font-size: 12px;
+}
+.live-history {
+  max-height: 260px;
+  overflow: auto;
+  font-size: 13px;
+}
