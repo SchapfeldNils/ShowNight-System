@@ -11,6 +11,10 @@
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
 
+## Ticketshop S8-01 (PR #49) – 15. Oktober 2026
+
+Umsetzung Claude, unabhängiger Review Codex. Korrekturrunde 1 (`9015e10`): Actor nach Eventsperre neu geladen, DST-Lücken/-Dopplungen, Preisgruppierung, Entwürfe bei 409, doppelter D018 – von Codex am `7f94d1c` als behoben bestätigt (inkl. eigener Warte-/Widerrufsprobe). Korrekturrunde 2: unveränderte Zeitpunkte mit Sekunden bleiben auch bei doppelter Uhrzeit exakt erhalten; Datenmodell/Schnittstellen nachgetragen; Abgleich mit `main` nach #47/#50. CI und erneute Prüfung werden im PR an den abschließenden Head gebunden. Kein Merge, kein Produktivupdate. [Spezifikation, Umsetzungsstand, Grenzen](s8-01-ticketvorbereitung.md).
+
 ## Stage-Timer-Vorbereitung vor dem Merge (PR #42) – 15. Oktober 2026
 
 Abschluss lokaler Umsetzung: Code `890779b` in [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), Typen/Build, Units55/55, Timer-PostgreSQL6/6, Szenen/Pakete5/5 und echter Timerbrowser1/1 bestanden. Mobiler Showheaderüberlauf behoben und bei390px erneut geprüft; Code und Fix unabhängig ohne bestätigte Befunde geprüft. Alle vier abschließenden CI-Workflows am neuen Code vollständig erfolgreich. Finaler unabhängiger Nachweisreview ohne bestätigte Befunde. PR reviewbereit; kein Merge/Produktivupdate. [Abschluss-/Übergabestand und Screenshots](stage-timer-vorbereitung.md). Ticketshopumfang jetzt zusätzlich in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) dokumentiert.

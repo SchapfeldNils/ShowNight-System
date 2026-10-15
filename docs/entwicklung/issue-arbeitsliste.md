@@ -22,8 +22,9 @@ Betreiberpriorität vom 15. Oktober 2026: zuerst sichtbare, benutzbare Online-Fu
 | #2 (S1), #5 (S2), #38 (Zusammenführung), #39 (Produktivupdate-Doku), #40 (historische Nachweise), #42 (Stage-Timer-Vorbereitung) | Gemergt |
 | #7, #9, #11, #13, #16, #18, #21, #25, #28, #30, #22, #35, #34, #37 | Geschlossen ohne eigenen Merge – Inhalt über PR #38 (bzw. #37 → #38) in `main` übernommen |
 | #14, #19 (lokale GPU-KI), #23, #26 | Geschlossen ohne Merge; #23 und #34 als Nachweise über PR #40 erhalten, #26 überholt |
-| #47 Doku-Bereinigung, #49 Ticketshop S8-01, #50 Zusammenarbeit | **Offen** |
-| #48 S8-01-Spezifikation | Offen, inhaltlich in #49 enthalten; Schließen empfohlen |
+| #47 Doku-Bereinigung, #50 Zusammenarbeit | Gemergt |
+| #49 Ticketshop S8-01 | **Offen**, im Review |
+| #48 S8-01-Spezifikation | Geschlossen ohne Merge, Inhalt in #49 |
 
 ## Offene Issues
 
