@@ -1650,6 +1650,7 @@ function ShowEditor({
 }) {
   const [s, setS] = useState(initial),
     [media, setMedia] = useState<MediaRecord[]>([]),
+    [mediaLoaded, setMediaLoaded] = useState(false),
     [team, setTeam] = useState(""),
     [error, setError] = useState("");
   const [scenes, setScenes] = useState<SceneRecord[]>([]),
@@ -1658,6 +1659,7 @@ function ShowEditor({
   const load = async () => {
     try {
       setMedia(await api("/media?" + scope));
+      setMediaLoaded(true);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -1706,6 +1708,7 @@ function ShowEditor({
         ownerId={ownerId}
         canEdit={s.canEdit}
         media={media}
+        mediaLoaded={mediaLoaded}
         api={api}
         onScenes={setScenes}
         onEditing={setSceneEditing}

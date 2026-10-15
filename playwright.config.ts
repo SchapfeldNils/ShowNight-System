@@ -5,7 +5,12 @@ export default defineConfig({
   workers: 1,
   timeout: 60000,
   retries: 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  // In CI zusätzlich GitHub-Annotationen, damit Fehler direkt am PR lesbar sind.
+  reporter: [
+    ["list"],
+    ["html", { open: "never" }],
+    ...(process.env.CI ? [["github"] as ["github"]] : []),
+  ],
   use: {
     baseURL: "http://localhost:3000",
     headless: true,
