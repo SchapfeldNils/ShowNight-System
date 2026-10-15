@@ -29,6 +29,10 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
   const saved = () =>
     expect(page.getByText(/Server gespeichert · Szenenrevision/)).toBeVisible();
   const centre = async (page: Page, selector: string) => {
+    // Mouse coordinates are viewport-relative: bring the canvas into view first.
+    await page
+      .locator(".scene-stage .scene-sketch")
+      .evaluate((el) => el.scrollIntoView({ block: "center" }));
     const box = (await page.locator(selector).boundingBox())!;
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   };
