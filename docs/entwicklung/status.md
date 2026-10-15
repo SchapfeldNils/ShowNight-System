@@ -4,10 +4,10 @@
 
 - **Produktiv auf Netcup:** Runtime `f232483` (Merge PR #38), Datenbankschema 6, Kontofunktionen und E-Mail-Passwortreset; Mailversand aktiv. Durchführung und Grenzen: [online-produktivupdate.md](online-produktivupdate.md).
 - **In `main`:** S1-Onlineserver, S2-Windows-Agent sowie alle S3-Bausteine (Paketablage, Offlinekonten/MFA, LAN, Renderer, Paketmedien, Szenenentwürfe, Erststart, Serverübersicht, lokale Technikrechte, native Szenen) und die Sicherungshärtung. Die Einzel-PRs wurden über PR #37/#38 zusammengeführt und danach geschlossen.
-- **In `main`, nicht produktiv:** Stage-Timer-Vorbereitung ([PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), gemergt als `c24d2cf`, Migration 7). Netcup läuft weiter auf Schema 6; ein Produktivupdate braucht eine eigene Freigabe.
-- **Offen als PR:** [#49 Ticketshop S8-01](https://github.com/SchapfeldNils/ShowNight-System/pull/49) mit Migration 8, Review durch Codex läuft.
-- **Nächstes Produktivupdate:** vorbereitet in [netcup-update-schema8.md](netcup-update-schema8.md) (Schema 6 → 8), Ausführung durch Codex nach Merges und Betreiberfreigabe.
-- **Fachlich offen:** Ticketshop über S8-01 hinaus (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), Szeneneditor (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
+- **In `main`, nicht produktiv:** Stage-Timer-Vorbereitung ([PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), Migration 7), Szeneneditor Paket 1 ([PR #55](https://github.com/SchapfeldNils/ShowNight-System/pull/55), gemergt als `0834409`, keine Migration) und Renderer-CI-Caches (#57). Netcup läuft weiter auf Schema 6; ein Produktivupdate braucht eine eigene Freigabe.
+- **Offen als PR (Stand GitHub 15.10.):** #49 Ticketshop S8-01 (Migration 8), #51 Server stoppen, #52 Softwareupdates, #56 Showablauf als Simulation (D021 offen), #53 diese Updateanleitung, #58 CI-Diagnose.
+- **Nächstes Produktivupdate:** Anleitung (PR #53, nicht ausgeführt) [netcup-update-schema7.md](netcup-update-schema7.md) für Schema 6 → 7 (Stage-Timer-Vorbereitung, Szeneneditor). Ausführung durch Codex nur nach Betreiberfreigabe von Zielcommit, Image und Wartungsfenster.
+- **Fachlich offen:** Ticketshop über S8-01 hinaus (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), weitere Szeneneditor-Pakete (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
 - Lokale Installation: Setup 0.3.8 (Stand Issue #24). Neuere Setups 0.3.9/0.3.10 wurden gebaut und hashgeprüft, aber nicht installiert.
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
