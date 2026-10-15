@@ -1,6 +1,6 @@
 # Fachliches Datenmodell – erster Showablauf
 
-15. Oktober 2026, Issue #41: Migration007 `timer_preparations` speichert genau einen eigenständig revisionsgebundenen Monitorentwurf pro Show. Countdown/Laufzeit, Sekunden-/Warnwerte, Farben, Überziehungsanzeige und Hinweistext/-layout/-ablauf. Änderung erhöht auch Showrevision/Historie; Kopie erhält unabhängigen Entwurf. Kein laufender Timer oder neuer Paketvertrag. [Vertrag/Grenzen](stage-timer-vorbereitung.md).
+15\. Oktober 2026, Issue #41: Migration007 `timer_preparations` speichert genau einen eigenständig revisionsgebundenen Monitorentwurf pro Show. Countdown/Laufzeit, Sekunden-/Warnwerte, Farben, Überziehungsanzeige und Hinweistext/-layout/-ablauf. Änderung erhöht auch Showrevision/Historie; Kopie erhält unabhängigen Entwurf. Kein laufender Timer oder neuer Paketvertrag. [Vertrag/Grenzen](stage-timer-vorbereitung.md).
 
 S3-06, 14. Oktober 2026: additive PostgreSQL-Migration 004 mit scenes (Show, eigene Revision, strikte Ebenendefinition) und scene_leases (Sitzungs-/Tokenhash, Ablauf). cue.sceneId optional, gleiche Show erforderlich. Szenenänderung erhöht auch Showrevision und schreibt Historie. Manifest-v2 enthält Szenen; v1 bleibt erhalten. Lokales SQLite-Schema unverändert, Szenen im hashgebundenen unveränderlichen Manifest. Kein aktiver Szenen-/Live-/GO-Zustand. [Konkreter Vertrag](s3-szenenentwuerfe.md).
 

@@ -2,7 +2,7 @@
 
 > Historischer Entwicklungsnachweis aus PR #34. Die Korrektur und ihr Regressionstest wurden später über PR #37 in den gemeinsamen Stand übernommen. Die damalige „Nächstes“-Angabe und Aussagen zum nicht aktualisierten Netcup-Stand beschreiben ausschließlich diesen früheren Zeitpunkt; das spätere Schema-6-Produktivupdate wird in [PR #39](https://github.com/SchapfeldNils/ShowNight-System/pull/39) dokumentiert.
 
-15. Oktober 2026 · [Issue #31](https://github.com/SchapfeldNils/ShowNight-System/issues/31) · F12/F28, Teilprüfung S1-07/A04. Arbeitsbranch `codex/netcup-media-worker-claims`, Ausgangsbasis gemergter S1/main `cd71423d2757989c342b6b2d54e4f47cd5e348d1`. Kein erneuter S1-Start, kein lokaler Funktionsausbau.
+15\. Oktober 2026 · [Issue #31](https://github.com/SchapfeldNils/ShowNight-System/issues/31) · F12/F28, Teilprüfung S1-07/A04. Arbeitsbranch `codex/netcup-media-worker-claims`, Ausgangsbasis gemergter S1/main `cd71423d2757989c342b6b2d54e4f47cd5e348d1`. Kein erneuter S1-Start, kein lokaler Funktionsausbau.
 
 ## Fehler und Korrektur
 

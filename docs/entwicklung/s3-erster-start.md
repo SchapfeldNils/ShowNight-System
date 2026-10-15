@@ -2,7 +2,7 @@
 
 Aktuelle Ergänzung: [Serverübersicht und Datenpfaddiagnose](s3-serveruebersicht.md), Setupquellen 0.3.8. Bei einer vorhandenen Einrichtung zuerst effektiven Pfad/Benutzerkontext prüfen und vorhandene Daten erhalten. Neuer Launcher prüft den laufenden HTTPS-Dienst getrennt; der unten beschriebene reine CLI-Status startet weiterhin keinen Server. Der tatsächliche vorbereitete Betreiber-Erststart ist separat in [PR #23](https://github.com/SchapfeldNils/ShowNight-System/pull/23) dokumentiert.
 
-14. Oktober 2026 · Issue #20 · Branch `codex/s3-first-run-diagnosis`, PR #21.
+14\. Oktober 2026 · Issue #20 · Branch `codex/s3-first-run-diagnosis`, PR #21.
 
 Der Startbefehl prüft vor Server- und Rendererstart die lokale Einrichtung. Fehlt sie, zeigt das Konsolenfenster konkrete Schritte statt der bisherigen allgemeinen Fehlermeldung. Es bleibt durch die Startdatei geöffnet. Der Eintrag **Einrichtungsstatus prüfen** im Startmenü beziehungsweise `Server-Status.cmd` prüft dieselben Voraussetzungen, ohne einen Dienst zu starten. CLI: `node.exe main.js status`.
 

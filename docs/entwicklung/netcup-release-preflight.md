@@ -1,6 +1,6 @@
 # Netcup: vollständiger Releasekandidat und isolierte Updateprüfung
 
-15. Oktober 2026 · F50/A17, F30/A18, F12/F28 · Issue #36 · implementiert und unabhängig geprüft auf `codex/netcup-release-preflight`, Basis PR #35 / `460bb1de75e42fa05ccf23909c10d97428f30c90`. Kein Produktivupdate und keine Mergefreigabe.
+15\. Oktober 2026 · F50/A17, F30/A18, F12/F28 · Issue #36 · implementiert und unabhängig geprüft auf `codex/netcup-release-preflight`, Basis PR #35 / `460bb1de75e42fa05ccf23909c10d97428f30c90`. Kein Produktivupdate und keine Mergefreigabe.
 
 ## Tatsächlicher Ausgangsbestand
 

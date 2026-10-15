@@ -1,6 +1,6 @@
 # Netcup: Sicherungsablauf härten
 
-15. Oktober 2026 · Issue #3 · F50/A17 · `codex/netcup-backup-hardening`, Basis PR #22 / `e0c94d7f7365a6971d0d63a3cbbe154e008a4e0b`. Eigener Folge-PR, kein produktiver Sicherungsjob.
+15\. Oktober 2026 · Issue #3 · F50/A17 · `codex/netcup-backup-hardening`, Basis PR #22 / `e0c94d7f7365a6971d0d63a3cbbe154e008a4e0b`. Eigener Folge-PR, kein produktiver Sicherungsjob.
 
 ## Korrekturen
 
