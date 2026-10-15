@@ -592,6 +592,7 @@ function TypeForm({
         <label>
           Kontingent
           <select
+            aria-label="Kontingent"
             value={form.contingentId}
             onChange={(e) => field("contingentId")(e.target.value)}
           >
