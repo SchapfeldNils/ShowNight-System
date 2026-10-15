@@ -56,6 +56,11 @@ type RunRow = {
   output_json: string | null;
   created_at: string;
   last_action_json: string | null;
+  /**
+   * Cues that were at or before the output position when a new stand was
+   * activated. An automatic advance onto one of them is never silent.
+   */
+  passed_guard: string | null;
 };
 type StandRow = {
   event_id: string;
@@ -96,7 +101,7 @@ export class LiveEngine {
     const version = Number(
       this.db.prepare("PRAGMA user_version").get()?.user_version ?? 0,
     );
-    if (version !== 0 && version !== 1) {
+    if (version !== 0 && version !== 1 && version !== 2) {
       this.db.close();
       throw new Error("Lokales Liveschema nicht unterstützt.");
     }
@@ -111,7 +116,8 @@ export class LiveEngine {
       status TEXT NOT NULL CHECK(status IN ('prepared','running','ended')),
       live_revision INTEGER NOT NULL, package_id TEXT NOT NULL, header_sha TEXT NOT NULL,
       next_cue_id TEXT, next_blocked TEXT, position_cue_id TEXT, at_end INTEGER NOT NULL DEFAULT 0,
-      output_json TEXT, created_at TEXT NOT NULL, created_by TEXT NOT NULL, last_action_json TEXT
+      output_json TEXT, created_at TEXT NOT NULL, created_by TEXT NOT NULL, last_action_json TEXT,
+      passed_guard TEXT
     ) STRICT;
     CREATE INDEX IF NOT EXISTS live_runs_event ON live_runs(event_id, created_at);
     CREATE TABLE IF NOT EXISTS live_commands(
@@ -124,7 +130,15 @@ export class LiveEngine {
       at TEXT NOT NULL, summary TEXT NOT NULL
     ) STRICT;
     CREATE INDEX IF NOT EXISTS live_events_event ON live_events(event_id, sequence);
-    PRAGMA user_version=1;`);
+    `);
+    // Version 2: cues already passed before a stand switch (JSON array).
+    if (
+      !(this.db.prepare("PRAGMA table_info(live_runs)").all() as { name: string }[]).some(
+        (c) => c.name === "passed_guard",
+      )
+    )
+      this.db.exec("ALTER TABLE live_runs ADD COLUMN passed_guard TEXT");
+    this.db.exec("PRAGMA user_version=2");
   }
   close() {
     this.db.close();
@@ -556,7 +570,7 @@ export class LiveEngine {
     });
     this.db
       .prepare(
-        "UPDATE live_runs SET status=?,live_revision=?,package_id=?,header_sha=?,next_cue_id=?,next_blocked=?,position_cue_id=?,at_end=?,output_json=?,last_action_json=? WHERE id=? AND live_revision=?",
+        "UPDATE live_runs SET status=?,live_revision=?,package_id=?,header_sha=?,next_cue_id=?,next_blocked=?,position_cue_id=?,at_end=?,output_json=?,last_action_json=?,passed_guard=? WHERE id=? AND live_revision=?",
       )
       .run(
         next.status,
@@ -569,6 +583,7 @@ export class LiveEngine {
         next.at_end,
         next.output_json,
         next.last_action_json,
+        next.passed_guard,
         r.id,
         r.live_revision,
       );
@@ -641,6 +656,7 @@ export class LiveEngine {
           next_cue_id: next,
           next_blocked: null,
           at_end: next ? 0 : 1,
+          passed_guard: null,
         });
         const name = cues.find((c) => c.id === next)?.name;
         const summary = "Durchlauf gestartet" + (name ? ` · nächster Einsatz „${name}“` : " · keine aktiven Einsätze");
@@ -656,10 +672,15 @@ export class LiveEngine {
         );
         if (!cue?.enabled)
           throw new Refusal(422, "CUE", "Einsatz ist nicht vorhanden oder deaktiviert.");
+        // Preparing a new cue keeps the stand-switch guard for the cues that
+        // were already passed; consciously preparing one of those (a replay)
+        // ends the guard, because the director chose to go back.
+        const guard = r.passed_guard ? (JSON.parse(r.passed_guard) as string[]) : [];
         const n = this.touch(r, actor, cmd.type, {
           next_cue_id: cue.id,
           next_blocked: null,
           at_end: 0,
+          passed_guard: guard.includes(cue.id) ? null : r.passed_guard,
         });
         const summary = `Nächster Einsatz – gemeinsam: „${cue.name}“`;
         this.log(cmd.eventId, r.id, cmd.type, n.live_revision, actor, summary);
@@ -694,14 +715,24 @@ export class LiveEngine {
           takenBy: actor.displayName,
         };
         const next = this.following(cues, cue.id);
+        // D009 6/7, D012 10: a cue that was already passed before a stand
+        // switch never becomes the next GO target silently.
+        const guard = r.passed_guard ? (JSON.parse(r.passed_guard) as string[]) : [];
+        const guarded = !!next && guard.includes(next);
         const n = this.touch(r, actor, cmd.type, {
           output_json: JSON.stringify(output),
           position_cue_id: cue.id,
           next_cue_id: next,
-          next_blocked: null,
+          next_blocked: guarded ? "next_moved" : null,
           at_end: next ? 0 : 1,
         });
-        const summary = `GO „${cue.name}“ (Simulation)` + (next ? "" : " · Ablaufende");
+        const summary =
+          `GO „${cue.name}“ (Simulation)` +
+          (!next
+            ? " · Ablaufende"
+            : guarded
+              ? " · nächster Einsatz lag vor dem Standwechsel bereits hinter der Position, GO gesperrt bis zur Bestätigung"
+              : "");
         this.log(cmd.eventId, r.id, cmd.type, n.live_revision, actor, summary);
         return { message: summary, runId: r.id, liveRevision: n.live_revision };
       }
@@ -801,7 +832,18 @@ export class LiveEngine {
       let blocked: BlockReason | null = r.next_blocked;
       let next = r.next_cue_id,
         atEnd = r.at_end;
+      let guard = r.passed_guard;
       if (r.status === "running") {
+        const at = r.position_cue_id
+          ? oldCues.findIndex((c) => c.id === r.position_cue_id)
+          : -1;
+        if (at >= 0)
+          guard = JSON.stringify([
+            ...new Set([
+              ...(r.passed_guard ? (JSON.parse(r.passed_guard) as string[]) : []),
+              ...oldCues.slice(0, at + 1).map((c) => c.id),
+            ]),
+          ]);
         if (r.position_cue_id && !cues.some((c) => c.id === r.position_cue_id))
           blocked ??= "position_removed";
         if (next) {
@@ -832,6 +874,7 @@ export class LiveEngine {
         next_cue_id: next,
         next_blocked: blocked,
         at_end: atEnd,
+        passed_guard: guard,
       });
       this.log(
         cmd.eventId,

@@ -71,6 +71,17 @@ export function LiveDirection({
 
   const currentEvent = useRef(eventId);
   currentEvent.current = eventId;
+  // A failed read is retried by the poll below (reading only; commands are
+  // never resent). Without a cursor the poll reads a full snapshot again.
+  const readFailed = useRef(false),
+    readError = useRef(""),
+    reading = useRef(false);
+  const failRead = (e: unknown) => {
+    readFailed.current = true;
+    readError.current =
+      (e as Error).message + " Ansicht wird automatisch erneut gelesen.";
+    setNotice({ text: readError.current, kind: "error" });
+  };
   async function load(id = eventId) {
     if (!id) return;
     const s = await api<Snapshot>("/live/" + id);
@@ -86,6 +97,12 @@ export function LiveDirection({
       return;
     cursor.current = { epoch: s.authorityEpoch, sequence: s.sequence };
     setSnap(s);
+    // Recovered after a failed read: remove the reading error (command
+    // results are separate notices and stay untouched).
+    if (readFailed.current) {
+      readFailed.current = false;
+      setNotice((n) => (n?.kind === "error" && n.text === readError.current ? null : n));
+    }
     for (const pid of new Set([
       s.stand.packageId,
       ...s.runs.map((r) => r.packageId),
@@ -101,11 +118,22 @@ export function LiveDirection({
   useEffect(() => {
     setSnap(null);
     cursor.current = null;
-    void load().catch((e) => setNotice({ text: (e as Error).message, kind: "error" }));
+    void load().catch(failRead);
     // Short polling with epoch/sequence; a gap or restart loads a snapshot.
     const timer = setInterval(async () => {
       const c = cursor.current;
-      if (!c || !eventId) return;
+      if (!eventId || reading.current) return;
+      if (!c) {
+        reading.current = true;
+        try {
+          await load(eventId);
+        } catch (e) {
+          if (!readFailed.current) failRead(e);
+        } finally {
+          reading.current = false;
+        }
+        return;
+      }
       try {
         const out = await api<{
           epoch: string;

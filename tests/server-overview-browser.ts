@@ -65,6 +65,8 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
   };
   let fail = false;
   let old = false;
+  // Number of upcoming live snapshot reads that fail (Codex-Review #56).
+  let liveSnapshotFailures = 0;
   // Synthetic live snapshot (Issue #45): one running rehearsal, simulated only.
   const runId = "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b01",
     cueA = "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b02",
@@ -168,7 +170,12 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
             }
           : {}),
       });
-      const body = path.startsWith("/live/")
+      const liveSnapshotRead =
+        path === "/live/" + eventId && liveSnapshotFailures > 0;
+      if (liveSnapshotRead) liveSnapshotFailures--;
+      const body = liveSnapshotRead
+        ? { error: { message: "Synthetischer Lesefehler" } }
+        : path.startsWith("/live/")
         ? path.endsWith("/events")
           ? { epoch: "synthetic-epoch", snapshotRequired: false, events: [] }
           : path === "/live/commands"
@@ -231,7 +238,7 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
                       };
       await route.fulfill({
         status:
-          path === "/server-status" && fail
+          (path === "/server-status" && fail) || liveSnapshotRead
             ? 503
             : path === "/live/commands"
               ? 409
@@ -531,6 +538,33 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
           await page.screenshot({ path: "test-results/lokaler-showablauf.png", fullPage: true });
           assert.deepEqual(errors, []);
         } finally {
+          await context.close();
+        }
+      },
+    );
+    await t.test(
+      "Showablauf: nach fehlgeschlagenem ersten Lesen erholt sich die Ansicht selbst, ohne Befehle zu senden",
+      async () => {
+        requests.length = 0;
+        liveSnapshotFailures = 2;
+        const { context, page, errors } = await fixture(true, true);
+        try {
+          const live = page.getByRole("region", { name: "Showablauf", exact: true });
+          await expect(live.getByRole("alert")).toContainText("Synthetischer Lesefehler");
+          await expect(
+            live.getByRole("button", { name: "GO · Begrüßung", exact: true }),
+          ).toBeVisible({ timeout: 10000 });
+          await expect(live.getByRole("alert")).toHaveCount(0);
+          const snapshotReads = requests.filter((r) => r.path === "/live/" + eventId);
+          assert.ok(snapshotReads.length >= 3, "erneute Snapshotabfragen");
+          assert.equal(
+            requests.filter((r) => r.method === "POST").length,
+            0,
+            "Lesen wiederholt nie einen Befehl",
+          );
+          assert.deepEqual(errors, []);
+        } finally {
+          liveSnapshotFailures = 0;
           await context.close();
         }
       },

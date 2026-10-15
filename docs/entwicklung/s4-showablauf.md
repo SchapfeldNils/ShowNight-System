@@ -2,7 +2,7 @@
 
 Stand: 15\. Oktober 2026. Status: als Pull Request in Umsetzung, nicht gemergt, nicht produktiv und nicht auf Windows-Hardware abgenommen.
 
-Grundlage: [live-regie.md](../planung/live-regie.md) (D007), [liveaktivierung.md](../planung/liveaktivierung.md) (D009), [durchlaeufe.md](../planung/durchlaeufe.md) (D010–D012), Schnittstellen „Livebefehle“ in [schnittstellen.md](schnittstellen.md) und D021 in [entscheidungen.md](../planung/entscheidungen.md). D021 ist vom Betreiber im Claude-Chat gewählt; die direkte Bestätigung in Issue #45 steht noch aus.
+Grundlage: [live-regie.md](../planung/live-regie.md) (D007), [liveaktivierung.md](../planung/liveaktivierung.md) (D009), [durchlaeufe.md](../planung/durchlaeufe.md) (D010–D012), Schnittstellen „Livebefehle“ in [schnittstellen.md](schnittstellen.md) und D021 in [entscheidungen.md](../planung/entscheidungen.md). **D021 ist offen:** Die direkte Betreiberbestätigung fehlt und ist in Issue #45 angefragt. Rechte und Simulationsumfang sind bis dahin ein Vorschlag.
 
 Verantwortlich: Claude (Umsetzung), Review: Codex.
 
@@ -43,7 +43,15 @@ Leitung oder Inhaltsrechte allein genügen nicht.
 
 Folgende Punkte sind ausdrücklich nicht umgesetzt: Aktivierungsübersicht mit geänderten Shows, Medien und Einsätzen (D009 Punkt 1; die Bestätigung nennt bisher nur Revision und Zahl offener Durchläufe), Aktivierung einer einzelnen Show (D009 Punkt 2), Renderer-Take und Geräte-, Ton- oder HDMI-Ausgabe, Übergänge/Überblendung, Direkt-, Overlay- und Unterbrechungsbefehle, Timer, Controller (APC/Stream Deck), Wechselprofile, Push per WebSocket (Paket 1 fragt einmal pro Sekunde ab), Abschlussaktionen beim Beenden, Online-Server.
 
-Die Live-Routen haben ein eigenes, höheres Anfragelimit (3000/min je IP statt global 200/min), damit mehrere abfragende Regiefenster ein GO nie mit 429 abweisen.
+Die Live-Routen haben ein eigenes, höheres Anfragelimit (3000/min je IP statt global 200/min), damit mehrere abfragende Regiefenster ein GO bei üblicher Nutzung nicht mit 429 abweisen. Eine absolute Garantie ist das nicht; bei sehr vielen Fenstern auf derselben IP kann das Limit weiterhin greifen, und die Oberfläche meldet das dann als unbekanntes Ergebnis ohne automatische Wiederholung.
+
+## Codex-Review an `9faf5ff` (zwei bestätigte P2)
+
+Korrigiert von Claude, unabhängige Nachprüfung durch Codex steht aus:
+
+1. **Erholung nach Lesefehler:** Schlägt das erste Lesen des Snapshots fehl, liest die Regieansicht im Sekundentakt erneut. Nach Erfolg verschwindet der Lesefehler; Meldungen zu Befehlen bleiben davon unberührt. Befehle werden nie automatisch wiederholt.
+2. **Gespielte Einsätze nach Standwechsel:** Beim Standwechsel merkt sich ein Durchlauf, welche Einsätze im alten Stand bis zur Ausgabeposition bereits durchlaufen waren (`passed_guard`, `live.sqlite` Version 2 mit Ergänzung bestehender Version-1-Dateien). Fällt ein späteres GO automatisch auf einen dieser Einsätze, wird er zwar als nächster Einsatz angeboten, aber gesperrt (`next_moved`). Erst das bewusste Vorbereiten gibt ihn frei. Bewusstes Zurückspringen auf einen bereits gespielten Einsatz beendet die Grenze. Das Vorbereiten eines neuen Einsatzes lässt sie bestehen. Ohne Standwechsel bleibt Zurückspringen in Proben ungesperrt.
+   - Bekannte Folge: Wurde vor dem Standwechsel bewusst auf einen früheren Einsatz zurückgesprungen, kann der darauf folgende, bereits gespielte Einsatz nach dem Wechsel zusätzlich eine Bestätigung verlangen. Diese Richtung ist sicher, weil nie still gespielt wird.
 
 ## Gegenprüfung vor dem Codex-Review
 
@@ -62,10 +70,12 @@ Eine unabhängige Subagenten-Prüfung (Claude, ohne Kenntnis der Umsetzung) an `
   - Ablaufende nach Standwechsel (entfernter letzter Einsatz, vorgezogene Position, neuer Einsatz hinten)
   - Umfeld des GO-Ziels: verschoben, eingefügt, (de)aktiviert, entfernt, unverändert
   - geänderter Medieninhalt bei gleicher ID, Rückkehr nur nach Dateiprüfung, keine Liverevision fremder Durchläufe in Ablehnungen
-- `tests/server-overview-browser.ts` (CI-Schritt in S1 verify): Regieansicht in Chromium gegen synthetische API – Simulationshinweis, GO sendet gezeigtes Ziel mit Liverevision und CSRF, Ablehnung ohne automatische Wiederholung, 390 px ohne Querscrollen, Leitung ohne Live-/Technikrolle sieht kein GO
+  - Codex-Fall [A,B] → [B,NEU,A]: nach GO „NEU“ ist A gesperrt; Freigabe nur durch Vorbereiten; Zurückspringen ohne Standwechsel bleibt frei
+  - Ergänzung einer Version-1-`live.sqlite`
+- `tests/server-overview-browser.ts` (CI-Schritt in S1 verify): Regieansicht in Chromium gegen synthetische API – Simulationshinweis, GO sendet gezeigtes Ziel mit Liverevision und CSRF, Ablehnung ohne automatische Wiederholung, 390 px ohne Querscrollen, Leitung ohne Live-/Technikrolle sieht kein GO, fehlgeschlagenes erstes Lesen erholt sich ohne gesendete Befehle
 - `tests/offline-integration.ts` (`pnpm test:offline`): echter lokaler HTTPS-Server mit Snapshot, Aktivierung, Ereignissen, Validierung, CSRF, Rechten für Mitglied, Leitung und Admin, fremder Veranstaltung
 
-In der Claude-Umgebung liefen die Engine-Tests (8/8) mit Node 22 und einer Zod-Kopie sowie eine Chromium-Probe der Regieansicht gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am PR-Commit.
+In der Claude-Umgebung liefen die Engine-Tests (10/10) mit Node 22 und einer Zod-Kopie sowie eine Chromium-Probe der Regieansicht gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am PR-Commit.
 
 ## Bekannte Grenzen
 

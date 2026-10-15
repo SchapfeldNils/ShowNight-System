@@ -397,3 +397,73 @@ test("Standwechsel: geänderter Medieninhalt bei gleicher ID sperrt GO; Rückkeh
     await rm(e.dir, { recursive: true, force: true });
   }
 });
+
+test("Codex-Review #56: nach neuem Einsatz am Ablaufende kehrt ein gespielter Einsatz nicht still zurück", async () => {
+  const e = await setup();
+  try {
+    const A = c(0),
+      B = c(2);
+    const NEW: Cue = { id: randomUUID(), name: "Neu", enabled: true };
+    const { run, activate } = await runningAt(e, [A, B], [A.id, B.id]);
+    assert.equal(run().atEnd, true);
+    assert.equal((await activate([B, NEW, A])).status, 200);
+    assert.equal(run().nextCueId, NEW.id);
+    assert.equal(run().nextBlocked, "cues_inserted");
+    const go = (id: string) =>
+      e.engine.execute(regieB, rLive, cmd("cue.go", { expectedNextCueId: id }, { runId: run().id, expectedLiveRevision: run().liveRevision }));
+    const prepare = (id: string) =>
+      e.engine.execute(regieB, rLive, cmd("cue.prepare", { cueId: id }, { runId: run().id, expectedLiveRevision: run().liveRevision }));
+    assert.equal((await prepare(NEW.id)).status, 200);
+    assert.equal((await go(NEW.id)).status, 200);
+    // A was already played before the switch: offered, but locked.
+    assert.equal(run().nextCueId, A.id);
+    assert.equal(run().nextBlocked, "next_moved");
+    assert.equal((await go(A.id)).code, "GO_LOCKED");
+    // Only a conscious preparation releases it.
+    assert.equal((await prepare(A.id)).status, 200);
+    assert.equal(run().nextBlocked, null);
+    assert.equal((await go(A.id)).status, 200);
+    assert.equal(run().atEnd, true);
+    // Without a stand switch, jumping back in a rehearsal stays unlocked.
+    const f = await setup();
+    try {
+      const r2 = await runningAt(f, [c(0), c(2), c(3)], [cueIds[0], cueIds[2]]);
+      await f.engine.execute(regieB, rLive, cmd("cue.prepare", { cueId: cueIds[0] }, { runId: r2.run().id, expectedLiveRevision: r2.run().liveRevision }));
+      await f.engine.execute(regieB, rLive, cmd("cue.go", { expectedNextCueId: cueIds[0] }, { runId: r2.run().id, expectedLiveRevision: r2.run().liveRevision }));
+      assert.equal(r2.run().nextCueId, cueIds[2]);
+      assert.equal(r2.run().nextBlocked, null);
+    } finally {
+      f.engine.close();
+      await rm(f.dir, { recursive: true, force: true });
+    }
+  } finally {
+    e.engine.close();
+    await rm(e.dir, { recursive: true, force: true });
+  }
+});
+
+test("Liveschema: Version 1 wird um die Standwechselgrenze ergänzt", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "shownight-live-v1-"));
+  try {
+    const { DatabaseSync } = await import("node:sqlite");
+    const db = new DatabaseSync(join(dir, "live.sqlite"));
+    db.exec(`CREATE TABLE live_runs(
+      id TEXT PRIMARY KEY, event_id TEXT NOT NULL, show_id TEXT NOT NULL,
+      kind TEXT NOT NULL CHECK(kind IN ('probe','auffuehrung')),
+      status TEXT NOT NULL CHECK(status IN ('prepared','running','ended')),
+      live_revision INTEGER NOT NULL, package_id TEXT NOT NULL, header_sha TEXT NOT NULL,
+      next_cue_id TEXT, next_blocked TEXT, position_cue_id TEXT, at_end INTEGER NOT NULL DEFAULT 0,
+      output_json TEXT, created_at TEXT NOT NULL, created_by TEXT NOT NULL, last_action_json TEXT
+    ) STRICT; PRAGMA user_version=1;`);
+    db.close();
+    const engine = new LiveEngine(dir, source().s);
+    engine.close();
+    const check = new DatabaseSync(join(dir, "live.sqlite"));
+    const cols = (check.prepare("PRAGMA table_info(live_runs)").all() as { name: string }[]).map((c) => c.name);
+    assert.ok(cols.includes("passed_guard"));
+    assert.equal(Number(check.prepare("PRAGMA user_version").get()?.user_version), 2);
+    check.close();
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
