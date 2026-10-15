@@ -18,6 +18,9 @@ $script:statusProcess = $null
 $script:statusRead = $null
 $script:statusStarted = [DateTime]::MinValue
 $script:lastStatus = $null
+$script:stopProcess = $null
+$script:stopRead = $null
+$script:stopStarted = [DateTime]::MinValue
 $form = New-Object Windows.Forms.Form
 $form.Text = 'ShowNight · Lokaler Server'
 $form.Size = New-Object Drawing.Size(950,740)
@@ -83,19 +86,22 @@ function Button([string]$text) {
 }
 $refresh = Button 'Status aktualisieren'
 $start = Button 'Server starten'
+$stopButton = Button 'Server stoppen'
 $open = Button 'Server im Browser'
 $folder = Button 'Datenordner'
 $guide = Button 'Anleitung'
 $start.Enabled = $false
+$stopButton.Enabled = $false
 $open.Enabled = $false
 $folder.Enabled = $false
-$footer = Label 'Serverstart öffnet ein eigenes Fenster. Dort mit Strg+C beenden. Oberfläche: vorläufige Gestaltung.' 9
+$footer = Label 'Serverstart öffnet ein eigenes Fenster. Beenden über „Server stoppen“ (alternativ Strg+C im Serverfenster). Oberfläche: vorläufige Gestaltung.' 9
 $footer.ForeColor = $subtitle.ForeColor
 $layout.Controls.Add($footer,0,6)
 function Read-Status {
     if ($script:statusProcess) { return }
     $refresh.Enabled = $false
     $start.Enabled = $false
+    $stopButton.Enabled = $false
     $open.Enabled = $false
     $state.Text = 'Status wird geprüft …'
     $info = New-Object Diagnostics.ProcessStartInfo
@@ -125,6 +131,25 @@ function Read-Status {
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 250
 $timer.Add_Tick({
+    if ($script:stopProcess) {
+        $stopExpired = ([DateTime]::UtcNow - $script:stopStarted).TotalSeconds -gt 40
+        if ($script:stopProcess.HasExited -or $stopExpired) {
+            try {
+                if ($stopExpired) { $script:stopProcess.Kill(); throw 'Timeout' }
+                $message = $script:stopRead.GetAwaiter().GetResult()
+                if ($message.Length -gt 4096) { throw 'Limit' }
+                if ($script:stopProcess.ExitCode -eq 0) { $state.Text = $message.Trim() }
+                else { $state.Text = 'Stopp nicht bestätigt: ' + $message.Trim() }
+            } catch {
+                $state.Text = 'Stopp nicht bestätigt. Status aktualisieren; nichts gewaltsam beendet.'
+            } finally {
+                $script:stopProcess.Dispose()
+                $script:stopProcess = $null
+                Read-Status
+            }
+        }
+        return
+    }
     if (!$script:statusProcess) { return }
     $expired = ([DateTime]::UtcNow - $script:statusStarted).TotalSeconds -gt 25
     if (!$script:statusProcess.HasExited -and !$expired) { return }
@@ -137,9 +162,13 @@ $timer.Add_Tick({
         $s = $script:lastStatus
         $lines = @(('Datenordner: ' + $s.dataRoot), ('Paketordner: ' + $s.packageRoot), '') + @($s.lines)
         $details.Text = $lines -join "`r`n`r`n"
+        $running = $s.service -and $s.service.state -eq 'running'
+        $stopButton.Enabled = $running
         if ($s.listener -eq 'alive') {
             $state.Text = 'HTTPS-Dienst antwortet · ' + $s.origin
             $open.Enabled = $true
+        } elseif ($running) {
+            $state.Text = 'Server läuft · Antwort des HTTPS-Dienstes noch nicht bestätigt'
         } elseif ($s.ready -eq $true) {
             $state.Text = 'Einrichtung vorbereitet · laufender Dienst nicht bestätigt'
             $start.Enabled = $true
@@ -169,6 +198,33 @@ $start.Add_Click({
         $start.Enabled = $false
     } catch { $state.Text = 'Startwerkzeug nicht verfügbar. Vollständige Installation und Anleitung prüfen.' }
 })
+$stopButton.Add_Click({
+    if ($script:stopProcess -or $script:statusProcess) { return }
+    # Nur der eigene Server dieser Installation wird über den lokalen Steuerkanal
+    # geordnet beendet. Kein Prozessabschuss.
+    $stopButton.Enabled = $false
+    $start.Enabled = $false
+    $state.Text = 'Server wird geordnet beendet …'
+    $info = New-Object Diagnostics.ProcessStartInfo
+    $info.FileName = $runtime
+    $info.Arguments = '"' + $entry + '" stop'
+    $info.WorkingDirectory = $PSScriptRoot
+    $info.UseShellExecute = $false
+    $info.CreateNoWindow = $true
+    $info.RedirectStandardOutput = $true
+    $info.StandardOutputEncoding = [Text.Encoding]::UTF8
+    $script:stopProcess = New-Object Diagnostics.Process
+    $script:stopProcess.StartInfo = $info
+    try {
+        [void]$script:stopProcess.Start()
+        $script:stopRead = $script:stopProcess.StandardOutput.ReadToEndAsync()
+        $script:stopStarted = [DateTime]::UtcNow
+    } catch {
+        $script:stopProcess.Dispose()
+        $script:stopProcess = $null
+        $state.Text = 'Stoppwerkzeug nicht verfügbar. Vollständige Installation und Anleitung prüfen.'
+    }
+})
 $open.Add_Click({
     $uri = $null
     if ($script:lastStatus -and [Uri]::TryCreate($script:lastStatus.origin,[UriKind]::Absolute,[ref]$uri) -and $uri.Scheme -eq 'https' -and $uri.Port -eq 3443) {
@@ -191,6 +247,8 @@ $form.Add_FormClosed({
         if (!$script:statusProcess.HasExited) { $script:statusProcess.Kill() }
         $script:statusProcess.Dispose()
     }
+    # Ein laufender Stoppbefehl wird nicht abgebrochen; er beendet sich selbst.
+    if ($script:stopProcess) { $script:stopProcess.Dispose() }
 })
 if ($UiCheck) {
     # CI constructs the actual controls and reads a synthetic profile without
@@ -205,6 +263,7 @@ if ($UiCheck) {
         title = $form.Text
         details = $details.Text
         startEnabled = $start.Enabled
+        stopEnabled = $stopButton.Enabled
         openEnabled = $open.Enabled
         ready = ($null -ne $script:lastStatus -and $script:lastStatus.ready)
     } | ConvertTo-Json -Compress
