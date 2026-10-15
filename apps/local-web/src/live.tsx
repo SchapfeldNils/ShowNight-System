@@ -74,6 +74,9 @@ export function LiveDirection({
   async function load(id = eventId) {
     if (!id) return;
     const s = await api<Snapshot>("/live/" + id);
+    // Never render a malformed answer (e.g. an error body or older server).
+    if (s?.protocolVersion !== 1 || !s.stand || !Array.isArray(s.runs) || !Array.isArray(s.history))
+      throw new Error("Showablauf auf diesem Server nicht verfügbar.");
     // Late answers (other event, or older than what is shown) are discarded.
     const c = cursor.current;
     if (

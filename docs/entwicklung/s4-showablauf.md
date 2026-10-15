@@ -62,6 +62,7 @@ Eine unabhängige Subagenten-Prüfung (Claude, ohne Kenntnis der Umsetzung) an `
   - Ablaufende nach Standwechsel (entfernter letzter Einsatz, vorgezogene Position, neuer Einsatz hinten)
   - Umfeld des GO-Ziels: verschoben, eingefügt, (de)aktiviert, entfernt, unverändert
   - geänderter Medieninhalt bei gleicher ID, Rückkehr nur nach Dateiprüfung, keine Liverevision fremder Durchläufe in Ablehnungen
+- `tests/server-overview-browser.ts` (CI-Schritt in S1 verify): Regieansicht in Chromium gegen synthetische API – Simulationshinweis, GO sendet gezeigtes Ziel mit Liverevision und CSRF, Ablehnung ohne automatische Wiederholung, 390 px ohne Querscrollen, Leitung ohne Live-/Technikrolle sieht kein GO
 - `tests/offline-integration.ts` (`pnpm test:offline`): echter lokaler HTTPS-Server mit Snapshot, Aktivierung, Ereignissen, Validierung, CSRF, Rechten für Mitglied, Leitung und Admin, fremder Veranstaltung
 
 In der Claude-Umgebung liefen die Engine-Tests (8/8) mit Node 22 und einer Zod-Kopie sowie eine Chromium-Probe der Regieansicht gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am PR-Commit.
