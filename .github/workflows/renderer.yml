@@ -78,7 +78,16 @@ jobs:
       - name: Test portable server and renderer bundle
         env:
           RENDERER_TEST_PORTABLE: "true"
-        run: pnpm test:renderer
+        shell: pwsh
+        # Bei Fehlern die letzten Zeilen als Annotation zeigen (Logs sind nicht
+        # überall abrufbar); Ergebnis und Exitcode bleiben unverändert.
+        run: |
+          pnpm test:renderer 2>&1 | Tee-Object -FilePath portable-test.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content portable-test.log -Tail 60 | Where-Object { $_.Trim() } | ForEach-Object { "::error title=Portabler Renderer-Test::" + ($_ -replace '%','%25') }
+            exit $code
+          }
       - run: pnpm streaming:installer --renderer
       - run: pnpm test:installer
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
