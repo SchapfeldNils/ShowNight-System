@@ -13,8 +13,8 @@ Modulares Veranstaltungssystem für die Jungschützen ShowNight und weitere Vera
 | Konto, Abmelden, Passwort ändern, Passwort per E-Mail zurücksetzen | Online nutzbar. Mailversand aktiv, SMTP-Anmeldung geprüft; echte Zustellung wartet noch auf die persönliche Adressbestätigung. |
 | Stage Timer (F20/A10) | Teilgrundlage „Timer und Hinweise vorbereiten“ in [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), **nicht gemergt**. Live-Bühnenanzeige offen. |
 | Ticketshop (F38–F43/A24–A27) | **Offen**, [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43). |
-| Windows-Agent (S2) | Code in `main`. Lesende VirtualDJ-Diagnose real bestätigt; Steuerung, Daslight, Controller offen. |
-| Lokaler Server, LAN, Renderer, Szenen (S3) | Code in `main`, als Software geprüft. Setup 0.3.8 lokal installiert. Keine Hardware-, HDMI-, Ton- oder Showabnahme. |
+| Windows-Agent (S2) | Code in `main`. Lesende VirtualDJ-Diagnose real bestätigt; Steuerung, Daslight, Controller offen ([#46](https://github.com/SchapfeldNils/ShowNight-System/issues/46)). |
+| Lokaler Server, LAN, Renderer, Szenen (S3) | Code in `main`, als Software geprüft. Setup 0.3.8 lokal installiert. Keine Hardware-, HDMI-, Ton- oder Showabnahme ([#46](https://github.com/SchapfeldNils/ShowNight-System/issues/46)); Showablauf mit GO offen ([#45](https://github.com/SchapfeldNils/ShowNight-System/issues/45)). |
 | Regelmäßige Sicherung | Verschlüsselte Sicherung und Restore als Software vorhanden; regelmäßiger Betrieb mit unabhängigem Ziel offen ([Issue #3](https://github.com/SchapfeldNils/ShowNight-System/issues/3)). |
 
 Software-, CI- und Browserprüfungen ersetzen keine Abnahme mit echter Bühnentechnik. Eine Veranstaltungsfreigabe gibt es noch nicht.

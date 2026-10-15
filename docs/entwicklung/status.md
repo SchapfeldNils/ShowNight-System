@@ -5,7 +5,7 @@
 - **Produktiv auf Netcup:** Runtime `f232483` (Merge PR #38), Datenbankschema 6, Kontofunktionen und E-Mail-Passwortreset; Mailversand aktiv. Durchführung und Grenzen: [online-produktivupdate.md](online-produktivupdate.md).
 - **In `main`:** S1-Onlineserver, S2-Windows-Agent sowie alle S3-Bausteine (Paketablage, Offlinekonten/MFA, LAN, Renderer, Paketmedien, Szenenentwürfe, Erststart, Serverübersicht, lokale Technikrechte, native Szenen) und die Sicherungshärtung. Die Einzel-PRs wurden über PR #37/#38 zusammengeführt und danach geschlossen.
 - **Offen als PR:** [#42 Stage-Timer-Vorbereitung](https://github.com/SchapfeldNils/ShowNight-System/pull/42) mit Migration 7, nicht gemergt, nicht produktiv.
-- **Fachlich offen:** Ticketshop (#43), Live-Bühnenmonitor (#41), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen.
+- **Fachlich offen:** Ticketshop (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), Szeneneditor (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
 - Lokale Installation: Setup 0.3.8 (Stand Issue #24). Neuere Setups 0.3.9/0.3.10 wurden gebaut und hashgeprüft, aber nicht installiert.
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
