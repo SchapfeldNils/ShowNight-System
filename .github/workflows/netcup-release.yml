@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   upgrade:
-    name: Schema 4 to 6 and return (${{ matrix.arch }})
+    name: Schema 6 to 7 and return (${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 1c983fc01c98916fc782422f19e67567821bdaaa
+          ref: f232483fd04f47dfa8c973fe1892859a3e84d27b
           path: .local/netcup-baseline
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

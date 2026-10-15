@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-15T05:27:01.853Z",
+  "candidateCommit": "890779bf3cc5d5a2b78c106d7d6af7e44cef7724",
+  "baselineCommit": "f232483fd04f47dfa8c973fe1892859a3e84d27b",
+  "baselineRebuilt": true,
+  "productionDigestMatched": false,
+  "architecture": "arm64",
+  "baselineImageID": "sha256:e5aa6d2cd2ef6bb7beeb58ecd6711bd7791044c10d937abd1176a4b3594d6216",
+  "candidateImageID": "sha256:fb07f5a3e543c1f80ac14255ce0742aa5fe4634e09e80ed44c843bc0d7465424",
+  "syntheticOnly": true,
+  "productionChanged": false,
+  "mailDeliveryEnabled": false,
+  "sourceSchema": 6,
+  "targetSchema": 7,
+  "rollbackSchema": 6,
+  "targetMigrations": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "rollbackMigrations": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "migrationRepeated": true,
+  "mailDeliveryModeDefault": "test",
+  "encryptedBackup": true,
+  "sameBackupForUpgradeAndRollback": true,
+  "originalMfaKeyPreserved": true,
+  "checks": {
+    "target": true,
+    "rollback": true
+  }
+}

@@ -1,5 +1,7 @@
 # Aktuelle Lieferliste – gemeinsame Online-Version
 
+Aktualisierung 15. Oktober 2026: Gemeinsame Basis samt Konto/E-Mail über PR #38 gemergt; freigegebener Schema-6-Produktivwechsel über PR #39 dokumentiert und gemergt. Kein alter PRstau. #31 (Workerclaims) und #36 (Releaseprüfung) nach unabhängiger Nachweiskontrolle geschlossen. #3 bleibt für regelmäßige Sicherung/Verwahrung/Überwachung offen. Nächste Umsetzung [#41 Timer-/Hinweisvorbereitung](https://github.com/SchapfeldNils/ShowNight-System/issues/41) mit persönlicher Browserprobe; kein Hardware-/Liveabschluss. Frühere Tabellen unten sind historische Lieferstände.
+
 15. Oktober 2026. Betreiber priorisiert einen sichtbaren Onlineablauf und autorisiert geeignete Merges. Keine weitere lokale Fachentwicklung vor diesem Lieferpunkt.
 
 | Lieferung | Tatsächlicher Stand | Nächster Nachweis |
