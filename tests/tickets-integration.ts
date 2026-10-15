@@ -454,6 +454,72 @@ test(
       );
 
       await t.test(
+        "Review #49 P1: Widerruf, Deaktivierung oder Rechteentzug während der Eventsperre verhindert den Schreibzugriff",
+        async () => {
+          for (const revoke of ["session", "disabled", "demoted"] as const) {
+            const lead = await account("ticket-race-" + revoke, true, [
+              [event.id, "leitung"],
+            ]);
+            const before = await count("ticket_contingents");
+            const locker = await db.connect();
+            let released = false;
+            try {
+              await locker.query("BEGIN");
+              await locker.query(
+                "SELECT id FROM events WHERE id=$1 FOR UPDATE",
+                [event.id],
+              );
+              const pending = req(
+                `/events/${event.id}/tickets/contingents`,
+                "POST",
+                { name: "Race " + revoke, capacity: 1 },
+                lead.session,
+              );
+              // Erst fortfahren, wenn die Anfrage nachweislich auf die Sperre wartet.
+              for (let i = 0; ; i++) {
+                const waiting = (
+                  await db.query(
+                    "SELECT count(*)::int AS n FROM pg_locks WHERE NOT granted",
+                  )
+                ).rows[0].n;
+                if (waiting > 0) break;
+                if (i > 400)
+                  throw new Error("Anfrage wartet nicht auf die Sperre.");
+                await new Promise((resolve) => setTimeout(resolve, 25));
+              }
+              if (revoke === "session")
+                await db.query("DELETE FROM sessions WHERE user_id=$1", [
+                  lead.id,
+                ]);
+              else if (revoke === "disabled")
+                await db.query("UPDATE users SET enabled=false WHERE id=$1", [
+                  lead.id,
+                ]);
+              else
+                await db.query(
+                  "DELETE FROM grants WHERE user_id=$1 AND role='leitung'",
+                  [lead.id],
+                );
+              await locker.query("COMMIT");
+              released = true;
+              const r = await pending;
+              if (revoke === "demoted") {
+                // Ohne Leitung und ohne weitere Zuordnung ist die Veranstaltung nicht mehr sichtbar.
+                assert.equal(r.statusCode, 404, r.body);
+              } else {
+                assert.equal(r.statusCode, 401, r.body);
+                assert.equal(r.json().error.code, "AUTH_FAILED");
+              }
+            } finally {
+              if (!released) await locker.query("ROLLBACK").catch(() => {});
+              locker.release();
+            }
+            assert.equal(await count("ticket_contingents"), before);
+          }
+        },
+      );
+
+      await t.test(
         "Erneute Migration und neue Verbindung erhalten den Stand",
         async () => {
           const before = await ok(`/events/${event.id}/tickets`);

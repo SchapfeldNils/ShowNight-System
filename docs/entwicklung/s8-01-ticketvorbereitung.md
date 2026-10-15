@@ -1,6 +1,6 @@
 # S8-01: Ticketarten, Preise, Kontingente und Verkaufszeiten vorbereiten
 
-Spezifikation vom 15\. Oktober 2026 für das erste Ticketshop-Paket aus [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43). Teilgrundlage F38/A24. Rechteentscheidung: [D019](../planung/entscheidungen.md#d019--ticketshop-s8-01-bearbeitung-durch-admin-und-leitung). Umsetzung durch Codex auf eigenem Branch und PR; dieses Dokument ist noch **keine** Umsetzung.
+Spezifikation vom 15\. Oktober 2026 für das erste Ticketshop-Paket aus [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43). Teilgrundlage F38/A24. Rechteentscheidung: [D019](../planung/entscheidungen.md#d019--ticketshop-s8-01-bearbeitung-durch-admin-und-leitung). Umsetzung durch Claude in [PR #49](https://github.com/SchapfeldNils/ShowNight-System/pull/49), unabhängiger Review durch Codex. Tatsächlicher Stand und Nachweise: Abschnitt „Umsetzungsstand“.
 
 ## Ziel
 
@@ -76,6 +76,19 @@ Saalplan und Plätze, Holds, Bestellungen, Gastshop, Gruppen, Reservierungen, Za
 - Dokumentation: dieses Dokument um tatsächlichen Stand und Grenzen ergänzen, `status.md` Abschnitt „Aktuell“, `issue-arbeitsliste.md`, Datenmodell und Schnittstellen.
 - Nur synthetische Demodaten.
 
-## Startprompt für Codex
+## Umsetzungsstand
 
-> Setze S8-01 aus `docs/entwicklung/s8-01-ticketvorbereitung.md` um (Issue #43, Entscheidung D019). Lies vorher AGENTS.md. Arbeite auf einem eigenen Branch ab aktuellem `main`, öffne einen PR und merge nicht selbst. Halte dich an den Umfang; alles unter „Ausdrücklich nicht in diesem Paket“ bleibt draußen. Rechte nur Admin und Veranstaltungsleitung, keine neuen Einzelrechte. Führe Typprüfung, Unit-, Integrations- und Browsertests lokal aus und dokumentiere tatsächliche Ergebnisse und Grenzen. Kein Produktivupdate.
+Wird nach jeder Korrekturrunde an den exakt geprüften Commit gebunden; ältere Ergebnisse gelten nicht für neue Commits.
+
+- Branch `claude/s8-01-ticketvorbereitung`, PR #49, tatsächliche Basis `codex/stage-timer-preparation` (PR #42, Migration 007). Umstellung auf `main` erst nach Entscheidung zu #42.
+- Korrekturrunde 1 nach Review 5529610473: Sitzung/Konto/Rechte werden nach der Eventsperre neu geladen; nicht existierende Berliner Uhrzeiten werden abgelehnt, doppelte Uhrzeiten verlangen eine Auswahl, unveränderte Zeitpunkte bleiben exakt erhalten; Preisgruppierung wird vor dem Entfernen der Punkte geprüft; Bearbeitungsentwürfe bleiben bei 409 erhalten und Speichern ist erst nach bewusster Entscheidung („Meine Fassung beibehalten“ / „Aktuellen Stand übernehmen“) möglich; doppelter D018-Eintrag entfernt.
+- Ergebnisse: siehe PR #49, Kommentar zum jeweiligen Head.
+
+## Grenzen
+
+- Doppelte Uhrzeiten bei der Rückstellung auf Winterzeit werden über eine zusätzliche Auswahl aufgelöst; die Anzeige in der Prüfansicht zeigt nur die Wandzeit ohne MESZ/MEZ-Kennzeichnung.
+- Bei Löschkonflikten wird nicht gelöscht; es gibt keinen Vergleich, nur den neu geladenen Stand.
+- „1.234“ ohne Komma wird als 1.234 € gelesen (deutsche Tausendergruppe), „12.50“ als 12,50 €.
+- Keine Offlineübertragung, kein Verkauf, keine Veröffentlichung.
+
+Der ursprüngliche Startprompt für Codex ist durch die Betreiberentscheidung vom 15. Oktober 2026 (Implementierung durch Claude, Review durch Codex) überholt.

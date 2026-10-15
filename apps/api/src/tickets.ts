@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { id } from "../../../packages/contracts/src/index.js";
 import {
@@ -14,7 +14,7 @@ import {
   type TicketSettings,
   type TicketType,
 } from "../../../packages/contracts/src/tickets.js";
-import type { Actor } from "./auth.js";
+import { actor } from "./auth.js";
 import { remember } from "./content.js";
 import { transaction, type DB, type Queryable } from "./db.js";
 import { HttpError, missing } from "./errors.js";
@@ -65,17 +65,28 @@ function conflict(current: unknown): never {
   );
 }
 
-/** Sperrt die Veranstaltung, prüft Admin/Leitung und das aktivierte Ticketmodul. */
-async function ticketAccess(c: Queryable, actor: Actor, eventId: string) {
+/**
+ * Sperrt die Veranstaltung, lädt danach Sitzung/Konto/MFA/Admin neu und prüft
+ * Admin/Leitung sowie das aktivierte Ticketmodul. Der Actor aus der Middleware
+ * kann während des Wartens auf die Sperre widerrufen worden sein.
+ */
+async function ticketAccess(
+  c: Queryable,
+  req: FastifyRequest,
+  eventId: string,
+) {
   await c.query("SELECT id FROM events WHERE id=$1 FOR UPDATE", [eventId]);
-  const event = await eventAccess(c, actor, eventId, true);
+  const current = await actor(c, req.cookies.sn_session);
+  if (!current)
+    throw new HttpError(401, "AUTH_FAILED", "Anmeldung nicht mehr gültig.");
+  const event = await eventAccess(c, current, eventId, true);
   if (!(event.modules as string[]).includes("tickets"))
     throw new HttpError(
       409,
       "MODULE_DISABLED",
       "Das Modul Tickets ist für diese Veranstaltung nicht aktiviert.",
     );
-  return event;
+  return current;
 }
 
 async function overview(db: Queryable, eventId: string) {
@@ -133,7 +144,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
   app.get("/api/v1/events/:id/tickets", async (req) => {
     const eventId = id.parse((req.params as any).id);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      await ticketAccess(c, req, eventId);
       return overview(c, eventId);
     });
   });
@@ -142,7 +153,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
     const eventId = id.parse((req.params as any).id),
       input = ticketSettingsInput.parse(req.body);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const previous = (
         await c.query("SELECT * FROM ticket_settings WHERE event_id=$1", [
           eventId,
@@ -164,16 +175,11 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
             input.maxTicketsPerOrder,
             input.admissionAt,
             input.startsAt,
-            req.actor.id,
+            user.id,
           ],
         )
       ).rows[0];
-      await remember(
-        c,
-        "ticket-settings",
-        { ...row, id: eventId },
-        req.actor.id,
-      );
+      await remember(c, "ticket-settings", { ...row, id: eventId }, user.id);
       return overview(c, eventId);
     });
   });
@@ -182,7 +188,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
     const eventId = id.parse((req.params as any).id),
       input = contingentCreate.parse(req.body);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const row = (
         await c.query(
           "INSERT INTO ticket_contingents(id,event_id,name,capacity,sort,created_by,updated_by) VALUES($1,$2,$3,$4,$5,$6,$6) RETURNING *",
@@ -192,11 +198,11 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
             input.name,
             input.capacity,
             input.sort,
-            req.actor.id,
+            user.id,
           ],
         )
       ).rows[0];
-      await remember(c, "ticket-contingent", row, req.actor.id);
+      await remember(c, "ticket-contingent", row, user.id);
       return overview(c, eventId);
     });
   });
@@ -206,7 +212,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
       input = contingentPatch.parse(req.body);
     const eventId = await eventOf(db, "ticket_contingents", contingentId);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const current = (
         await c.query(
           "SELECT * FROM ticket_contingents WHERE id=$1 AND event_id=$2 FOR UPDATE",
@@ -224,11 +230,11 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
             input.name ?? current.name,
             input.capacity ?? current.capacity,
             input.sort ?? current.sort,
-            req.actor.id,
+            user.id,
           ],
         )
       ).rows[0];
-      await remember(c, "ticket-contingent", row, req.actor.id);
+      await remember(c, "ticket-contingent", row, user.id);
       return overview(c, eventId);
     });
   });
@@ -238,7 +244,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
       { expectedRevision: expected } = expectedRevision.parse(req.query);
     const eventId = await eventOf(db, "ticket_contingents", contingentId);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const current = (
         await c.query(
           "SELECT * FROM ticket_contingents WHERE id=$1 AND event_id=$2 FOR UPDATE",
@@ -266,7 +272,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
         c,
         "ticket-contingent",
         { ...current, revision: current.revision + 1, deleted: true },
-        req.actor.id,
+        user.id,
       );
       return overview(c, eventId);
     });
@@ -276,7 +282,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
     const eventId = id.parse((req.params as any).id),
       input = ticketTypeCreate.parse(req.body);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       await requireContingent(c, eventId, input.contingentId);
       const row = (
         await c.query(
@@ -296,11 +302,11 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
             input.requiresAdmissionProof,
             input.active,
             input.sort,
-            req.actor.id,
+            user.id,
           ],
         )
       ).rows[0];
-      await remember(c, "ticket-type", row, req.actor.id);
+      await remember(c, "ticket-type", row, user.id);
       return overview(c, eventId);
     });
   });
@@ -310,7 +316,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
       input = ticketTypePatch.parse(req.body);
     const eventId = await eventOf(db, "ticket_types", typeId);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const current = (
         await c.query(
           "SELECT * FROM ticket_types WHERE id=$1 AND event_id=$2 FOR UPDATE",
@@ -344,11 +350,11 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
             pick("requiresAdmissionProof", "requires_admission_proof"),
             pick("active", "active"),
             pick("sort", "sort"),
-            req.actor.id,
+            user.id,
           ],
         )
       ).rows[0];
-      await remember(c, "ticket-type", row, req.actor.id);
+      await remember(c, "ticket-type", row, user.id);
       return overview(c, eventId);
     });
   });
@@ -358,7 +364,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
       { expectedRevision: expected } = expectedRevision.parse(req.query);
     const eventId = await eventOf(db, "ticket_types", typeId);
     return transaction(db, async (c) => {
-      await ticketAccess(c, req.actor, eventId);
+      const user = await ticketAccess(c, req, eventId);
       const current = (
         await c.query(
           "SELECT * FROM ticket_types WHERE id=$1 AND event_id=$2 FOR UPDATE",
@@ -372,7 +378,7 @@ export function ticketRoutes(app: FastifyInstance, db: DB) {
         c,
         "ticket-type",
         { ...current, revision: current.revision + 1, deleted: true },
-        req.actor.id,
+        user.id,
       );
       return overview(c, eventId);
     });

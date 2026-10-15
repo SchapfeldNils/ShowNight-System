@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  berlinLocalCandidates,
   berlinLocalToIso,
   contingentPatch,
   defaultTicketSettings,
@@ -31,7 +32,22 @@ test("Preise: ganze Cent formatieren und deutsche Eingaben lesen", () => {
     ["0", 0],
   ] as const)
     assert.equal(parseEuroInput(input), cents, input);
-  for (const invalid of ["", "abc", "-3", "12,555", "1,2,3", "12 50"])
+  assert.equal(parseEuroInput("1.234,50"), 123450);
+  assert.equal(parseEuroInput("1.234.567,89"), 123456789);
+  // Review #49: Gruppierung vor dem Entfernen der Punkte prüfen.
+  for (const invalid of [
+    "",
+    "abc",
+    "-3",
+    "12,555",
+    "1,2,3",
+    "12 50",
+    "12.50,00",
+    "1..234,50",
+    "1.23,50",
+    "1.234.5",
+    "12345678",
+  ])
     assert.equal(parseEuroInput(invalid), null, invalid);
 });
 
@@ -56,6 +72,25 @@ test("Zeiten: Wandzeit Europe/Berlin unabhängig von der Rechnerzeitzone", () =>
     "14.11.2026, 19:00 Uhr",
   );
   assert.equal(formatBerlin(null), "offen");
+  // Review #49: nicht existierende Uhrzeit ablehnen, doppelte Uhrzeit nicht still wählen.
+  assert.deepEqual(berlinLocalCandidates("2027-03-28T02:30"), []);
+  assert.equal(berlinLocalToIso("2027-03-28T02:30"), null);
+  assert.deepEqual(berlinLocalCandidates("2026-10-25T02:30"), [
+    "2026-10-25T00:30:00.000Z",
+    "2026-10-25T01:30:00.000Z",
+  ]);
+  assert.equal(berlinLocalToIso("2026-10-25T02:30"), null);
+  assert.equal(
+    isoToBerlinLocal("2026-10-25T00:30:00.000Z"),
+    "2026-10-25T02:30",
+  );
+  assert.equal(
+    isoToBerlinLocal("2026-10-25T01:30:00.000Z"),
+    "2026-10-25T02:30",
+  );
+  assert.deepEqual(berlinLocalCandidates("2026-10-25T03:00"), [
+    "2026-10-25T02:00:00.000Z",
+  ]);
   for (const local of [
     "2026-01-01T00:00",
     "2026-03-29T03:15",

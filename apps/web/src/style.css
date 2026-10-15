@@ -644,6 +644,13 @@ button:focus-visible {
   gap: 10px;
   margin-top: 10px;
 }
+.ticket-time {
+  flex: 1;
+  min-width: 150px;
+}
+.ticket-time label {
+  min-width: 0;
+}
 .ticket-form {
   border-top: 1px solid #344156;
   padding-top: 8px;

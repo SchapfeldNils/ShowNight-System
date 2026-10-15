@@ -253,15 +253,21 @@ export function formatCents(cents: number) {
   );
 }
 
-/** „12,50“, „12.50“, „12“, „1.234,5 €“ → Cent; ungültig → null. */
+/**
+ * Deutsche Eurobeträge → ganze Cent; ungültig → null.
+ * Erlaubt: „12“, „12,5“, „12,50“, „12.50“, „1.234,50“, „1.234“ (streng in Dreiergruppen), optional „ €“.
+ * Gruppierung wird geprüft, bevor Punkte entfernt werden: „12.50,00“ oder „1..234,50“ sind ungültig.
+ */
 export function parseEuroInput(text: string): number | null {
-  let value = text.trim().replace(/\s*€$/, "");
+  const value = text.trim().replace(/\s*€$/, "");
   if (!value || /\s/.test(value)) return null;
-  if (value.includes(",")) value = value.replace(/\./g, "").replace(",", ".");
-  else if (/^\d{1,3}(\.\d{3})+$/.test(value)) value = value.replace(/\./g, "");
-  const match = /^(\d{1,7})(?:\.(\d{1,2}))?$/.exec(value);
+  const match =
+    /^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/.exec(value) ??
+    /^(\d+)\.(\d{1,2})$/.exec(value);
   if (!match) return null;
-  return Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
+  const euros = match[1].replace(/\./g, "");
+  if (euros.length > 7) return null;
+  return Number(euros) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
 }
 
 const berlin = new Intl.DateTimeFormat("en-US", {
@@ -272,48 +278,42 @@ const berlin = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
-  second: "2-digit",
 });
-function berlinParts(ms: number) {
+function berlinWall(ms: number) {
   const parts = Object.fromEntries(
     berlin.formatToParts(new Date(ms)).map((p) => [p.type, p.value]),
   );
-  return {
-    year: Number(parts.year),
-    month: Number(parts.month),
-    day: Number(parts.day),
-    hour: Number(parts.hour),
-    minute: Number(parts.minute),
-    second: Number(parts.second),
-  };
-}
-function berlinOffset(ms: number) {
-  const p = berlinParts(ms);
-  return (
-    Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) -
-    Math.floor(ms / 1000) * 1000
-  );
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 }
 
-/** Wandzeit in Europe/Berlin („2026-11-14T19:00“) → ISO-Zeitpunkt in UTC. */
-export function berlinLocalToIso(local: string): string | null {
+/**
+ * Alle Zeitpunkte, die in Europe/Berlin die Wandzeit „local“ zeigen, aufsteigend.
+ * Leer bei nicht existierender Uhrzeit (Sprung auf Sommerzeit), zwei Einträge bei
+ * doppelter Uhrzeit (Rückstellung auf Winterzeit: zuerst Sommerzeit, dann Winterzeit).
+ */
+export function berlinLocalCandidates(local: string): string[] {
   const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(local);
-  if (!match) return null;
+  if (!match) return [];
   const [, y, mo, d, h, mi] = match.map(Number);
   const wall = Date.UTC(y, mo - 1, d, h, mi);
-  let utc = wall - berlinOffset(wall);
-  utc = wall - berlinOffset(utc);
-  return new Date(utc).toISOString();
+  // Europe/Berlin liegt immer bei UTC+1 oder UTC+2.
+  return [2, 1]
+    .map((hours) => wall - hours * 3600000)
+    .filter((ms) => berlinWall(ms) === local)
+    .map((ms) => new Date(ms).toISOString());
+}
+
+/** Eindeutige Berliner Wandzeit → ISO-Zeitpunkt; nicht existierend oder doppelt → null. */
+export function berlinLocalToIso(local: string): string | null {
+  const candidates = berlinLocalCandidates(local);
+  return candidates.length === 1 ? candidates[0] : null;
 }
 
 /** ISO-Zeitpunkt → Wandzeit in Europe/Berlin für <input type="datetime-local">. */
 export function isoToBerlinLocal(iso: string | null): string {
   if (!iso) return "";
   const ms = Date.parse(iso);
-  if (Number.isNaN(ms)) return "";
-  const p = berlinParts(ms);
-  const two = (n: number) => String(n).padStart(2, "0");
-  return `${p.year}-${two(p.month)}-${two(p.day)}T${two(p.hour)}:${two(p.minute)}`;
+  return Number.isNaN(ms) ? "" : berlinWall(ms);
 }
 
 /** Anzeige „14.11.2026, 19:00 Uhr“ in Europe/Berlin. */

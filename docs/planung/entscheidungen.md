@@ -151,20 +151,14 @@
 - Erster weiterer Baustein: S3-01 Inhaltspakete mit lokaler SQLite-Ablage. Kein neues Rechte-/Ausfallmodell, keine Liveaktivierung und keine Ablösung des geplanten Windows-Renderers durch Browserausgabe.
 - Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
 
-## D018 – Windows-Setup-Anwendung für den Streaming-Rechner
-
-- Status: bestätigt durch ausdrücklichen Betreiberauftrag (Eintrag am 15. Oktober 2026 nachgetragen; D018 wurde bereits in Arbeitspaketen, Abnahmeplan, Lizenzen und Status referenziert, fehlte aber hier)
-- Datum: 14. Oktober 2026
-- Folge: Der Streaming-Rechner erhält eine deutsche Windows-Setup-Anwendung mit gebündeltem Server, Node-Laufzeit und Renderer-Grundlage, Startmenü und Deinstallation; private Daten bleiben bei Update/Deinstallation erhalten.
-- Dokumente: [Streaming-Installer](../entwicklung/s3-streaming-installer.md), [Arbeitspakete](../entwicklung/arbeitspakete.md).
-
 ## D019 – Ticketshop S8-01: Bearbeitung durch Admin und Leitung
 
-- Status: bestätigt durch Betreiber
+- Status: vom Betreiber in der Claude-Unterhaltung ausgewählt; direkte Bestätigung des Betreibers in Issue #43 ausstehend
 - Datum: 15. Oktober 2026
+- Nachweis: Auf die Rückfrage „Wer darf im ersten Ticketshop-Paket Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung bearbeiten?“ wählte der Betreiber „Admin + Leitung“ statt „Neue Einzelrechte sofort“. Diese Unterhaltung ist für Codex nicht einsehbar; Git-Autorenschaft ist kein Nachweis.
 - Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung lesen und bearbeiten im ersten Ticketshop-Paket ausschließlich Systemadmin und Veranstaltungsleitung, mit bestehender MFA-Pflicht.
 - Die Einzelrechte der Rolle „Verkauf und Einlass“ (Saalplan, Verkauf, Zahlung, Stornierung, Erstattung, Freikarten, manueller Einlass, Wiedereintritt) bleiben verbindliches Ziel und werden als eigenes, vorher abgestimmtes Paket eingeführt.
-- Umsetzung von S8-01 durch Codex mit lokalen Tests; Claude liefert Spezifikation und Review.
+- Umsetzung von S8-01 durch Claude (Betreiberauftrag vom 15. Oktober 2026), unabhängiger Review durch Codex in PR #49.
 - Dokument: [S8-01 Ticketvorbereitung](../entwicklung/s8-01-ticketvorbereitung.md), [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43).
 
 ## Weitere technische Konkretisierungen (ohne eigene D-Nummer)

@@ -1,6 +1,6 @@
 # Entwicklungsplan – Server zuerst, danach Agenten
 
-S8-01, 15\. Oktober 2026: erstes Ticketshop-Paket – Ticketarten, Preise, Kontingente und Verkaufszeiten je Veranstaltung vorbereiten, nur Admin/Leitung (D019), kein Verkauf. [Spezifikation](s8-01-ticketvorbereitung.md), [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43). Umsetzung durch Codex.
+S8-01, 15\. Oktober 2026: erstes Ticketshop-Paket – Ticketarten, Preise, Kontingente und Verkaufszeiten je Veranstaltung vorbereiten, nur Admin/Leitung (D019), kein Verkauf. [Spezifikation](s8-01-ticketvorbereitung.md), [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43). Umsetzung durch Claude in PR #49, Review durch Codex.
 
 15. Oktober 2026: [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41), nächstes sichtbares Onlinepaket: gespeicherte Timer-/Hinweisvorbereitung pro Show und persönliche stumme Browserprobe. Vorhandene Vorbereitungsrechte, Revisionen und unabhängige Showkopie; keine neuen Live-/Ausfallregeln. F20/A10 nur teilweise adressiert. [Ablauf und Grenzen](stage-timer-vorbereitung.md); Status/Prüfungen während Umsetzung führen. Ticketshop und vollständiger lokaler Showbetrieb bleiben Folgepakete.
 

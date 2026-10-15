@@ -5,6 +5,7 @@ import { totp } from "../../apps/api/src/security.js";
 
 test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor – ohne Verkauf", async ({
   page,
+  context,
 }) => {
   test.setTimeout(180000);
   page.setDefaultTimeout(15000);
@@ -13,6 +14,24 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor �
   f.cfg.PUBLIC_BASE_URL = f.cfg.origin;
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  let other: Page | undefined;
+  /** Synthetischer API-Aufruf aus dem angemeldeten Fenster, mit dessen CSRF-Token. */
+  const call = (window: Page, path: string, method = "GET", body?: unknown) =>
+    window.evaluate(
+      async ({ path, method, body }) => {
+        const me = await (await fetch("/api/v1/me")).json();
+        const response = await fetch("/api/v1" + path, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": me.csrfToken,
+          },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        });
+        return { status: response.status, json: await response.json() };
+      },
+      { path, method, body },
+    );
   const region = (name: string) =>
     page.getByRole("region", { name, exact: true });
   const form = (name: string) => page.getByRole("form", { name, exact: true });
@@ -178,35 +197,92 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor �
     );
     console.log("Ticketprobe: Bearbeitung und Löschschutz bestanden");
 
-    // Ein Konflikt überschreibt nichts und erhält die Eingabe.
-    let rejected = 0;
-    await page.route("**/api/v1/events/*/tickets/settings", async (route) => {
-      rejected++;
-      await route.fulfill({
-        status: 409,
-        contentType: "application/json",
-        body: JSON.stringify({
-          error: {
-            code: "REVISION_CONFLICT",
-            message: "Synthetischer Konflikt",
-          },
-        }),
-      });
+    // Review #49: echte Konflikte zwischen zwei Fenstern, ohne Mock und mit tatsächlicher Revisionsänderung.
+    other = await context.newPage();
+    other.setDefaultTimeout(15000);
+    other.on("pageerror", (error) => errors.push(error.message));
+    await other.setViewportSize({ width: 1280, height: 900 });
+    await other.goto(f.cfg.origin);
+    await openTickets(other);
+    const otherRegion = (name: string) =>
+      other!.getByRole("region", { name, exact: true });
+    const save = (scope: ReturnType<Page["getByRole"]>, name: string) =>
+      scope.getByRole("button", { name, exact: true }).click();
+
+    const normalRow = list.getByRole("listitem", {
+      name: "Ticketart Normal",
+      exact: true,
     });
+    await normalRow
+      .getByRole("button", { name: "Bearbeiten", exact: true })
+      .click();
+    const mine = form("Ticketart Normal bearbeiten");
+    await mine.getByLabel("Preis in Euro", { exact: true }).fill("16");
+    await otherRegion("Ticketarten")
+      .getByRole("listitem", { name: "Ticketart Normal", exact: true })
+      .getByRole("button", { name: "Bearbeiten", exact: true })
+      .click();
+    const theirs = other.getByRole("form", {
+      name: "Ticketart Normal bearbeiten",
+      exact: true,
+    });
+    await theirs.getByLabel("Preis in Euro", { exact: true }).fill("17");
+    await save(theirs, "Ticketart speichern");
+    await expect(
+      other.getByText("Ticketart „Normal“ gespeichert."),
+    ).toBeVisible();
+    await save(mine, "Ticketart speichern");
+    await expect(page.getByRole("alert")).toContainText(
+      "Deine Eingaben bleiben erhalten",
+    );
+    await expect(mine.getByLabel("Preis in Euro", { exact: true })).toHaveValue(
+      "16",
+    );
+    const typeChoice = normalRow.getByRole("group", {
+      name: "Versionskonflikt",
+      exact: true,
+    });
+    await expect(typeChoice).toContainText("17,00 €");
+    await expect(
+      mine.getByRole("button", { name: "Ticketart speichern", exact: true }),
+    ).toBeDisabled();
+    await typeChoice
+      .getByRole("button", { name: "Meine Fassung beibehalten", exact: true })
+      .click();
+    await save(mine, "Ticketart speichern");
+    await expect(
+      page.getByText("Ticketart „Normal“ gespeichert."),
+    ).toBeVisible();
+    await expect(normalRow.getByTestId("ticket-price")).toHaveText("16,00 €");
+
     await times
       .getByLabel("Tickets je Bestellung höchstens", { exact: true })
       .fill("6");
-    await times
-      .getByRole("button", { name: "Verkaufszeiten speichern", exact: true })
-      .click();
+    const otherTimes = otherRegion("Verkaufszeiten");
+    await otherTimes
+      .getByLabel("Tickets je Bestellung höchstens", { exact: true })
+      .fill("5");
+    await save(otherTimes, "Verkaufszeiten speichern");
+    await expect(other.getByText("Verkaufszeiten gespeichert.")).toBeVisible();
+    await save(times, "Verkaufszeiten speichern");
     await expect(page.getByRole("alert")).toContainText(
-      "deine Eingaben stehen noch im Formular",
+      "Deine Eingaben bleiben erhalten",
     );
     await expect(
       times.getByLabel("Tickets je Bestellung höchstens", { exact: true }),
     ).toHaveValue("6");
-    expect(rejected).toBe(1);
-    await page.unroute("**/api/v1/events/*/tickets/settings");
+    const settingsChoice = times.getByRole("group", {
+      name: "Versionskonflikt",
+      exact: true,
+    });
+    await expect(settingsChoice).toContainText("höchstens 5 je Bestellung");
+    await settingsChoice
+      .getByRole("button", { name: "Aktuellen Stand übernehmen", exact: true })
+      .click();
+    await expect(
+      times.getByLabel("Tickets je Bestellung höchstens", { exact: true }),
+    ).toHaveValue("5");
+    console.log("Ticketprobe: echte Zwei-Fenster-Konflikte bestanden");
 
     await page.reload();
     await openTickets(page);
@@ -217,7 +293,7 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor �
       region("Verkaufszeiten").getByLabel("Tickets je Bestellung höchstens", {
         exact: true,
       }),
-    ).toHaveValue("8");
+    ).toHaveValue("5");
     await expect(region("Ticketarten").getByRole("listitem")).toHaveCount(3);
     await expect(
       region("Ticketarten")
@@ -225,6 +301,54 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor �
         .getByTestId("ticket-price"),
     ).toHaveText("9,50 €");
     console.log("Ticketprobe: Neuladen erhält den Stand");
+
+    // Review #49: doppelte Uhrzeit bleibt beim unveränderten Speichern exakt erhalten, Lücke wird abgelehnt.
+    const events = (await call(page, "/events")).json as any[];
+    const eventId = events.find(
+      (e) => e.name === "Synthetische Ticketnacht",
+    ).id;
+    const ticketsPath = `/events/${eventId}/tickets`;
+    const stored = (await call(page, ticketsPath)).json.settings;
+    const ambiguous = await call(page, ticketsPath + "/settings", "PUT", {
+      expectedRevision: stored.revision,
+      saleStartsAt: stored.saleStartsAt,
+      saleEndsAt: stored.saleEndsAt,
+      maxTicketsPerOrder: stored.maxTicketsPerOrder,
+      admissionAt: "2026-10-25T00:30:00.000Z",
+      startsAt: stored.startsAt,
+    });
+    expect(ambiguous.status).toBe(200);
+    await page.reload();
+    await openTickets(page);
+    const dst = region("Verkaufszeiten");
+    await expect(dst.getByLabel("Einlass", { exact: true })).toHaveValue(
+      "2026-10-25T02:30",
+    );
+    await expect(
+      dst.getByRole("combobox", {
+        name: "Einlass: Zeitumstellung",
+        exact: true,
+      }),
+    ).toHaveValue("first");
+    await dst
+      .getByLabel("Tickets je Bestellung höchstens", { exact: true })
+      .fill("7");
+    await save(dst, "Verkaufszeiten speichern");
+    await expect(page.getByText("Verkaufszeiten gespeichert.")).toBeVisible();
+    const unchanged = (await call(page, ticketsPath)).json.settings;
+    expect(unchanged.admissionAt).toBe("2026-10-25T00:30:00.000Z");
+    expect(unchanged.maxTicketsPerOrder).toBe(7);
+    await dst
+      .getByLabel("Verkaufsbeginn", { exact: true })
+      .fill("2027-03-28T02:30");
+    await save(dst, "Verkaufszeiten speichern");
+    await expect(dst.getByRole("alert")).toContainText(
+      "wegen der Umstellung auf Sommerzeit nicht",
+    );
+    expect((await call(page, ticketsPath)).json.settings.revision).toBe(
+      unchanged.revision,
+    );
+    console.log("Ticketprobe: Zeitumstellung bestanden");
 
     await mkdir(".local", { recursive: true });
     await page.screenshot({
@@ -257,6 +381,7 @@ test("S8-01: Leitung bereitet Verkaufszeiten, Kontingente und Ticketarten vor �
     expect(errors).toEqual([]);
   } finally {
     await page.goto("about:blank").catch(() => {});
+    await other?.close().catch(() => {});
     for (const socket of f.app.websocketServer.clients) socket.terminate();
     f.app.server.closeAllConnections();
     await f.close();
