@@ -92,17 +92,17 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
     await page.mouse.down();
     await page.mouse.move(from.x + 60, from.y + 30, { steps: 6 });
     await page.mouse.up();
+    await expect.poll(() => num("X")).toBeGreaterThan(start.x + 50);
+    await expect.poll(() => num("Y")).toBeGreaterThan(start.y + 20);
     const moved = { x: await num("X"), y: await num("Y") };
-    expect(moved.x).toBeGreaterThan(start.x + 50);
-    expect(moved.y).toBeGreaterThan(start.y + 20);
+    const position = async () => ({ x: await num("X"), y: await num("Y") });
     await page.keyboard.press("Control+z");
-    expect({ x: await num("X"), y: await num("Y") }).toEqual(start);
+    await expect.poll(position).toEqual(start);
     await page.keyboard.press("Control+y");
-    expect({ x: await num("X"), y: await num("Y") }).toEqual(moved);
+    await expect.poll(position).toEqual(moved);
     await page.keyboard.press("Shift+ArrowRight");
     await page.keyboard.press("ArrowDown");
-    expect(await num("X")).toBe(moved.x + 10);
-    expect(await num("Y")).toBe(moved.y + 1);
+    await expect.poll(position).toEqual({ x: moved.x + 10, y: moved.y + 1 });
 
     // Resize with the corner handle.
     const width = await num("Breite");
@@ -111,7 +111,7 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
     await page.mouse.down();
     await page.mouse.move(handle.x + 50, handle.y + 20, { steps: 6 });
     await page.mouse.up();
-    expect(await num("Breite")).toBeGreaterThan(width + 40);
+    await expect.poll(() => num("Breite")).toBeGreaterThan(width + 40);
 
     // Drag a checked image from the media strip onto the canvas.
     await page
@@ -212,7 +212,9 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
       "ShowNight · synthetischer Titel",
     );
     await expect(field("Ebenentext")).toBeDisabled();
-    expect({ x: await num("X"), y: await num("Y") }).toEqual(final);
+    await expect
+      .poll(async () => ({ x: await num("X"), y: await num("Y") }))
+      .toEqual(final);
     expect(errors).toEqual([]);
   } finally {
     await page.goto("about:blank").catch(() => {});

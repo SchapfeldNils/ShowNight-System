@@ -654,10 +654,13 @@ function NumberField({
 }) {
   // Local text keeps partial input (e.g. "2" on the way to "24"); only values
   // inside the contract range are applied, the rest is corrected on blur.
-  const [text, setText] = useState(String(value));
-  useEffect(() => {
-    setText((t) => (Number(t) === value && t !== "" ? t : String(value)));
-  }, [value]);
+  const [text, setText] = useState(String(value)),
+    [seen, setSeen] = useState(value);
+  // Follow outside changes (undo, drag) in the same render, not one effect later.
+  if (seen !== value) {
+    setSeen(value);
+    setText(Number(text) === value && text !== "" ? text : String(value));
+  }
   return (
     <label>
       {label}
