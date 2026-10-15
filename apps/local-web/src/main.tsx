@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SceneSketch } from "../../web/src/scenes.js";
+import { SceneSketch } from "../../web/src/scene-sketch.js";
 import { createRoot } from "react-dom/client";
 import "../../web/src/style.css";
 import "./style.css";

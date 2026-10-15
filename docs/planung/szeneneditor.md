@@ -14,3 +14,5 @@ Datum: 9. Oktober 2026. Status: bestätigt. Antwort „aaaaaaaaaa“ als 1A bis 
 10. **A bestätigt:** Fehlende Medien erscheinen als deutliche Platzhalter im Editor und als sichtbare Fehler in der Prüfübersicht. Für die echte Ausgabe gelten die bestehenden Validierungs- und Ersatzregeln.
 
 Siehe D006 im [Entscheidungsprotokoll](entscheidungen.md). Diese Regeln sind Zielanforderungen, keine bereits implementierte Software.
+
+Umsetzungsstand: Paket 1 (Bedienung ohne Schemaänderung) siehe [s3-szeneneditor.md](../entwicklung/s3-szeneneditor.md), Issue #44.
