@@ -11,6 +11,10 @@
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
 
+## Szeneneditor Paket 1 (Issue #44, PR offen) – 15. Oktober 2026
+
+Claude setzt auf Branch `claude/issue-44-szeneneditor` (Basis `main` `06aa8f9`) die Editorbedienung ohne Schemaänderung um: Maus/Tastatur auf der Arbeitsfläche, Einrasten, Ebenenliste mit Namen und Miniaturen, Eigenschaftenleiste je Ebene, Ziehen aus der Medienleiste, Rückgängig/Wiederholen und Prüfübersicht. Vorlagen, Video/Animation, Drehung und Renderer bleiben Folgepakete. Nicht gemergt, nicht produktiv. [Umfang, Prüfungen und Grenzen](s3-szeneneditor.md).
+
 ## Stage-Timer-Vorbereitung vor dem Merge (PR #42) – 15. Oktober 2026
 
 Abschluss lokaler Umsetzung: Code `890779b` in [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), Typen/Build, Units55/55, Timer-PostgreSQL6/6, Szenen/Pakete5/5 und echter Timerbrowser1/1 bestanden. Mobiler Showheaderüberlauf behoben und bei390px erneut geprüft; Code und Fix unabhängig ohne bestätigte Befunde geprüft. Alle vier abschließenden CI-Workflows am neuen Code vollständig erfolgreich. Finaler unabhängiger Nachweisreview ohne bestätigte Befunde. PR reviewbereit; kein Merge/Produktivupdate. [Abschluss-/Übergabestand und Screenshots](stage-timer-vorbereitung.md). Ticketshopumfang jetzt zusätzlich in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) dokumentiert.
