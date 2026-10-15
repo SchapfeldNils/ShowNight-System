@@ -81,7 +81,7 @@ test("S3-06: PostgreSQL-Szenen, echte Leases, Rechte, Kopie und SQLite-Paketimpo
         await migrate(f.db);
         assert.equal(
           (await f.app.inject({ url: "/health/ready" })).json().schemaVersion,
-          6,
+          7,
         );
         show = await ok("/shows", "POST", {
           name: "Synthetische Szenenvorlage",

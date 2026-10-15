@@ -32,6 +32,7 @@
     "local:packages": "tsx apps/local/src/main.ts",
     "test:packages": "tsx --test tests/packages-integration.ts",
     "test:scenes": "tsx --test tests/scenes-integration.ts",
+    "test:timers": "tsx --test tests/timer-integration.ts",
     "test:offline": "tsx --test tests/offline-integration.ts",
     "server:package": "node scripts/agent-package.mjs server",
     "server:local": "tsx apps/local/src/server-main.ts",

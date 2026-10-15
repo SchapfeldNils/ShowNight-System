@@ -14,6 +14,7 @@ import { OfflineExport } from "./offline.js";
 import { SceneDrafts } from "./scenes.js";
 import { Account } from "./account.js";
 import { Recovery } from "./recovery.js";
+import { TimerPreparationEditor } from "./timer-preparation.js";
 import type { SceneRecord } from "../../../packages/contracts/src/scene.js";
 type Me = {
   id: string;
@@ -1708,6 +1709,19 @@ function ShowEditor({
         api={api}
         onScenes={setScenes}
         onEditing={setSceneEditing}
+        onSaved={(before, after) =>
+          setS((current) =>
+            current.revision === before
+              ? { ...current, revision: after }
+              : current,
+          )
+        }
+      />
+      <TimerPreparationEditor
+        key={ownerId + ":" + s.id}
+        showId={s.id}
+        canEdit={s.canEdit}
+        api={api}
         onSaved={(before, after) =>
           setS((current) =>
             current.revision === before

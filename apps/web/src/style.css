@@ -541,3 +541,75 @@ button:focus-visible {
   width: auto;
   display: inline;
 }
+.timer-preparation {
+  margin: 24px 0;
+  border: 1px solid #465360;
+  padding: 16px;
+  border-radius: 10px;
+  min-width: 0;
+}
+.timer-preparation fieldset {
+  min-width: 0;
+  border: 1px solid #465360;
+  margin: 12px 0;
+}
+.timer-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+  gap: 12px;
+}
+.timer-fields label {
+  min-width: 0;
+}
+.timer-preparation input,
+.timer-preparation select,
+.timer-preparation textarea {
+  max-width: 100%;
+}
+.timer-preparation input[type="checkbox"] {
+  width: auto;
+  display: inline;
+  margin-right: 8px;
+}
+.timer-preparation input[type="color"] {
+  width: 80px;
+  height: 36px;
+  padding: 2px;
+}
+.timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.timer-actions button {
+  white-space: normal;
+}
+.timer-monitor {
+  background: #07090d;
+  border: 1px solid #465360;
+  border-radius: 10px;
+  padding: 24px 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.timer-digits {
+  display: block;
+  font:
+    700 clamp(38px, 7vw, 100px) / 1.2 ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.timer-simulation {
+  color: #bfc7d5;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.timer-hint {
+  font-size: clamp(20px, 3vw, 38px);
+  white-space: pre-wrap;
+}
+.timer-hint-large {
+  font-size: clamp(28px, 4vw, 58px);
+}

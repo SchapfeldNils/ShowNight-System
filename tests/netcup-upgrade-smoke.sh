@@ -2,7 +2,7 @@
 set -eu
 # CI-only rehearsal with synthetic data. Never accepts a production env/volume.
 [ "${CI:-}" = true ] || { echo 'Nur auf isoliertem CI-Runner ausführen.' >&2; exit 1; }
-baseline=1c983fc01c98916fc782422f19e67567821bdaaa
+baseline=f232483fd04f47dfa8c973fe1892859a3e84d27b
 [ "$(git -C .local/netcup-baseline rev-parse HEAD)" = "$baseline" ] || { echo 'Falsche Baseline.' >&2; exit 1; }
 [ ! -e .local/netcup-release ] || { echo 'Vorhandener privater Teststand; Abbruch.' >&2; exit 1; }
 [ ! -e test-results/netcup-release ] || { echo 'Vorhandener Nachweis; Abbruch.' >&2; exit 1; }
@@ -33,9 +33,9 @@ cleanup() {
 }
 trap cleanup EXIT
 docker network create shownight-netcup-release-proxy >/dev/null
-docker build -t shownight:netcup-release-schema4 .local/netcup-baseline
+docker build -t shownight:netcup-release-schema6 .local/netcup-baseline
 docker build -t shownight:netcup-release-candidate .
-docker image inspect shownight:netcup-release-schema4 --format '{{json .}}' > "$private/baseline-image.json"
+docker image inspect shownight:netcup-release-schema6 --format '{{json .}}' > "$private/baseline-image.json"
 docker image inspect shownight:netcup-release-candidate --format '{{json .}}' > "$private/candidate-image.json"
 mfa_secret=$(openssl rand -hex 32)
 export SN_PROBE_PASSWORD=$(openssl rand -hex 24)
@@ -58,7 +58,7 @@ MAIL_MODE=test
 MAIL_DELIVERY_ENABLED=false
 EOF
 }
-make_env source shownight:netcup-release-schema4
+make_env source shownight:netcup-release-schema6
 compose() { phase=$1; shift; docker compose --env-file "$private/$phase.env" -f "$compose_file" "$@"; }
 versions() {
   phase=$1 expected=$2
@@ -72,14 +72,14 @@ probe() {
 }
 compose source up -d --wait postgres
 compose source run --rm app node dist/api/cli.js migrate
-versions source 1,2,3,4
+versions source 1,2,3,4,5,6
 compose source run --rm -e BOOTSTRAP_LOGIN -e BOOTSTRAP_NAME -e BOOTSTRAP_PASSWORD app node dist/api/cli.js bootstrap
 compose source run --rm app node dist/api/cli.js demo
 compose source up -d --wait app worker
 export SN_PROBE_FIXTURE=''
-probe source enroll 4 "$private/fixture.json"
+probe source enroll 6 "$private/fixture.json"
 export SN_PROBE_FIXTURE=$(cat "$private/fixture.json")
-# A harmless completed old test job proves migration 005 preserves its test nature.
+# A harmless completed test job must retain its persisted test mode across migration 007.
 compose source exec -T postgres psql -U shownight -d shownight -v ON_ERROR_STOP=1 -c "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status) VALUES(gen_random_uuid(),'release-existing-test','release@example.invalid','Synthetische Probe','Keine echte Nachricht','simulated')" >/dev/null
 # Exact candidate runner, encrypted archive and authenticated extraction, all private.
 mkdir "$private/archives"
@@ -93,29 +93,29 @@ node scripts/backup-vault.mjs open "$1" "$private/restored" < "$private/backup-p
 unset mfa_secret
 mfa_secret=$(node -e 'const fs=require("node:fs");const text=fs.readFileSync(process.argv[1],"utf8");const lines=text.split(/\r?\n/).filter(x=>x.startsWith("MFA_ENCRYPTION_KEY="));if(lines.length!==1||!/^MFA_ENCRYPTION_KEY=[a-f0-9]{64}$/.test(lines[0]))process.exit(1);process.stdout.write(lines[0].split("=")[1]);' "$private/restored/stack.env")
 make_env target shownight:netcup-release-candidate
-make_env rollback shownight:netcup-release-schema4
+make_env rollback shownight:netcup-release-schema6
 # No old app/worker remains active while new workers run against the migrated copy.
 compose source stop app worker
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/target.env" "$private/restored"
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5,6
+versions target 1,2,3,4,5,6,7
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5,6
+versions target 1,2,3,4,5,6,7
 mail_default=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='mail_jobs' AND column_name='delivery_mode'")
 [ "$mail_default" = "'test'::text" ] || { echo 'Testversand-Default fehlt.' >&2; exit 1; }
 old_mail=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT count(*) FROM mail_jobs WHERE business_key='release-existing-test' AND delivery_mode='test' AND status='simulated'")
 [ "$old_mail" = 1 ] || { echo 'Bestehender Testauftrag verändert.' >&2; exit 1; }
 compose target up -d --wait app worker
-probe target check 6 "$private/target-check.json"
+probe target check 7 "$private/target-check.json"
 compose target stop app worker
 # Return uses the SAME original snapshot in another fresh stack, never SQL downgrade.
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/rollback.env" "$private/restored"
 compose rollback run --rm app node dist/api/cli.js migrate
-versions rollback 1,2,3,4
+versions rollback 1,2,3,4,5,6
 rollback_mail_column=$(compose rollback exec -T postgres psql -U shownight -d shownight -Atc "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='mail_jobs' AND column_name='delivery_mode'")
-[ "$rollback_mail_column" = 0 ] || { echo 'Rückkehr enthält unerwartet Schema 5.' >&2; exit 1; }
+[ "$rollback_mail_column" = 1 ] || { echo 'Rückkehr benötigt den ursprünglichen Schema-6-Mailmodus.' >&2; exit 1; }
 compose rollback up -d --wait app worker
-probe rollback check 4 "$private/rollback-check.json"
+probe rollback check 6 "$private/rollback-check.json"
 unset SN_PROBE_PASSWORD SN_PROBE_FIXTURE BOOTSTRAP_PASSWORD mfa_secret
 node --input-type=module - "$private" <<'PROOF'
 import {readFile, writeFile} from 'node:fs/promises';
@@ -126,8 +126,8 @@ const read=async name=>JSON.parse(await readFile(`${root}/${name}`, 'utf8'));
 const old=await read('baseline-image.json'), current=await read('candidate-image.json');
 const target=await read('target-check.json'), rollback=await read('rollback-check.json');
 // Deliberate allowlist: private MFA/password/fixture/config data never enters proof.
-const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'1c983fc01c98916fc782422f19e67567821bdaaa',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:4,targetSchema:6,rollbackSchema:4,targetMigrations:[1,2,3,4,5,6],rollbackMigrations:[1,2,3,4],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
+const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'f232483fd04f47dfa8c973fe1892859a3e84d27b',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:6,targetSchema:7,rollbackSchema:6,targetMigrations:[1,2,3,4,5,6,7],rollbackMigrations:[1,2,3,4,5,6],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
 assert.equal(target.passed,true);assert.equal(rollback.passed,true);
 await writeFile('test-results/netcup-release/result.json',JSON.stringify(result,null,2)+'\n');
-console.log('Isolierter Schema-4→6- und Rückkehrnachweis bestanden; keine Produktivänderung.');
+console.log('Isolierter Schema-6→7- und Rückkehrnachweis bestanden; keine Produktivänderung.');
 PROOF

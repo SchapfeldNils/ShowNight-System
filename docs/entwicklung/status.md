@@ -1,3 +1,7 @@
+# In Arbeit: sichtbare Stage-Timer-Vorbereitung – 15. Oktober 2026
+
+Manuell fortgesetzt nach Betreiberauftrag, reguläres Kontingent verfügbar; keine bezahlte Fortsetzung autorisiert. Auf main `e183cf5` eigener Branch `codex/stage-timer-preparation`, [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41). Gespeicherter Bühnenmonitorentwurf je Show und persönliche stumme Browserprobe werden implementiert/geprüft. Kein gemeinsamer Live-Timer auf Netcup, kein Offlineexport oder Produktivupdate. Backend, eigenständige Tests und nicht implementierender Review sind getrennt zugeordnet. [Ablauf und Grenzen](stage-timer-vorbereitung.md). Softwareissues #31/#36 mit Nachweisen geschlossen; #3 bleibt für regelmäßigen Sicherungsbetrieb offen. Automatische Fortsetzung bleibt pausiert.
+
 # Produktivstand – 15. Oktober 2026
 
 Nach ausdrücklicher Betreiberfreigabe gemeinsame Runtime `f232483` tatsächlich auf Netcup bereitgestellt, öffentliche HTTPS-Readiness Schema 6. Frisches konsistentes Backup, verschlüsselte Windows-Kopie samt Entschlüsselungsprüfung und isolierter Schema4-Restore/Schema6-Migration mit Bestandsvergleich bestanden. Originalvolumes und altes Image erhalten. Kontomailversand aktiv, SMTP-TLS/Anmeldung aus Worker bestätigt; tatsächliche Zustellung und gewünschter Passwortreset warten noch auf persönliche Adressbestätigung. Kein Passwort-/MFA-Bypass. [Wartungsprotokoll und Grenzen](online-produktivupdate.md). Frühere Aussagen „noch nicht bereitgestellt“ unten sind historische Stände.
