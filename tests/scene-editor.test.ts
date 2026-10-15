@@ -13,6 +13,8 @@ import {
   clampBox,
   emptyHistory,
   moveLayer,
+  movedBox,
+  resizedBox,
   newLayer,
   nudge,
   placeBox,
@@ -240,4 +242,20 @@ test("Szeneneditor: Prüfübersicht meldet ungültige Namen und wartet auf die M
     checkScene(s, []).filter((c) => c.layerId === s.layers[1].id).length,
     1,
   );
+});
+
+test("Szeneneditor: Mausgesten runden nur die veränderte Komponente (Codex-Review #55)", () => {
+  const start = { x: 300.5, y: 200.25, width: 100.5, height: 50.4 };
+  assert.deepEqual(movedBox(start, 340.4, 9000), {
+    x: 340,
+    y: 8192,
+    width: 100.5,
+    height: 50.4,
+  });
+  assert.deepEqual(resizedBox(start, 0.2, 130.6), {
+    x: 300.5,
+    y: 200.25,
+    width: 1,
+    height: 131,
+  });
 });

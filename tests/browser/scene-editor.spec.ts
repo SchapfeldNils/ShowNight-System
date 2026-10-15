@@ -215,6 +215,105 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
     await expect
       .poll(async () => ({ x: await num("X"), y: await num("Y") }))
       .toEqual(final);
+
+    // Codex-Review PR #55, Befund 2: Mausgesten runden nur die Komponente,
+    // die sie verändern. Gebrochene Werte bleiben exakt erhalten.
+    await page
+      .getByRole("button", { name: "Szene bearbeiten", exact: true })
+      .click();
+    await expect(field("Ebenentext")).toBeEnabled();
+    await field("Breite").fill("100.5");
+    await field("Höhe").fill("50.4");
+    await field("X").fill("300.5");
+    await field("Y").fill("200.25");
+    await expect.poll(() => num("Höhe")).toBe(50.4);
+    const textHit = '.scene-hit[data-layer="Text 1"]';
+    const t0 = await centre(page, textHit);
+    await page.mouse.move(t0.x, t0.y);
+    await page.mouse.down();
+    await page.mouse.move(t0.x + 40, t0.y + 25, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(() => num("X")).not.toBe(300.5);
+    expect(await field("Breite").inputValue()).toBe("100.5");
+    expect(await field("Höhe").inputValue()).toBe("50.4");
+    await field("X").fill("300.5");
+    await field("Y").fill("200.25");
+    await expect.poll(() => num("Y")).toBe(200.25);
+    const h0 = await centre(page, ".scene-handle");
+    await page.mouse.move(h0.x, h0.y);
+    await page.mouse.down();
+    await page.mouse.move(h0.x + 30, h0.y + 15, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(() => num("Breite")).toBeGreaterThan(110);
+    expect(await field("X").inputValue()).toBe("300.5");
+    expect(await field("Y").inputValue()).toBe("200.25");
+    const kept = {
+      x: await field("X").inputValue(),
+      y: await field("Y").inputValue(),
+      w: await field("Breite").inputValue(),
+      h: await field("Höhe").inputValue(),
+    };
+    await saved();
+
+    // Codex-Review PR #55, Befund 1: Während die Freigabe auf die
+    // Lease-Antwort wartet, sind keine Entwurfsänderungen möglich.
+    let releaseDelayed = 0;
+    await page.route("**/api/v1/scenes/*/lease", async (route) => {
+      if (route.request().method() === "DELETE") {
+        releaseDelayed++;
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+      await route.continue();
+    });
+    await page
+      .getByRole("button", { name: "Speichern und freigeben", exact: true })
+      .click();
+    await expect(
+      page.getByText("Freigabe läuft · Änderungen bis zum Abschluss gesperrt"),
+    ).toBeVisible();
+    const media = page.getByRole("button", { name: /synthetisch\.png · bereit/ });
+    await expect(media).toBeDisabled();
+    await expect(
+      page.getByRole("button", { name: "Text hinzufügen", exact: true }),
+    ).toBeDisabled();
+    await expect(field("Ebenentext")).toBeDisabled();
+    // Even a forced event must not change the draft.
+    await media.dispatchEvent("click");
+    await page.locator(".scene-stage").focus();
+    await page.keyboard.press("Delete");
+    expect(await layerNames()).toEqual([
+      "Text 1",
+      "Rechteck 1",
+      "Synthetisches Logo",
+    ]);
+    await expect(
+      page.getByText("Gespeichert · Bearbeitung freigegeben", { exact: true }),
+    ).toBeVisible();
+    expect(releaseDelayed).toBe(1);
+    await page.unroute("**/api/v1/scenes/*/lease");
+    await page.reload();
+    await page.getByRole("button", { name: "Shows", exact: true }).click();
+    await page
+      .locator(".show-row")
+      .filter({ hasText: "Synthetische Szeneneditorprobe" })
+      .getByRole("button", { name: "Arbeitsfläche öffnen", exact: true })
+      .click();
+    await page
+      .getByRole("combobox", { name: "Szene ansehen", exact: true })
+      .selectOption({ label: "Neue Szene" });
+    expect(await layerNames()).toEqual([
+      "Text 1",
+      "Rechteck 1",
+      "Synthetisches Logo",
+    ]);
+    await expect
+      .poll(async () => ({
+        x: await field("X").inputValue(),
+        y: await field("Y").inputValue(),
+        w: await field("Breite").inputValue(),
+        h: await field("Höhe").inputValue(),
+      }))
+      .toEqual(kept);
     expect(errors).toEqual([]);
   } finally {
     await page.goto("about:blank").catch(() => {});

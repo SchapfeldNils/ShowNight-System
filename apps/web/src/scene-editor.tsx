@@ -16,13 +16,14 @@ import { SceneSketch } from "./scenes.js";
 import {
   IMAGE_MIMES,
   checkScene,
-  clampBox,
   kindIcon,
   kindLabel,
   mediaAspect,
   moveLayer,
+  movedBox,
   newLayer,
   nudge,
+  resizedBox,
   snapMove,
   snapResize,
   type Box,
@@ -208,7 +209,15 @@ export function SceneEditor({
         lines = { x: s.guidesX, y: s.guidesY };
       }
     }
-    const next = withLayer(d.before, d.id, clampBox(box));
+    // Only the component the gesture changes is rounded/limited; the others
+    // keep their exact (possibly fractional) values.
+    const next = withLayer(
+      d.before,
+      d.id,
+      d.mode === "move"
+        ? movedBox(d.box, box.x, box.y)
+        : resizedBox(d.box, box.width, box.height),
+    );
     d.latest = next;
     setGuides(lines);
     actions.live(next);

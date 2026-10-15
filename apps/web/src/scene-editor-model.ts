@@ -163,6 +163,25 @@ export function clampBox(box: Box): Box {
   };
 }
 
+/** Pointer move: only x/y change (rounded, in range); size stays exact. */
+export function movedBox(start: Box, x: number, y: number): Box {
+  return {
+    x: round(clamp(x, -LIMIT, LIMIT)),
+    y: round(clamp(y, -LIMIT, LIMIT)),
+    width: start.width,
+    height: start.height,
+  };
+}
+/** Corner resize: only width/height change (rounded, in range); x/y stay exact. */
+export function resizedBox(start: Box, width: number, height: number): Box {
+  return {
+    x: start.x,
+    y: start.y,
+    width: round(clamp(width, 1, LIMIT)),
+    height: round(clamp(height, 1, LIMIT)),
+  };
+}
+
 /** Move by whole pixels; width and height stay exactly as they are. */
 export function nudge(box: Box, dx: number, dy: number): Box {
   return {

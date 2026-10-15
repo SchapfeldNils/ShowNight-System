@@ -33,6 +33,15 @@ Die Große Arbeitsfläche zeigt den Speicherstatus und wird bei Speicher- oder S
 
 Eine unabhängige Subagenten-Prüfung (Claude, ohne Kenntnis der Umsetzung) an `499645f` fand keinen P1-Befund, drei P2- und acht P3-Befunde. Behoben im Fixcommit direkt nach `499645f` (Hash im PR #55): Zahleneingabe, Statusanzeige in der Großansicht, Prüfung abgelegter Medien-IDs, Ziehabbruch, Tastenkürzel auf Checkboxen/Farbfeldern, Entf nur auf der Arbeitsfläche, Seitenverhältnis hoher Bilder, Pfeiltasten ohne Größenrundung, Medienliste noch nicht geladen, Namensfehler in der Prüfübersicht, Medienleiste unabhängig vom Speichervorgang. Diese Vorprüfung ersetzt das Review durch Codex nicht.
 
+## Codex-Review an `a54a2ac` (zwei bestätigte P2)
+
+Korrigiert von Claude, unabhängige Nachprüfung durch Codex steht aus:
+
+1. **Freigabe als eigener Zustand:** Ab dem Klick auf „Speichern und freigeben“ bis zum Ende der Lease-Freigabe nimmt der Editor keine Entwurfsänderung mehr an. Werkzeugleiste, Medienleiste, Eigenschaften und Tastatur sind gesperrt, und alle Änderungsaktionen prüfen den Zustand zusätzlich. Ein laufendes Autospeichern wird abgewartet statt übersprungen. Die Erfolgsmeldung erscheint nur, wenn der angezeigte Stand dem gespeicherten entspricht. Das gewöhnliche Autospeichern lässt weiterhin parallele Eingaben zu.
+2. **Exakte Geometrie:** Mausverschieben ändert und rundet nur X/Y, Skalieren nur Breite/Höhe. Die jeweils anderen Werte bleiben exakt, auch gebrochene Werte wie 100.5 × 50.4.
+
+Regressionen: Unit-Test für `movedBox`/`resizedBox`; im Browsertest werden gebrochene Maße beim Verschieben und Skalieren mit der Maus geprüft, außerdem eine um 2,5 s verzögerte Lease-Freigabe mit Einfügeversuch und gespeichertem Serverstand nach dem Neuladen.
+
 ## Nicht enthalten (Folgepakete)
 
 Diese Punkte brauchen Schemaerweiterungen, Rendererarbeit oder Betreiberentscheidungen und sind ausdrücklich nicht umgesetzt:
@@ -57,7 +66,7 @@ Diese Punkte brauchen Schemaerweiterungen, Rendererarbeit oder Betreiberentschei
 - `tests/browser/scene-editor.spec.ts` (Teil von `pnpm test:browser`, eigene Testdatenbank Port 55462, HTTP 3006): Verschieben mit der Maus, Rückgängig/Wiederholen, Pfeiltasten, Eckgriff, Ziehen eines geprüften Bildes aus der Medienleiste, Umbenennen, Sichtbarkeit, Reihenfolge, Prüfübersicht, ausblendbare Bereiche, große Arbeitsfläche, mobile Breite ohne horizontales Scrollen, gespeicherter Serverstand nach Neuladen
 - Bestehende Prüfung `tests/browser/preparation.spec.ts` deckt weiterhin Sperre, fehlgeschlagene Speicherung und lokale Wiederherstellung ab
 
-In der Claude-Umgebung ist die npm-Registry gesperrt; dort liefen nur die Unit-Tests (9/9) mit einer Zod-Kopie sowie eine Chromium-Probe der Bedienung gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am jeweiligen PR-Commit.
+In der Claude-Umgebung ist die npm-Registry gesperrt; dort liefen nur die Unit-Tests (10/10) mit einer Zod-Kopie sowie eine Chromium-Probe der Bedienung gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am jeweiligen PR-Commit.
 
 ## Bekannte Grenzen
 

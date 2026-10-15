@@ -68,6 +68,12 @@ export function SceneDrafts({
     revision = useRef(0),
     alive = useRef(true);
   const saved = useRef("");
+  // Release ("Speichern und freigeben") is its own state: from the click until
+  // the lease is gone no draft change is accepted, so nothing can appear on
+  // screen that the server never received. Ordinary autosave keeps editing open.
+  const [releasing, setReleasing] = useState(false);
+  const releasingRef = useRef(false);
+  const draftRef = useRef<SceneDefinition | null>(null);
   const key = (id: string) => `shownight.scene-draft.${ownerId}.${id}`;
   const load = async () => {
     const next = await current.current.api<SceneRecord[]>(
@@ -112,13 +118,19 @@ export function SceneDrafts({
     return () => clearInterval(timer);
   }, [lease, blocked]);
   useEffect(() => {
-    if (!draft || !lease || blocked || saved.current === JSON.stringify(draft))
+    if (
+      !draft ||
+      !lease ||
+      blocked ||
+      releasing ||
+      saved.current === JSON.stringify(draft)
+    )
       return;
     const timer = setTimeout(() => {
       void persist(draft, lease);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [draft, lease, blocked, busy]);
+  }, [draft, lease, blocked, busy, releasing]);
   async function persist(value: SceneDefinition, active: Lease) {
     if (saving.current || held.current !== active) return;
     const valid = sceneDefinition.safeParse(value);
@@ -251,38 +263,65 @@ export function SceneDrafts({
     }
   }
   async function finish() {
-    if (!lease || saving.current) return;
-    if (!blocked && draft && JSON.stringify(draft) !== saved.current) {
-      if (!(await persist(draft, lease))) return;
-    }
-    setBusy(true);
+    if (!lease || releasingRef.current) return;
+    releasingRef.current = true;
+    setReleasing(true);
+    setStatus("Freigabe läuft · Änderungen bis zum Abschluss gesperrt");
     try {
-      await current.current.api(`/scenes/${lease.scene.id}/lease`, "DELETE", {
-        leaseToken: lease.leaseToken,
-      });
-      if (
-        !blocked &&
-        localStorage.getItem(key(lease.scene.id)) === saved.current
-      )
-        localStorage.removeItem(key(lease.scene.id));
-      setStatus(
-        blocked
-          ? "Bearbeitung beendet · lokalen Entwurf vor erneutem Laden vergleichen"
-          : "Gespeichert · Bearbeitung freigegeben",
-      );
-    } catch (e) {
-      setError((e as Error).message);
+      // An autosave may still be in flight; wait for it instead of skipping.
+      for (let i = 0; saving.current && i < 600; i++)
+        await new Promise((r) => setTimeout(r, 50));
+      if (saving.current) {
+        setError("Speicherung läuft noch. Bitte erneut freigeben.");
+        return;
+      }
+      const value = draftRef.current;
+      if (!blocked && value && JSON.stringify(value) !== saved.current) {
+        if (!(await persist(value, lease))) return;
+        setStatus("Freigabe läuft · Änderungen bis zum Abschluss gesperrt");
+      }
+      setBusy(true);
+      try {
+        await current.current.api(
+          `/scenes/${lease.scene.id}/lease`,
+          "DELETE",
+          { leaseToken: lease.leaseToken },
+        );
+        // Defensive: the success message only for exactly the saved state.
+        const unsaved =
+          !blocked && JSON.stringify(draftRef.current) !== saved.current;
+        if (
+          !blocked &&
+          !unsaved &&
+          localStorage.getItem(key(lease.scene.id)) === saved.current
+        )
+          localStorage.removeItem(key(lease.scene.id));
+        setStatus(
+          blocked
+            ? "Bearbeitung beendet · lokalen Entwurf vor erneutem Laden vergleichen"
+            : unsaved
+              ? "Freigegeben · letzte Änderung nicht gespeichert, lokaler Entwurf bleibt erhalten"
+              : "Gespeichert · Bearbeitung freigegeben",
+        );
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        held.current = null;
+        setLease(null);
+        setHistory(emptyHistory());
+        setBusy(false);
+        current.current.onEditing(false);
+      }
     } finally {
-      held.current = null;
-      setLease(null);
-      setHistory(emptyHistory());
-      setBusy(false);
-      current.current.onEditing(false);
+      releasingRef.current = false;
+      if (alive.current) setReleasing(false);
     }
   }
-  const editing = !!lease && !blocked;
+  draftRef.current = draft;
+  const editing = !!lease && !blocked && !releasing;
   const actions: EditorActions = {
     edit(next, key) {
+      if (releasingRef.current) return;
       if (!draft || !editing) return;
       const now = Date.now(),
         last = lastEdit.current;
@@ -292,15 +331,18 @@ export function SceneDrafts({
       change(next);
     },
     live(next) {
+      if (releasingRef.current) return;
       if (editing) change(next);
     },
     commit(before, next) {
+      if (releasingRef.current) return;
       if (!editing) return;
       lastEdit.current = { at: 0 };
       setHistory((h) => record(h, before));
       change(next);
     },
     undo() {
+      if (releasingRef.current) return;
       if (!draft || !editing) return;
       const step = undo(history, draft);
       if (!step) return;
@@ -310,6 +352,7 @@ export function SceneDrafts({
       setStatus("Rückgängig gemacht · automatische Speicherung folgt");
     },
     redo() {
+      if (releasingRef.current) return;
       if (!draft || !editing) return;
       const step = redo(history, draft);
       if (!step) return;
@@ -400,7 +443,7 @@ export function SceneDrafts({
           {lease && (
             <button
               className="secondary"
-              disabled={busy}
+              disabled={busy || releasing}
               onClick={() => void finish()}
             >
               {blocked
