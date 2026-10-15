@@ -22,6 +22,7 @@ import { lanSetup, assignedAddress, certificatePairInfo } from "./network.js";
 import { RendererClient, disabledRenderer } from "./renderer.js";
 import { StartupError, startupStatus, printStartupStatus } from "./startup.js";
 import { createWindowsIoProvider } from "./windows-io.js";
+import { requestStop, serviceState, startControl } from "./control.js";
 import { get as httpsGet } from "node:https";
 import { X509Certificate } from "node:crypto";
 
@@ -93,6 +94,13 @@ async function main() {
     secrets = join(process.env.LOCALAPPDATA, "ShowNight", "secrets"),
     packageRoot = join(process.env.LOCALAPPDATA, "ShowNight", "local-packages");
   const mode = process.argv[2] ?? "run";
+  if (mode === "stop") {
+    // Issue #32: nur den eigenen Server über den lokalen Steuerkanal beenden.
+    const stopped = await requestStop(root);
+    console.log(stopped.message);
+    process.exitCode = stopped.result === "failed" ? 2 : 0;
+    return;
+  }
   if (
     mode === "status-json" ||
     mode === "status" ||
@@ -105,12 +113,27 @@ async function main() {
         JSON.stringify({
           ...status,
           listener: await listenerStatus(root, status.origin),
+          service: await serviceState(root),
         }),
       );
       return;
     }
     if (mode === "status" || !status.ready) {
       printStartupStatus(status);
+      if (mode === "status") {
+        const service = await serviceState(root);
+        console.log(
+          service.state === "running"
+            ? "Dienst: läuft seit " +
+                new Date(service.startedAt).toLocaleString("de-DE") +
+                ". Beenden über 'Server stoppen'."
+            : service.state === "stale"
+              ? "Dienst: gestoppt (veralteter Laufzustand eines früheren Starts)."
+              : service.state === "unreadable"
+                ? "Dienst: Laufzustand nicht lesbar; Datenordner und Rechte prüfen."
+                : "Dienst: gestoppt.",
+        );
+      }
       if (mode !== "status") {
         console.log(
           "Dienst nicht gestartet: oben genannte Voraussetzungen zuerst vervollständigen.",
@@ -332,18 +355,50 @@ async function main() {
       });
       await server.listen({ host: bindAddress, port: 3443 });
       retained = true;
+      let stopping = false;
+      let control: Awaited<ReturnType<typeof startControl>> | undefined;
+      const stop = () => {
+        if (stopping) return;
+        stopping = true;
+        console.log("Server wird geordnet beendet …");
+        // Review PR #51: Frist vor dem Warten auf server.close() setzen. Hängende
+        // Verbindungen (z. B. LAN-Clients ohne Abschluss) dürfen das Ende nicht verhindern.
+        setTimeout(() => {
+          server.server.closeAllConnections();
+          setTimeout(() => process.exit(), 2000).unref();
+        }, 8000).unref();
+        void Promise.resolve(control?.close())
+          .then(() => server.close())
+          .then(() => console.log("Server beendet."))
+          .catch(() => {
+            process.exitCode = 1;
+          })
+          .finally(() => {
+            // Alle eigenen Ressourcen sind geschlossen. Verbliebene fremde Handles
+            // dürfen das Ende nicht verhindern.
+            setTimeout(() => process.exit(), 5000).unref();
+          });
+      };
+      try {
+        // Lokaler, tokengeschützter Steuerkanal für 'Server stoppen' und den Installer.
+        control = await startControl({
+          root,
+          origin: v.origin,
+          mode,
+          onStop: stop,
+        });
+      } catch (error) {
+        // Ohne Steuerkanal nicht weiterlaufen: sonst wäre kein regulärer Stopp möglich.
+        await server.close();
+        throw error;
+      }
+      process.once("SIGINT", stop);
+      process.once("SIGTERM", stop);
       console.log(
         "ShowNight Offlinevorbereitung · " +
           v.origin +
           " · keine Live-/Geräteausgabe · Mail aus",
       );
-      const stop = () => {
-        void server.close().catch(() => {
-          process.exitCode = 1;
-        });
-      };
-      process.once("SIGINT", stop);
-      process.once("SIGTERM", stop);
     } else throw new Error("Unbekannter Modus.");
   } finally {
     if (!retained) {

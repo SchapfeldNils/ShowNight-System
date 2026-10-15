@@ -193,6 +193,7 @@ for (const [file, mode] of server
       ["Serverschluessel-Importieren.cmd", "trust"],
       ["Anmeldestand-Importieren.cmd", "import-auth"],
       ["Server-Start.cmd", "run"],
+      ["Server-Stoppen.cmd", "stop"],
       ["Admin-Wiederherstellen.cmd", "recover"],
       ["Admin-Konten-Anzeigen.cmd", "admins"],
     ]

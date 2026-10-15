@@ -7,7 +7,7 @@
 [Setup]
 AppId={{91B460DA-7153-4619-9B7D-DC6EAD45982B}
 AppName=ShowNight Streaming
-AppVersion=0.3.10
+AppVersion=0.3.11
 AppPublisher=ShowNight
 AppPublisherURL=https://github.com/SchapfeldNils/ShowNight-System
 DefaultDirName={localappdata}\Programs\ShowNight\Streaming
@@ -49,6 +49,7 @@ Name: "{group}\2 - Serverschlüssel importieren"; Filename: "{app}\Serverschlues
 Name: "{group}\3 - Anmeldestand importieren"; Filename: "{app}\Anmeldestand-Importieren.cmd"; WorkingDir: "{app}"
 Name: "{group}\Netzwerk prüfen"; Filename: "{app}\Server-Netzwerk-Pruefen.cmd"; WorkingDir: "{app}"
 Name: "{group}\Einrichtungsstatus prüfen"; Filename: "{app}\Server-Status.cmd"; WorkingDir: "{app}"
+Name: "{group}\Server stoppen"; Filename: "{app}\Server-Stoppen.cmd"; WorkingDir: "{app}"
 Name: "{group}\Installationshinweise"; Filename: "{app}\Installationshinweise.txt"
 Name: "{group}\Programmordner"; Filename: "{app}"
 Name: "{group}\Deinstallieren"; Filename: "{uninstallexe}"
@@ -84,16 +85,57 @@ begin
   end;
 end;
 
+function StopOwnServer: Boolean;
+var
+  ResultCode, Attempt: Integer;
+begin
+  // Issue #32: nur den eigenen Server über den lokalen, tokengeschützten Steuerkanal
+  // geordnet beenden. Kein Prozessabschuss; fremde Prozesse bleiben unberührt.
+  Result := False;
+  if not FileExists(ExpandConstant('{app}\main.js')) then exit;
+  Log('Eigenen ShowNight-Server geordnet beenden.');
+  if not Exec(ExpandConstant('{app}\node.exe'), '"' + ExpandConstant('{app}\main.js') + '" stop',
+      ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then exit;
+  Log('Stoppbefehl beendet mit Code ' + IntToStr(ResultCode) + '.');
+  if ResultCode <> 0 then exit;
+  // Programmdateien erst nach dem tatsächlichen Prozessende freigeben.
+  for Attempt := 1 to 20 do begin
+    if not OwnApplicationRunning then begin
+      Result := True;
+      exit;
+    end;
+    Sleep(500);
+  end;
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   Result := '';
-  if OwnApplicationRunning then
-    Result := 'ShowNight im Zielordner läuft noch oder die Prozessprüfung ist nicht verfügbar. Bitte Server und Renderer regulär beenden und erneut versuchen.';
+  if not OwnApplicationRunning then exit;
+  if not WizardSilent then
+    if MsgBox('Der lokale ShowNight-Server dieser Installation läuft noch.' + #13#10 + #13#10 +
+        'Für das Update wird er jetzt geordnet beendet. Daten, Profil und Pakete bleiben erhalten. ' +
+        'Läuft gerade eine Probe oder Veranstaltung, bitte „Nein“ wählen und später aktualisieren.' + #13#10 + #13#10 +
+        'Server jetzt beenden und fortfahren?', mbConfirmation, MB_YESNO) <> IDYES then begin
+      Result := 'Update auf Wunsch abgebrochen. Der Server läuft unverändert weiter.';
+      exit;
+    end;
+  if not StopOwnServer then
+    Result := 'Der laufende ShowNight-Prozess konnte nicht geordnet beendet werden oder gehört nicht eindeutig zum lokalen Server dieser Installation. ' +
+      'Es wurde nichts überschrieben. Bitte über „Server stoppen“ oder im Serverfenster mit Strg+C beenden und erneut versuchen.';
 end;
 
 function InitializeUninstall: Boolean;
 begin
-  Result := not OwnApplicationRunning;
+  Result := True;
+  if not OwnApplicationRunning then exit;
+  if not UninstallSilent then
+    if MsgBox('Der lokale ShowNight-Server dieser Installation läuft noch. Für die Deinstallation wird er geordnet beendet; Daten, Profil und Pakete bleiben erhalten. Fortfahren?',
+        mbConfirmation, MB_YESNO) <> IDYES then begin
+      Result := False;
+      exit;
+    end;
+  Result := StopOwnServer;
   if not Result then
-    MsgBox('Bitte ShowNight im Installationsordner regulär beenden. Die Deinstallation beendet keine laufenden Prozesse.', mbError, MB_OK);
+    MsgBox('ShowNight konnte nicht geordnet beendet werden oder gehört nicht eindeutig zu dieser Installation. Es wurde nichts entfernt. Bitte über „Server stoppen“ oder mit Strg+C im Serverfenster beenden.', mbError, MB_OK);
 end;

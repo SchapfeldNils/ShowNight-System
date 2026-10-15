@@ -177,6 +177,7 @@ try {
   );
   assert.match(nativeUi.details, /Profil: fehlt/);
   assert.equal(nativeUi.startEnabled, false);
+  assert.equal(nativeUi.stopEnabled, false);
   assert.equal(nativeUi.openEnabled, false);
   const env = { ...process.env, LOCALAPPDATA: profile };
   const statusShortcut = powershell(
@@ -188,6 +189,30 @@ try {
     join(folder, "Server-Status.cmd").toLowerCase(),
   );
   await access(statusShortcut);
+  // Issue #32: Startmenüeintrag „Server stoppen“ und verständliche Rückmeldung ohne laufenden Server.
+  const stopShortcut = powershell(
+    "$p=Join-Path ([Environment]::GetFolderPath('Programs')) ($env:TEST_GROUP+'\\Server stoppen.lnk');(New-Object -ComObject WScript.Shell).CreateShortcut($p).TargetPath",
+    { TEST_GROUP: group },
+  ).trim();
+  assert.equal(
+    stopShortcut.toLowerCase(),
+    join(folder, "Server-Stoppen.cmd").toLowerCase(),
+  );
+  await access(stopShortcut);
+  const stopWithoutServer = execFileSync(
+    runtime,
+    [join(folder, "main.js"), "stop"],
+    { env, encoding: "utf8", windowsHide: true },
+  );
+  assert.match(stopWithoutServer, /Server läuft nicht/);
+  assert.match(
+    execFileSync(runtime, [join(folder, "main.js"), "status"], {
+      env,
+      encoding: "utf8",
+      windowsHide: true,
+    }),
+    /Dienst: gestoppt/,
+  );
   const firstStatus = execFileSync(
     runtime,
     [join(folder, "main.js"), "status"],
@@ -236,10 +261,18 @@ try {
     stdio: "ignore",
   });
   await new Promise((r) => setTimeout(r, 1000));
+  // Ein fremdes Skript mit der eigenen Laufzeit ist kein ShowNight-Server dieser
+  // Installation: Der Stoppversuch findet keinen Laufzustand, nichts wird beendet
+  // oder überschrieben.
   assert.notEqual(
     await install("running-blocked"),
     0,
-    "Aktive eigene Laufzeit muss Update verhindern.",
+    "Nicht eindeutig zugeordnete eigene Laufzeit muss Update verhindern.",
+  );
+  assert.equal(blocker.exitCode, null, "Fremder Prozess bleibt unberührt.");
+  assert.match(
+    await readFile(join(proof, "running-blocked.log"), "utf8"),
+    /Eigenen ShowNight-Server geordnet beenden/,
   );
   const stopped = new Promise((r) => blocker.once("exit", r));
   blocker.kill();
@@ -286,6 +319,8 @@ try {
         bundledRuntime: true,
         startMenu: true,
         activeUpdateBlocked: true,
+        unidentifiedProcessUntouched: true,
+        stopShortcut: true,
         upgradePreservesData: true,
         uninstallPreservesData: true,
         physicalOutputTested: false,

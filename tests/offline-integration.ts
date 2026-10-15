@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID, randomBytes, X509Certificate } from "node:crypto";
-import { mkdir, writeFile, readFile, mkdtemp } from "node:fs/promises";
+import { access, mkdir, writeFile, readFile, mkdtemp } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
@@ -828,47 +828,54 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
             ),
           );
           await cli("import-auth", authPath);
-          const server = spawn(runtime, [exe, "run"], {
-            cwd: isolated,
-            env: { ...process.env, LOCALAPPDATA: profile },
-            windowsHide: true,
-            stdio: ["ignore", "pipe", "ignore"],
-          });
-          try {
+          const startServer = async () => {
+            const p = spawn(runtime, [exe, "run"], {
+              cwd: isolated,
+              env: { ...process.env, LOCALAPPDATA: profile },
+              windowsHide: true,
+              stdio: ["ignore", "pipe", "ignore"],
+            });
             await new Promise<void>((resolve, reject) => {
               const timer = setTimeout(
                 () => reject(new Error("HTTPS-Server startet nicht.")),
                 15000,
               );
-              server.stdout.on("data", (b) => {
+              p.stdout.on("data", (b) => {
                 if (b.toString().includes("https://localhost:3443")) {
                   clearTimeout(timer);
                   resolve();
                 }
               });
-              server.once("exit", () => {
+              p.once("exit", () => {
                 clearTimeout(timer);
                 reject(new Error("HTTPS-Server vorzeitig beendet."));
               });
             });
-            const get = () =>
-              new Promise<{ status: number; body: string }>(
-                (resolve, reject) => {
-                  const r = httpsRequest(
-                    "https://localhost:3443/health/live",
-                    { ca: certificate.toString(), rejectUnauthorized: true },
-                    (res) => {
-                      let body = "";
-                      res.on("data", (b) => (body += b));
-                      res.on("end", () =>
-                        resolve({ status: res.statusCode!, body }),
-                      );
-                    },
+            const exited = new Promise<number | null>((resolve) =>
+              p.exitCode !== null
+                ? resolve(p.exitCode)
+                : p.once("exit", resolve),
+            );
+            return { p, exited };
+          };
+          const get = () =>
+            new Promise<{ status: number; body: string }>((resolve, reject) => {
+              const r = httpsRequest(
+                "https://localhost:3443/health/live",
+                { ca: certificate.toString(), rejectUnauthorized: true },
+                (res) => {
+                  let body = "";
+                  res.on("data", (b) => (body += b));
+                  res.on("end", () =>
+                    resolve({ status: res.statusCode!, body }),
                   );
-                  r.on("error", reject);
-                  r.end();
                 },
               );
+              r.on("error", reject);
+              r.end();
+            });
+          let server = await startServer();
+          try {
             assert.equal((await get()).status, 200);
             const page = await new Promise<number>((resolve, reject) => {
               const r = httpsRequest(
@@ -883,12 +890,30 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
               r.end();
             });
             assert.equal(page, 200);
+            // Issue #32: Laufzustand erkennen, geordnet stoppen, Listener freigeben,
+            // erneut starten. Kein Prozessabschuss durch den Stoppbefehl.
+            const running = JSON.parse(await cli("status-json"));
+            assert.equal(running.listener, "alive");
+            assert.equal(running.service.state, "running");
+            assert.equal(running.service.pid, server.p.pid);
+            assert.match(await cli("status"), /Dienst: läuft/);
+            assert.match(await cli("stop"), /geordnet beendet/);
+            assert.equal(await server.exited, 0);
+            await assert.rejects(get());
+            const stoppedState = JSON.parse(await cli("status-json"));
+            assert.equal(stoppedState.service.state, "stopped");
+            assert.notEqual(stoppedState.listener, "alive");
+            assert.match(await cli("stop"), /Server läuft nicht/);
+            await access(join(serverRoot, "accounts.sqlite"));
+            server = await startServer();
+            assert.equal((await get()).status, 200);
+            assert.match(await cli("stop"), /geordnet beendet/);
+            assert.equal(await server.exited, 0);
           } finally {
-            server.kill();
-            await new Promise<void>((resolve) => {
-              if (server.exitCode !== null) resolve();
-              else server.once("exit", () => resolve());
-            });
+            if (server.p.exitCode === null) {
+              server.p.kill();
+              await server.exited;
+            }
           }
           // A LAN certificate is tested over isolated loopback transport. This
           // proves TLS/identity/rights, not a real interface, firewall or WLAN.

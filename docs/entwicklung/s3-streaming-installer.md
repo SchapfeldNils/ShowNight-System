@@ -22,7 +22,7 @@ Setup startet keine Medienausgabe, verändert weder Zertifikatvertrauen noch Fir
 
 ## Update und Deinstallation
 
-Gleiche AppId und gleicher Benutzer erlauben ein Update über die bestehende Installation. Vorher den eigenen Server/Renderer regulär beenden. Setup und Uninstaller prüfen laufende Prozesse anhand des exakten installierten EXE-Pfads; sie beenden keine Anwendungen. Nicht verfügbare Prozessprüfung verhindert die Änderung.
+Gleiche AppId und gleicher Benutzer erlauben ein Update über die bestehende Installation. Ab Setup 0.3.11 beendet Setup einen laufenden eigenen Server (ab 0.3.11 gestartet) nach Rückfrage geordnet über den lokalen Steuerkanal und setzt danach fort; ist der Prozess nicht eindeutig zuzuordnen oder scheitert der Stopp, wird nichts überschrieben ([Server stoppen](s3-server-stoppen.md)). Ein Server aus Version 0.3.10 oder älter hat diesen Steuerkanal noch nicht und muss einmalig manuell beendet werden. Setup und Uninstaller prüfen laufende Prozesse anhand des exakten installierten EXE-Pfads; sie beenden keine Anwendungen. Nicht verfügbare Prozessprüfung verhindert die Änderung.
 
 Windows → Installierte Apps → ShowNight Streaming oder Startmenü → Deinstallieren entfernt die vom Installer verwalteten Programmdateien/Verknüpfungen. Die getrennten Benutzerdaten bleiben erhalten. Kein rekursives Löschen des ShowNight-Datenordners. Das Entwicklungspaket besitzt noch keine Herausgebersignatur; SHA256-Datei liegt neben der Setup-EXE.
 
