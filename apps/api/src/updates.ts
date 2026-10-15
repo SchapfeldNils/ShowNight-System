@@ -27,6 +27,8 @@ import {
   updateManifest,
   updatePlatform,
   updateSigningPayload,
+  peFileVersion,
+  versionScanBytes,
   type SignedUpdateManifest,
 } from "../../../packages/contracts/src/updates.js";
 
@@ -123,12 +125,14 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
 
   app.post("/api/v1/software-updates", async (req) => {
     admin(req);
-    const { version } = z
-      .strictObject({ version: softwareVersion })
+    // Version kommt aus der Versionsressource des Setups (Review PR #52). Eine
+    // optional angegebene Version muss übereinstimmen.
+    const { version: declared } = z
+      .strictObject({ version: softwareVersion.optional() })
       .parse(req.query);
     const limit = Math.min(cfg.MAX_UPLOAD_BYTES, maxUpdateBytes);
     await mkdir(root(cfg), { recursive: true });
-    if (await readRelease(cfg, version))
+    if (declared && (await readRelease(cfg, declared)))
       throw new HttpError(
         409,
         "VERSION_EXISTS",
@@ -143,9 +147,10 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
         "FILE_REQUIRED",
         "Bitte die Setup-Datei wählen.",
       );
+    // Feste, von der Wiederherstellung erlaubte Namensform: .upload-<12 hex>
     const staging = join(
       root(cfg),
-      "." + version + "-" + randomBytes(6).toString("hex"),
+      ".upload-" + randomBytes(6).toString("hex"),
     );
     await mkdir(staging, { mode: 0o700 });
     try {
@@ -169,19 +174,38 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
           "UPLOAD_LIMIT",
           "Die Datei überschreitet das Uploadlimit.",
         );
-      // Windows-Programm (PE) erkennen; der Inhalt wird nicht ausgeführt.
-      const head = Buffer.alloc(2);
+      // Windows-Programm (PE) und Versionsressource lesen; nichts wird ausgeführt.
+      const head = Buffer.alloc(Math.min(size, versionScanBytes));
       const handle = await open(file, "r");
       try {
-        await handle.read(head, 0, 2, 0);
+        await handle.read(head, 0, head.length, 0);
       } finally {
         await handle.close();
       }
-      if (size < 1024 || head.toString("latin1") !== "MZ")
+      if (size < 1024 || head.toString("latin1", 0, 2) !== "MZ")
         throw new HttpError(
           415,
           "FILE_TYPE",
           "Keine Windows-Setup-Datei (.exe) erkannt.",
+        );
+      const version = peFileVersion(head);
+      if (!version)
+        throw new HttpError(
+          415,
+          "VERSION_MISSING",
+          "Die Setup-Datei enthält keine lesbare Version (x.y.z.0). Bitte das unveränderte CI-Setup verwenden.",
+        );
+      if (declared && declared !== version)
+        throw new HttpError(
+          400,
+          "VERSION_MISMATCH",
+          `Die Setup-Datei hat Version ${version}, angegeben war ${declared}. Nichts veröffentlicht.`,
+        );
+      if (await readRelease(cfg, version))
+        throw new HttpError(
+          409,
+          "VERSION_EXISTS",
+          `Version ${version} ist bereits veröffentlicht.`,
         );
       const manifest = updateManifest.parse({
         schemaVersion: 1,
@@ -210,7 +234,7 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
           throw new HttpError(
             409,
             "VERSION_EXISTS",
-            "Diese Version ist bereits veröffentlicht.",
+            `Version ${version} ist bereits veröffentlicht.`,
           );
         throw error;
       });
@@ -237,7 +261,7 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
     // Erst unsichtbar machen, dann entfernen.
     const withdrawn = join(
       root(cfg),
-      ".withdrawn-" + version + "-" + randomBytes(6).toString("hex"),
+      ".withdrawn-" + randomBytes(6).toString("hex"),
     );
     await rename(dir, withdrawn);
     await rm(withdrawn, { recursive: true, force: true });

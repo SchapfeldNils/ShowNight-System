@@ -9,6 +9,7 @@ import { hash, hashPassword, totp } from "../apps/api/src/security.js";
 import { trustFor } from "../packages/transfer/src/offline.js";
 import { updateFileName } from "../packages/contracts/src/updates.js";
 import { checkForUpdate, verifyRelease } from "../apps/local/src/updates.js";
+import { syntheticSetup } from "./update-fixture.js";
 
 test(
   "Issue #33: Softwareupdates veröffentlichen, öffentlich prüfbar abrufen, zurückziehen",
@@ -48,8 +49,8 @@ test(
         { "content-type": body.contentType },
       );
     };
-    const setup = (size = 2048) =>
-      Buffer.concat([Buffer.from("MZ"), randomBytes(size - 2)]);
+    const setup = (version = "0.3.12", size = 2048) =>
+      syntheticSetup(version, size);
     const trust = trustFor(cfg.MFA_ENCRYPTION_KEY, cfg.origin);
     try {
       const first = await inject("/api/v1/auth/login", "POST", anonymous, {
@@ -115,7 +116,15 @@ test(
       });
 
       await t.test("Ungültige Uploads veröffentlichen nichts", async () => {
-        assert.equal((await upload(null, setup())).statusCode, 400);
+        const missing = await upload(
+          null,
+          Buffer.concat([Buffer.from("MZ"), Buffer.alloc(2000)]),
+        );
+        assert.equal(missing.statusCode, 415);
+        assert.equal(missing.json().error.code, "VERSION_MISSING");
+        const mismatch = await upload("0.3.13", setup("0.3.12"));
+        assert.equal(mismatch.statusCode, 400);
+        assert.equal(mismatch.json().error.code, "VERSION_MISMATCH");
         assert.equal((await upload("1.2", setup())).statusCode, 400);
         assert.equal((await upload("../1.2.3", setup())).statusCode, 400);
         assert.equal(
@@ -123,9 +132,13 @@ test(
             .statusCode,
           415,
         );
-        assert.equal((await upload("0.3.12", setup(1000))).statusCode, 415);
         assert.equal(
-          (await upload("0.3.12", setup(cfg.MAX_UPLOAD_BYTES + 10))).statusCode,
+          (await upload("0.3.12", setup("0.3.12", 1000))).statusCode,
+          415,
+        );
+        assert.equal(
+          (await upload("0.3.12", setup("0.3.12", cfg.MAX_UPLOAD_BYTES + 10)))
+            .statusCode,
           413,
         );
         assert.deepEqual((await inject("/api/v1/software-updates")).json(), []);
@@ -135,7 +148,7 @@ test(
       await t.test(
         "Veröffentlichen, signiertes Manifest und Download",
         async () => {
-          const published = await upload("0.3.12", bytes);
+          const published = await upload(null, bytes);
           assert.equal(published.statusCode, 200, published.body);
           const manifest = published.json();
           assert.equal(manifest.version, "0.3.12");
@@ -145,6 +158,7 @@ test(
             createHash("sha256").update(bytes).digest("hex"),
           );
           assert.equal((await upload("0.3.12", setup())).statusCode, 409);
+          assert.equal((await upload(null, setup())).statusCode, 409);
           const latest = await inject(
             "/updates/v1/windows-x64/latest.json",
             "GET",
@@ -201,7 +215,7 @@ test(
       );
 
       await t.test("Ältere Version und Zurückziehen", async () => {
-        assert.equal((await upload("0.3.11", setup())).statusCode, 200);
+        assert.equal((await upload(null, setup("0.3.11"))).statusCode, 200);
         assert.deepEqual(
           (await inject("/api/v1/software-updates"))
             .json()

@@ -5,14 +5,17 @@ import { mkdtemp, readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { signer, trustFor } from "../packages/transfer/src/offline.js";
+import { syntheticSetup } from "./update-fixture.js";
 import {
   compareVersions,
+  peFileVersion,
   updateFileName,
   updateSigningPayload,
   type UpdateManifest,
 } from "../packages/contracts/src/updates.js";
 import {
   checkForUpdate,
+  installDecision,
   installedVersion,
   preparedUpdate,
   verifyRelease,
@@ -213,4 +216,81 @@ test("Nur HTTPS als Updatequelle; installierte Version aus version.json", async 
   assert.equal(await installedVersion(base), "0.3.12");
   await writeFile(join(base, "version.json"), JSON.stringify({ version: "x" }));
   assert.equal(await installedVersion(base), null);
+});
+
+test("Review PR #52: Version aus der Versionsressource des Setups", () => {
+  assert.equal(peFileVersion(syntheticSetup("0.3.12")), "0.3.12");
+  assert.equal(peFileVersion(syntheticSetup("12.0.7")), "12.0.7");
+  assert.equal(
+    peFileVersion(
+      Buffer.concat([Buffer.from("MZ"), randomBytes(500)]).fill(0, 2),
+    ),
+    null,
+  );
+  assert.equal(peFileVersion(Buffer.from("PK" + "x".repeat(100))), null);
+  const fourth = syntheticSetup("0.3.12");
+  const at = fourth.indexOf(Buffer.from([0xbd, 0x04, 0xef, 0xfe]));
+  fourth.writeUInt32LE((12 << 16) | 1, at + 12);
+  assert.equal(peFileVersion(fourth), null);
+});
+
+test("Review PR #52: Installation nur nach Online-Bestätigung genau dieser Version", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "shownight-updates-"));
+  const options = {
+    origin,
+    publicKey: trust.publicKey,
+    current: "0.3.11",
+    dir,
+  };
+  // Nur prüfen: neue Version wird gemeldet, aber nicht heruntergeladen.
+  const calls: string[] = [];
+  const available = await checkForUpdate({
+    ...options,
+    download: false,
+    fetchImpl: server(release("0.3.12"), { "0.3.12": setup }, calls),
+  });
+  assert.equal(available.state, "available");
+  assert.equal(calls.length, 1);
+  const ready = await checkForUpdate({
+    ...options,
+    fetchImpl: server(release("0.3.12"), { "0.3.12": setup }),
+  });
+  assert.equal(ready.state, "ready");
+  const prepared = await preparedUpdate(dir, "0.3.11", trust.publicKey);
+  assert.ok(prepared);
+  assert.equal(installDecision(ready, prepared).ok, true);
+  // Offline: nicht installieren, obwohl die Datei geprüft bereitliegt.
+  assert.equal(
+    installDecision({ state: "offline", message: "x" }, prepared).ok,
+    false,
+  );
+  // Zurückgezogen (Server meldet ältere Version als aktuell) bzw. kein Update mehr.
+  assert.equal(
+    installDecision(
+      { state: "current", current: "0.3.11", latest: "0.3.11", message: "x" },
+      prepared,
+    ).ok,
+    false,
+  );
+  assert.equal(
+    installDecision(
+      { state: "none", current: "0.3.11", message: "x" },
+      prepared,
+    ).ok,
+    false,
+  );
+  // Inzwischen neuere Version: nicht die vorbereitete installieren.
+  assert.equal(
+    installDecision(
+      {
+        state: "available",
+        current: "0.3.11",
+        version: "0.3.13",
+        message: "x",
+      },
+      prepared,
+    ).ok,
+    false,
+  );
+  assert.equal(installDecision(ready, null).ok, false);
 });

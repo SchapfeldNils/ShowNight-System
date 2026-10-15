@@ -26,6 +26,7 @@ import { requestStop, serviceState, startControl } from "./control.js";
 import {
   checkForUpdate,
   installedVersion,
+  installDecision,
   preparedUpdate,
   type UpdateStatus,
 } from "./updates.js";
@@ -185,7 +186,7 @@ async function main() {
   }
   const v = await loadVault(root);
   const updateDir = join(process.env.LOCALAPPDATA, "ShowNight", "updates");
-  const checkUpdates = async (): Promise<UpdateStatus> => {
+  const checkUpdates = async (download = true): Promise<UpdateStatus> => {
     if (!v.trust)
       return {
         state: "not-configured",
@@ -198,6 +199,7 @@ async function main() {
       publicKey: v.trust.publicKey,
       current: await installedVersion(),
       dir: updateDir,
+      download,
     });
   };
   if (mode === "update-check") {
@@ -206,9 +208,10 @@ async function main() {
     return;
   }
   if (mode === "update-prepare") {
-    // Vor der Installation: erneut online prüfen (zurückgezogene Versionen) und
-    // die heruntergeladene Datei gegen das signierte Manifest verifizieren.
-    const online = await checkUpdates();
+    // Review PR #52: Installation nur nach erfolgreicher Online-Bestätigung genau
+    // dieser Version; ohne Verbindung oder bei zurückgezogener Version nicht.
+    // Prüft nur, lädt nichts herunter.
+    const online = await checkUpdates(false);
     const prepared = v.trust
       ? await preparedUpdate(
           updateDir,
@@ -216,26 +219,9 @@ async function main() {
           v.trust.publicKey,
         )
       : null;
-    if (
-      !prepared ||
-      online.state === "current" ||
-      online.state === "none" ||
-      online.state === "failed" ||
-      (online.state === "ready" && online.version !== prepared.version)
-    ) {
-      console.log(
-        JSON.stringify({
-          ok: false,
-          message:
-            online.state === "ready" && prepared
-              ? "Inzwischen ist eine andere Version veröffentlicht. Erneut nach Updates suchen."
-              : "Kein geprüftes Update bereit. " + online.message,
-        }),
-      );
-      process.exitCode = 1;
-      return;
-    }
-    console.log(JSON.stringify({ ok: true, ...prepared }));
+    const decision = installDecision(online, prepared);
+    console.log(JSON.stringify(decision));
+    if (!decision.ok) process.exitCode = 1;
     return;
   }
   if (mode === "import-package") {

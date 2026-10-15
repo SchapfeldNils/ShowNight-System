@@ -41,6 +41,12 @@ export type UpdateStatus =
       sha256: string;
       message: string;
     }
+  | {
+      state: "available";
+      current: string;
+      version: string;
+      message: string;
+    }
   | { state: "failed"; message: string };
 
 type FetchLike = (
@@ -104,6 +110,8 @@ export async function checkForUpdate(options: {
   dir: string;
   fetchImpl?: FetchLike;
   timeoutMs?: number;
+  /** false: nur prüfen, nichts herunterladen (vor der Installation). */
+  download?: boolean;
 }): Promise<UpdateStatus> {
   const { origin, publicKey, current, dir } = options;
   const fetchImpl: FetchLike =
@@ -181,6 +189,13 @@ export async function checkForUpdate(options: {
   } catch {
     /* nicht vorhanden */
   }
+  if (options.download === false)
+    return {
+      state: "available",
+      current,
+      version: manifest.version,
+      message: `Version ${manifest.version} ist verfügbar, aber noch nicht geprüft heruntergeladen.`,
+    };
   await mkdir(target, { recursive: true, mode: 0o700 });
   const partial = file + ".partial";
   await rm(partial, { force: true });
@@ -246,4 +261,31 @@ export async function preparedUpdate(
   } catch {
     return null;
   }
+}
+
+/**
+ * Review PR #52: Installation nur, wenn der Onlineserver genau die vorbereitete
+ * Version gerade als aktuell bestätigt. Offline, zurückgezogen oder abweichend: nein.
+ */
+export function installDecision(
+  online: UpdateStatus,
+  prepared: { version: string; path: string; sha256: string } | null,
+):
+  | { ok: true; version: string; path: string; sha256: string }
+  | { ok: false; message: string } {
+  if (
+    prepared &&
+    online.state === "ready" &&
+    online.version === prepared.version
+  )
+    return { ok: true, ...prepared };
+  return {
+    ok: false,
+    message:
+      online.state === "offline"
+        ? "Onlineserver nicht erreichbar. Installation erst nach erneuter Online-Bestätigung."
+        : online.state === "available" || (online.state === "ready" && prepared)
+          ? "Inzwischen ist eine andere Version veröffentlicht. Erneut nach Updates suchen."
+          : "Kein bestätigtes Update bereit. " + online.message,
+  };
 }

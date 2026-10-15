@@ -55,3 +55,25 @@ export function compareVersions(a: string, b: string) {
   for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i];
   return 0;
 }
+
+/** Größter Bereich am Dateianfang, in dem die Versionsressource gesucht wird. */
+export const versionScanBytes = 8 * 1024 * 1024;
+
+/**
+ * Liest die Dateiversion aus der Windows-Versionsressource (VS_FIXEDFILEINFO) eines
+ * Setups, z. B. 0.3.12.0 → „0.3.12“. Bindet das Updatemanifest an das tatsächlich
+ * hochgeladene Setup statt an eine manuell eingegebene Version (Review PR #52).
+ */
+export function peFileVersion(bytes: Uint8Array): string | null {
+  const data = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (data.length < 2 || data.toString("latin1", 0, 2) !== "MZ") return null;
+  const signature = Buffer.from([0xbd, 0x04, 0xef, 0xfe]);
+  const at = data.indexOf(signature);
+  if (at < 0 || at + 16 > data.length) return null;
+  const major = data.readUInt32LE(at + 8),
+    minor = data.readUInt32LE(at + 12);
+  const parts = [major >>> 16, major & 0xffff, minor >>> 16, minor & 0xffff];
+  if (parts[3] !== 0) return null;
+  const version = parts.slice(0, 3).join(".");
+  return softwareVersion.safeParse(version).success ? version : null;
+}

@@ -30,13 +30,13 @@ export function SoftwareUpdates({ api }: { api: Api }) {
   useEffect(() => {
     void load();
   }, []);
-  async function act(action: () => Promise<void>, success: string) {
+  async function act(action: () => Promise<string | void>, success: string) {
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      await action();
-      setNotice(success);
+      const message = await action();
+      setNotice(message || success);
       await load();
     } catch (e) {
       setError((e as Error).message);
@@ -48,7 +48,8 @@ export function SoftwareUpdates({ api }: { api: Api }) {
     <section className="card" aria-label="Softwareupdates Streaming-Rechner">
       <h2>Softwareupdates · Streaming-Rechner</h2>
       <p className="muted">
-        Die neueste veröffentlichte Version wird von installierten
+        Die Version wird aus der Versionsressource der Setup-Datei gelesen. Die
+        neueste veröffentlichte Version wird von installierten
         Streaming-Rechnern automatisch geprüft und heruntergeladen. Installiert
         wird dort erst nach Bestätigung. Absicherung: HTTPS, SHA-256 und
         Signatur mit dem Serverschlüssel dieses Onlineservers. Wer diesen Server
@@ -69,26 +70,31 @@ export function SoftwareUpdates({ api }: { api: Api }) {
         className="inline"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!versionPattern.test(version.trim()))
-            return setError("Version im Format 1.2.3 angeben.");
+          const declared = version.trim();
+          if (declared && !versionPattern.test(declared))
+            return setError(
+              "Version im Format 1.2.3 angeben oder leer lassen.",
+            );
           if (!file) return setError("Setup-Datei wählen.");
           const body = new FormData();
           body.append("file", file);
           void act(async () => {
-            await api(
-              "/software-updates?version=" + encodeURIComponent(version.trim()),
+            const published = await api<Release>(
+              "/software-updates" +
+                (declared ? "?version=" + encodeURIComponent(declared) : ""),
               "POST",
               body,
             );
             setVersion("");
             setFile(null);
-          }, `Version ${version.trim()} veröffentlicht.`);
+            return `Version ${published.version} aus der Setup-Datei gelesen und veröffentlicht.`;
+          }, "Veröffentlicht.");
         }}
       >
         <label>
-          Version
+          Erwartete Version (optional, Kontrolle)
           <input
-            placeholder="0.3.12"
+            placeholder="z. B. 0.3.12"
             value={version}
             onChange={(e) => setVersion(e.target.value)}
           />
