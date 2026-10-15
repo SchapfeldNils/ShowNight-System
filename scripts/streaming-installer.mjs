@@ -41,6 +41,16 @@ await rm(stage, { recursive: true, force: true });
 await mkdir(stage, { recursive: true });
 await mkdir(out, { recursive: true });
 await cp(source, stage, { recursive: true });
+// Eine Versionsquelle: AppVersion in streaming.iss. version.json dient der
+// installierten Anwendung zum Vergleich mit Onlineupdates (Issue #33).
+const appVersion = /^AppVersion=(\d+\.\d+\.\d+)\r?$/m.exec(
+  await readFile(resolve("deploy/windows/streaming.iss"), "utf8"),
+)?.[1];
+if (!appVersion) throw new Error("AppVersion in streaming.iss fehlt.");
+await writeFile(
+  join(stage, "version.json"),
+  JSON.stringify({ version: appVersion, platform: "windows-x64" }),
+);
 await writeFile(
   join(stage, "Streaming-Start.cmd"),
   '@echo off\r\ncall "%~dp0Server-Oberflaeche.cmd"\r\n',
@@ -131,7 +141,7 @@ await writeFile(
   join(out, "build-info.json"),
   JSON.stringify(
     {
-      version: "0.3.11",
+      version: appVersion,
       rendererIncluded: renderer,
       stage: "software-preparation",
       signed: false,

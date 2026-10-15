@@ -23,6 +23,12 @@ import { RendererClient, disabledRenderer } from "./renderer.js";
 import { StartupError, startupStatus, printStartupStatus } from "./startup.js";
 import { createWindowsIoProvider } from "./windows-io.js";
 import { requestStop, serviceState, startControl } from "./control.js";
+import {
+  checkForUpdate,
+  installedVersion,
+  preparedUpdate,
+  type UpdateStatus,
+} from "./updates.js";
 import { get as httpsGet } from "node:https";
 import { X509Certificate } from "node:crypto";
 
@@ -178,6 +184,60 @@ async function main() {
     return;
   }
   const v = await loadVault(root);
+  const updateDir = join(process.env.LOCALAPPDATA, "ShowNight", "updates");
+  const checkUpdates = async (): Promise<UpdateStatus> => {
+    if (!v.trust)
+      return {
+        state: "not-configured",
+        message:
+          "Serverschlüssel fehlt; Updateprüfung erst nach '2 - Serverschlüssel importieren'.",
+      };
+    await secureDirectory(updateDir);
+    return checkForUpdate({
+      origin: v.trust.serverOrigin,
+      publicKey: v.trust.publicKey,
+      current: await installedVersion(),
+      dir: updateDir,
+    });
+  };
+  if (mode === "update-check") {
+    // Issue #33: prüfen und geprüft herunterladen, niemals installieren.
+    console.log(JSON.stringify(await checkUpdates()));
+    return;
+  }
+  if (mode === "update-prepare") {
+    // Vor der Installation: erneut online prüfen (zurückgezogene Versionen) und
+    // die heruntergeladene Datei gegen das signierte Manifest verifizieren.
+    const online = await checkUpdates();
+    const prepared = v.trust
+      ? await preparedUpdate(
+          updateDir,
+          await installedVersion(),
+          v.trust.publicKey,
+        )
+      : null;
+    if (
+      !prepared ||
+      online.state === "current" ||
+      online.state === "none" ||
+      online.state === "failed" ||
+      (online.state === "ready" && online.version !== prepared.version)
+    ) {
+      console.log(
+        JSON.stringify({
+          ok: false,
+          message:
+            online.state === "ready" && prepared
+              ? "Inzwischen ist eine andere Version veröffentlicht. Erneut nach Updates suchen."
+              : "Kein geprüftes Update bereit. " + online.message,
+        }),
+      );
+      process.exitCode = 1;
+      return;
+    }
+    console.log(JSON.stringify({ ok: true, ...prepared }));
+    return;
+  }
   if (mode === "import-package") {
     const archive = await inputPath(process.argv[3]);
     await secureDirectory(packageRoot);
@@ -388,6 +448,24 @@ async function main() {
       }
       process.once("SIGINT", stop);
       process.once("SIGTERM", stop);
+      // Issue #33: regelmäßig prüfen und herunterladen, niemals selbst installieren.
+      const updateTimer = setInterval(
+        () => {
+          void checkUpdates()
+            .then((status) => {
+              if (status.state === "ready")
+                console.log(
+                  "Softwareupdate " +
+                    status.version +
+                    " bereit. Installation über die Serveroberfläche nach Bestätigung.",
+                );
+            })
+            .catch(() => {});
+        },
+        6 * 60 * 60 * 1000,
+      );
+      // unref: der Zeitgeber hält einen gestoppten Server nicht am Leben.
+      updateTimer.unref();
       console.log(
         "ShowNight Offlinevorbereitung · " +
           v.origin +
