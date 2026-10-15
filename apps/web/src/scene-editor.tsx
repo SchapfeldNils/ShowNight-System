@@ -326,7 +326,7 @@ export function SceneEditor({
         </span>
       </div>
       {showLayers && (
-        <aside className="scene-layers" aria-label="Ebenen">
+        <aside className="scene-layers" role="complementary" aria-label="Ebenen">
           <h4>Ebenen</h4>
           {!draft.layers.length && <p className="muted">Noch keine Ebenen.</p>}
           <ol>
@@ -550,7 +550,11 @@ export function SceneEditor({
         </section>
       </div>
       {showProps && (
-        <aside className="scene-inspector" aria-label="Eigenschaften">
+        <aside
+          className="scene-inspector"
+          role="complementary"
+          aria-label="Eigenschaften"
+        >
           {selected ? (
             <LayerProperties
               key={selected.id}

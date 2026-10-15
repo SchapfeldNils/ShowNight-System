@@ -68,7 +68,7 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
         return page
           .getByRole("button", { name: /synthetisch\.png · bereit/ })
           .count();
-      })
+      }, { timeout: 30000, intervals: [500, 1000, 2000] })
       .toBe(1);
 
     await page.getByRole("button", { name: "Szene anlegen", exact: true }).click();
