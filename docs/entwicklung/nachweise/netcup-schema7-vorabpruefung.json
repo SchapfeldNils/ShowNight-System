@@ -1,0 +1,20 @@
+{
+  "candidateCommit": "0834409abfbda494841ad4c47d79153cd8f0f3f6",
+  "runId": 38759884920,
+  "arm64ArtifactId": 11984788808,
+  "githubReportedArtifactZipDigest": "sha256:05cf6c356bb2aaf509d6ebdb8f50ff5ee45888234a013c0101079454e3e218fb",
+  "artifactZipDigestIndependentlyVerified": false,
+  "imageArchiveSha256": "a2591c6f0f96379c61c5223b55379cf7e20349c6faec70585f561b65bd56dfb2",
+  "imageArchiveBytes": 239335882,
+  "archiveChecksumFileMatched": true,
+  "imageConfigId": "sha256:993ccfec69a225a515e235ee6996c258ddc439ffe7cfcd49b63f493a79b99996",
+  "configMatchesRehearsalProof": true,
+  "platform": "linux/arm64",
+  "repoTags": [
+    "shownight:0834409abfbda494841ad4c47d79153cd8f0f3f6-arm64"
+  ],
+  "imageLoadedOnProductionHost": false,
+  "productionChanged": false,
+  "freshProductionBackup": false,
+  "realDataRestoreTest": false
+}
