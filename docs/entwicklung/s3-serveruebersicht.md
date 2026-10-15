@@ -1,6 +1,6 @@
 # Lokale Serverübersicht und Ein-/Ausgänge
 
-14. Oktober 2026 · [Issue #24](https://github.com/SchapfeldNils/ShowNight-System/issues/24) · F26/F28/F30/F47, A02/A17/A18. Softwarevorbereitung, keine Veranstaltungsfreigabe.
+14\. Oktober 2026 · [Issue #24](https://github.com/SchapfeldNils/ShowNight-System/issues/24) · F26/F28/F30/F47, A02/A17/A18. Softwarevorbereitung, keine Veranstaltungsfreigabe.
 
 ## Abschluss und tatsächliche Betreiberaktualisierung
 

@@ -1,6 +1,6 @@
 # Stage Timer: Onlinevorbereitung und persönliche Browserprobe
 
-15. Oktober 2026 · [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41), [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42) · Teilgrundlage F20/A10. Branch `codex/stage-timer-preparation` auf main `e183cf5`. Implementiert, lokal und in allen vier CI-Workflows am Code `890779bf3cc5d5a2b78c106d7d6af7e44cef7724` erfolgreich geprüft; finaler unabhängiger Code-/Nachweisreview ohne bestätigte Befunde. Kein Merge oder Produktivupdate.
+15\. Oktober 2026 · [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41), [PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42) · Teilgrundlage F20/A10. Branch `codex/stage-timer-preparation` auf main `e183cf5`. Implementiert, lokal und in allen vier CI-Workflows am Code `890779bf3cc5d5a2b78c106d7d6af7e44cef7724` erfolgreich geprüft; finaler unabhängiger Code-/Nachweisreview ohne bestätigte Befunde. Kein Merge oder Produktivupdate.
 
 ## Bedienung
 

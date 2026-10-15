@@ -1,6 +1,6 @@
 # Lokale Kontenrechte: Technikvergabe
 
-14. Oktober 2026 · [Issue #27](https://github.com/SchapfeldNils/ShowNight-System/issues/27) · F05/F30, A18. Branch `codex/s3-offline-account-rights`, Ausgangsbasis PR #25 / `000f1a2995443d84bfc1a9fd4b2a11b77ed1d936`.
+14\. Oktober 2026 · [Issue #27](https://github.com/SchapfeldNils/ShowNight-System/issues/27) · F05/F30, A18. Branch `codex/s3-offline-account-rights`, Ausgangsbasis PR #25 / `000f1a2995443d84bfc1a9fd4b2a11b77ed1d936`.
 
 ## Verhalten und Bedienung
 

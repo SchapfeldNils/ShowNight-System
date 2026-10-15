@@ -1,6 +1,6 @@
 # Gemeinsame, nutzbare Online-Version
 
-15. Oktober 2026 · F30/A18, F01/F05/F12/F25, F28/A03/A04. Nutzer priorisiert eine sichtbare Online-Version und autorisiert das Zusammenführen geeigneter geprüfter Entwicklungsstände. Die automatische Fortsetzung bleibt pausiert; dieser manuelle Auftrag wird ausgeführt. Kein Produktivupdate aus einer Mergefreigabe ableiten.
+15\. Oktober 2026 · F30/A18, F01/F05/F12/F25, F28/A03/A04. Nutzer priorisiert eine sichtbare Online-Version und autorisiert das Zusammenführen geeigneter geprüfter Entwicklungsstände. Die automatische Fortsetzung bleibt pausiert; dieser manuelle Auftrag wird ausgeführt. Kein Produktivupdate aus einer Mergefreigabe ableiten.
 
 ## Eine gemeinsame Basis
 
