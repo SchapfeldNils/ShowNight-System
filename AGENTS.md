@@ -27,3 +27,10 @@ Markdown ist der führende Stand. Der Word-Export ist ein datierter Schnappschus
 Zuerst Netcup-fähigen Online-Server (S1), danach Windows-Agenten (S2), dann lokalen Server/Renderer und vollständigen Showablauf (S3/S4). Netcup rendert keine Bühnen-HDMI-Ausgabe. Servervorbereitung und spätere lokale Offline-Liveausführung strikt unterscheiden.
 Deploymentvorlagen erstellen und lokal prüfen, auch wenn reale VM-/Domain-/Zugangsdaten fehlen. Ohne tatsächlichen Zielzugriff kein erfolgtes Netcup-Deployment behaupten. Betriebs-/Treiberstände dokumentieren. Ein vorhandener Server wird nicht pauschal neu installiert.
 Technische Startentwürfe in Datenmodell/Schnittstellen sind begründbar anpassbar; bestätigte Fachregeln bleiben verbindlich. Status während Implementierung in docs/entwicklung/status.md mit Nachweisen und Grenzen führen.
+
+## Dokumentationspflege
+- README.md bleibt kurz: Zweck, eine aktuelle Statustabelle, Start, Links. Keine Abschnitte je Arbeitspaket und keine Verlaufsabsätze. Nach jedem Merge oder Produktivupdate die Statustabelle ersetzen, nicht ergänzen.
+- docs/entwicklung/status.md beginnt immer mit dem Abschnitt „Aktuell“, der den tatsächlichen Stand von main und Produktion beschreibt. Ältere Abschnitte bleiben darunter als datierte Nachweise. Überholte Aussagen nicht stehen lassen, ohne sie als damaligen Stand zu kennzeichnen.
+- Verlaufsabsätze, die nicht mehr aktuell sind, nach docs/entwicklung/historie.md verschieben statt neue Absätze darüberzuschreiben.
+- Vor jeder Statusaussage zu PRs/Issues den echten Stand auf GitHub abfragen (gemergt, geschlossen, offen). Keine Annahmen aus früheren Dokumenten übernehmen.
+- Absätze nie mit „15. Oktober …“ beginnen: Markdown macht daraus eine nummerierte Liste und GitHub zeigt fortlaufende, falsche Daten (16., 17. …). Den Punkt escapen (`15\. Oktober`) oder das Datum nicht an den Zeilenanfang stellen.
