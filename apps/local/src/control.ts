@@ -1,27 +1,28 @@
 import { createServer, connect, type Server } from "node:net";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
 
 /**
  * Lokaler Steuerkanal für den geordneten Stopp des eigenen Servers (Issue #32).
  *
- * - Named Pipe unter Windows (nur lokal erreichbar, kein Netzwerkport); auf anderen
- *   Systemen eine Unix-Socket-Datei, ausschließlich für Tests.
- * - Jeder Start erzeugt ein zufälliges Token. Es steht nur im Laufzustand im privaten
- *   Datenordner (ACL: aktueller Benutzer und SYSTEM).
+ * - TCP ausschließlich auf 127.0.0.1 mit zufälligem Port. Loopback ist von anderen
+ *   Rechnern nicht erreichbar, auch bei LAN-Einrichtung und unabhängig von
+ *   Windows-Pipe-Sicherheitsbeschreibungen (Review PR #51).
+ * - Jeder Start erzeugt ein zufälliges 256-Bit-Token. Es steht nur im Laufzustand im
+ *   privaten Datenordner (ACL: aktueller Benutzer und SYSTEM). Ohne Token wird nichts
+ *   beendet; gleichzeitige Verbindungen sind begrenzt.
  * - Es wird nie ein Prozess per PID beendet. Ein fremder Prozess, auch auf Port 3443,
- *   kennt weder Pipe noch Token und bleibt unberührt.
+ *   kennt weder Port noch Token und bleibt unberührt.
  */
 
 export const runStateName = "run-state.json";
 const runState = z.strictObject({
-  version: z.literal(1),
+  version: z.literal(2),
   pid: z.int().positive(),
   startedAt: z.iso.datetime(),
-  pipe: z.string().min(1).max(260),
+  port: z.int().min(1024).max(65535),
   token: z.string().regex(/^[a-f0-9]{64}$/),
   mode: z.enum(["run", "run-renderer"]),
   origin: z.string().max(200),
@@ -29,12 +30,7 @@ const runState = z.strictObject({
 export type RunState = z.infer<typeof runState>;
 
 const digest = (value: string) => createHash("sha256").update(value).digest();
-
-function pipePath(id: string) {
-  return process.platform === "win32"
-    ? `\\\\.\\pipe\\shownight-local-${id}`
-    : join(tmpdir(), `shownight-${id}.sock`);
-}
+const loopback = "127.0.0.1";
 
 function alive(pid: number) {
   try {
@@ -56,6 +52,21 @@ export async function readRunState(root: string): Promise<RunState | null> {
   }
   if (raw.length > 4096) throw new Error("Laufzustand zu groß.");
   return runState.parse(JSON.parse(raw));
+}
+
+/** Entfernt den Laufzustand nur, wenn er noch genau dem erwarteten Start gehört. */
+async function unlinkIfSame(root: string, expected: RunState) {
+  try {
+    const current = await readRunState(root);
+    if (
+      current?.pid === expected.pid &&
+      current.port === expected.port &&
+      current.startedAt === expected.startedAt
+    )
+      await unlink(join(root, runStateName));
+  } catch {
+    /* Unlesbarer oder fremder Zustand bleibt für die Diagnose erhalten. */
+  }
 }
 
 export type ServiceState =
@@ -83,10 +94,8 @@ export async function startControl(options: {
   mode: RunState["mode"];
   onStop: () => void;
 }) {
-  const id = randomBytes(8).toString("hex");
   const token = randomBytes(32).toString("hex");
   const expected = digest(token);
-  const pipe = pipePath(id);
   let requested = false;
   const server: Server = createServer((socket) => {
     let input = "";
@@ -116,44 +125,51 @@ export async function startControl(options: {
       }
     });
   });
+  // Begrenzt gehaltene Verbindungen, damit der Kanal nicht blockiert werden kann.
+  server.maxConnections = 8;
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(pipe, () => {
+    server.listen({ host: loopback, port: 0, exclusive: true }, () => {
       server.off("error", reject);
       resolve();
     });
   });
+  const closeServer = () =>
+    new Promise<void>((resolve) => server.close(() => resolve()));
+  const address = server.address();
   const state: RunState = {
-    version: 1,
+    version: 2,
     pid: process.pid,
     startedAt: new Date().toISOString(),
-    pipe,
+    port: typeof address === "object" && address ? address.port : 0,
     token,
     mode: options.mode,
     origin: options.origin,
   };
   const file = join(options.root, runStateName);
-  const temporary = file + "." + id + ".tmp";
-  await writeFile(temporary, JSON.stringify(state), {
-    flag: "wx",
-    mode: 0o600,
-  });
-  await rename(temporary, file);
+  const temporary = file + "." + randomBytes(6).toString("hex") + ".tmp";
+  try {
+    runState.parse(state);
+    await writeFile(temporary, JSON.stringify(state), {
+      flag: "wx",
+      mode: 0o600,
+    });
+    await rename(temporary, file);
+  } catch (error) {
+    // Review PR #51: ohne veröffentlichten Laufzustand keinen offenen Kanal zurücklassen.
+    await rm(temporary, { force: true }).catch(() => {});
+    await closeServer();
+    throw error;
+  }
   let closed = false;
   return {
-    pipe,
+    port: state.port,
     async close() {
       if (closed) return;
       closed = true;
-      await new Promise<void>((resolve) => server.close(() => resolve()));
-      try {
-        // Nur den eigenen Laufzustand entfernen, nie den eines späteren Starts.
-        const current = await readRunState(options.root);
-        if (current?.pid === process.pid && current.pipe === pipe)
-          await unlink(file);
-      } catch {
-        /* Unlesbarer Zustand bleibt für die Diagnose erhalten. */
-      }
+      await closeServer();
+      // Nur den eigenen Laufzustand entfernen, nie den eines späteren Starts.
+      await unlinkIfSame(options.root, state);
     },
   };
 }
@@ -186,18 +202,21 @@ export async function requestStop(
     };
   const state = s;
   if (!alive(state.pid)) {
-    await unlink(join(root, runStateName)).catch(() => {});
+    // Review PR #51: nur entfernen, wenn kein neuerer Start den Zustand ersetzt hat.
+    await unlinkIfSame(root, state);
     return {
       result: "not-running",
       message:
         "Server läuft nicht mehr. Veralteter Laufzustand eines früheren Starts wurde entfernt.",
     };
   }
-  const token = state.token;
   const accepted = await new Promise<boolean>((resolve) => {
-    const socket = connect(state.pipe);
+    const socket = connect({ host: loopback, port: state.port });
     let output = "";
+    let settled = false;
     const done = (value: boolean) => {
+      if (settled) return;
+      settled = true;
       socket.destroy();
       resolve(value);
     };
@@ -205,7 +224,9 @@ export async function requestStop(
     socket.setTimeout(3000, () => done(false));
     socket.on("error", () => done(false));
     socket.on("connect", () =>
-      socket.write(JSON.stringify({ action: "stop", token }) + "\n"),
+      socket.write(
+        JSON.stringify({ action: "stop", token: state.token }) + "\n",
+      ),
     );
     socket.on("data", (chunk: string) => {
       output += chunk;

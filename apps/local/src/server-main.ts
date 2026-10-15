@@ -421,6 +421,12 @@ async function main() {
         if (stopping) return;
         stopping = true;
         console.log("Server wird geordnet beendet …");
+        // Review PR #51: Frist vor dem Warten auf server.close() setzen. Hängende
+        // Verbindungen (z. B. LAN-Clients ohne Abschluss) dürfen das Ende nicht verhindern.
+        setTimeout(() => {
+          server.server.closeAllConnections();
+          setTimeout(() => process.exit(), 2000).unref();
+        }, 8000).unref();
         void Promise.resolve(control?.close())
           .then(() => server.close())
           .then(() => console.log("Server beendet."))
@@ -429,7 +435,7 @@ async function main() {
           })
           .finally(() => {
             // Alle eigenen Ressourcen sind geschlossen. Verbliebene fremde Handles
-            // (z. B. offene Keep-Alive-Verbindungen) dürfen das Ende nicht verhindern.
+            // dürfen das Ende nicht verhindern.
             setTimeout(() => process.exit(), 5000).unref();
           });
       };

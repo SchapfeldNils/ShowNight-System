@@ -92,7 +92,7 @@ test("Issue #32: falsches Token beendet nichts; veralteter Zustand wird erkannt"
     const state = JSON.parse(original);
     // Direkter Aufruf mit falschem Token.
     const reply = await new Promise<string>((resolve, reject) => {
-      const socket = connect(control.pipe);
+      const socket = connect({ host: "127.0.0.1", port: control.port });
       let text = "";
       socket.setEncoding("utf8");
       socket.on("connect", () =>
@@ -128,10 +128,10 @@ test("Issue #32: falsches Token beendet nichts; veralteter Zustand wird erkannt"
   await writeFile(
     join(root, runStateName),
     JSON.stringify({
-      version: 1,
+      version: 2,
       pid,
       startedAt: new Date().toISOString(),
-      pipe: "unbenutzt",
+      port: 65000,
       token: "a".repeat(64),
       mode: "run",
       origin: "https://localhost:3443",
@@ -160,4 +160,39 @@ test("Issue #32: fremder Dienst ohne Laufzustand bleibt unberührt", async () =>
   } finally {
     await new Promise<void>((r) => foreign.close(() => r()));
   }
+});
+
+test("Review PR #51: fehlgeschlagene Veröffentlichung schließt den Kanal; fremder Laufzustand bleibt", async () => {
+  const servers = () =>
+    process.getActiveResourcesInfo().filter((r) => r === "TCPServerWrap")
+      .length;
+  const before = servers();
+  await assert.rejects(
+    startControl({
+      root: join(tmpdir(), "shownight-fehlt-" + Date.now(), "nicht", "da"),
+      origin: "https://localhost:3443",
+      mode: "run",
+      onStop: () => {},
+    }),
+  );
+  assert.equal(servers(), before);
+
+  const root = await mkdtemp(join(tmpdir(), "shownight-control-"));
+  const control = await startControl({
+    root,
+    origin: "https://localhost:3443",
+    mode: "run",
+    onStop: () => {},
+  });
+  // Ein späterer Start hat den Laufzustand ersetzt: close() darf ihn nicht löschen.
+  const replaced = {
+    ...JSON.parse(await readFile(join(root, runStateName), "utf8")),
+    startedAt: new Date(Date.now() + 1000).toISOString(),
+  };
+  await writeFile(join(root, runStateName), JSON.stringify(replaced));
+  await control.close();
+  assert.deepEqual(
+    JSON.parse(await readFile(join(root, runStateName), "utf8")),
+    replaced,
+  );
 });
