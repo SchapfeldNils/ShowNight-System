@@ -103,7 +103,12 @@ export type LiveOutput = {
   takenAt: string;
   takenBy: string;
 };
-export type BlockReason = "next_changed" | "next_removed" | "next_moved";
+export type BlockReason =
+  | "next_changed"
+  | "next_removed"
+  | "next_moved"
+  | "cues_inserted"
+  | "position_removed";
 export type LiveRun = {
   id: string;
   showId: string;

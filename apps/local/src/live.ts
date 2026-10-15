@@ -198,7 +198,46 @@ export class LiveEngine {
     const scene = cue.sceneId
       ? manifest.scenes?.find((s) => s.id === cue.sceneId)
       : undefined;
-    return stable({ cue, scene: scene ? scene.definition : null });
+    // Media content counts too: same ID with new bytes is a changed cue.
+    const ids = [
+      ...cue.mediaIds,
+      ...(scene?.definition.layers.flatMap((l) =>
+        l.kind === "image" ? [l.mediaId] : [],
+      ) ?? []),
+    ];
+    const media = ids.map(
+      (id) => manifest.media.find((m) => m.id === id)?.sha256 ?? null,
+    );
+    return stable({ cue, scene: scene ? scene.definition : null, media });
+  }
+  /**
+   * Order check between the position and the shared GO target (D009 6/7).
+   * Any reorder, removal or (de)activation in between, or a target that
+   * changed sides, blocks GO; pure insertions block with their own reason.
+   */
+  private orderChange(
+    oldCues: LiveCue[],
+    newCues: LiveCue[],
+    position: string | null,
+    target: string,
+  ): BlockReason | null {
+    const span = (cues: LiveCue[]) => {
+      const ids = cues.map((c) => c.id);
+      const a = position ? ids.indexOf(position) : -1,
+        b = ids.indexOf(target);
+      if ((position && a < 0) || b < 0) return null;
+      const part = a < b ? cues.slice(a + 1, b) : cues.slice(b + 1, a);
+      return { dir: Math.sign(b - a), part };
+    };
+    const o = span(oldCues),
+      n = span(newCues);
+    if (!o || !n) return "position_removed";
+    if (o.dir !== n.dir) return "next_moved";
+    const known = new Set(oldCues.map((c) => c.id));
+    const key = (c: LiveCue) => c.id + ":" + c.enabled;
+    const common = n.part.filter((c) => known.has(c.id));
+    if (common.map(key).join() !== o.part.map(key).join()) return "next_moved";
+    return common.length < n.part.length ? "cues_inserted" : null;
   }
   private following(cues: LiveCue[], afterCueId: string | null) {
     const start = afterCueId ? cues.findIndex((c) => c.id === afterCueId) : -1;
@@ -370,6 +409,23 @@ export class LiveEngine {
         if (!recheck().activate)
           throw new Refusal(403, "FORBIDDEN", "Berechtigung inzwischen entzogen.");
       }
+      if (cmd.type === "stand.rollback") {
+        // D009 5 applies to the return as well: full file check first. The
+        // stand revision inside the transaction pins the same previous stand.
+        const previous = this.stand(cmd.eventId).previous_package_id;
+        if (previous) {
+          verified = await this.source.verify(previous);
+          if (verified.status !== "valid")
+            throw new Refusal(
+              422,
+              "PACKAGE_INVALID",
+              "Vorheriger Datenstand ist nicht mehr vollständig: " +
+                verified.errors.slice(0, 3).join(" "),
+            );
+          if (!recheck().activate)
+            throw new Refusal(403, "FORBIDDEN", "Berechtigung inzwischen entzogen.");
+        }
+      }
     } catch (e) {
       if (e instanceof Refusal) return this.finish(cmd, actor, hash, e);
       throw e;
@@ -427,7 +483,9 @@ export class LiveEngine {
   private finish(cmd: LiveCommand, actor: LiveActor, hash: string, e: Refusal) {
     const run =
       "runId" in cmd
-        ? (this.db.prepare("SELECT live_revision FROM live_runs WHERE id=?").get(cmd.runId) as
+        ? (this.db
+            .prepare("SELECT live_revision FROM live_runs WHERE id=? AND event_id=?")
+            .get(cmd.runId, cmd.eventId) as
             | { live_revision: number }
             | undefined)
         : undefined;
@@ -728,29 +786,45 @@ export class LiveEngine {
       `Datenstand ${label} Revision ${manifest.eventRevision}`,
     );
     for (const r of runs) {
-      const old = this.bound(r.package_id, r.header_sha);
-      const cues = this.cues(manifest, r.show_id);
-      let blocked: BlockReason | null = r.next_blocked;
-      if (r.next_cue_id) {
-        const before = this.fingerprint(old, r.show_id, r.next_cue_id),
-          after = this.fingerprint(manifest, r.show_id, r.next_cue_id);
-        const nextNow = cues.find((c) => c.id === r.next_cue_id);
-        if (!after || !nextNow?.enabled) blocked = "next_removed";
-        else if (before !== after) blocked = "next_changed";
-        else if (r.status === "running") {
-          // Moved: the cue following the current position is now another one.
-          const expected = this.following(this.cues(old, r.show_id), r.position_cue_id);
-          const now2 = this.following(cues, r.position_cue_id);
-          if (expected === r.next_cue_id && now2 !== r.next_cue_id) blocked = "next_moved";
-        }
+      let old: TransferManifest;
+      try {
+        old = this.bound(r.package_id, r.header_sha);
+      } catch {
+        throw new Refusal(
+          409,
+          "RUN_STAND_MISSING",
+          "Das Paket eines offenen Durchlaufs fehlt lokal oder wurde verändert. Diesen Durchlauf zuerst beenden.",
+        );
       }
-      // New cues behind the position simply become part of the coming flow
-      // (D009 point 6); a run at its end gets the new following cue prepared.
+      const oldCues = this.cues(old, r.show_id),
+        cues = this.cues(manifest, r.show_id);
+      let blocked: BlockReason | null = r.next_blocked;
       let next = r.next_cue_id,
         atEnd = r.at_end;
-      if (r.status === "running" && !next && r.at_end) {
-        next = this.following(cues, r.position_cue_id);
-        atEnd = next ? 0 : 1;
+      if (r.status === "running") {
+        if (r.position_cue_id && !cues.some((c) => c.id === r.position_cue_id))
+          blocked ??= "position_removed";
+        if (next) {
+          const before = this.fingerprint(old, r.show_id, next),
+            after = this.fingerprint(manifest, r.show_id, next);
+          const nextNow = cues.find((c) => c.id === next);
+          if (!after || !nextNow?.enabled) blocked = "next_removed";
+          else if (before !== after) blocked = "next_changed";
+          else
+            blocked ??= this.orderChange(oldCues, cues, r.position_cue_id, next);
+        } else if (atEnd && r.position_cue_id) {
+          // D009 6 / D012 10: only cues that are new behind the unchanged
+          // position may follow "Ablaufende", and only after a conscious
+          // confirmation. Reordered old cues never come back silently.
+          const candidate = cues.some((c) => c.id === r.position_cue_id)
+            ? this.following(cues, r.position_cue_id)
+            : null;
+          if (candidate && !oldCues.some((c) => c.id === candidate)) {
+            next = candidate;
+            atEnd = 0;
+            blocked = "cues_inserted";
+          }
+        }
       }
       const n = this.touch(r, actor, cmd.type, {
         package_id: target.packageId,

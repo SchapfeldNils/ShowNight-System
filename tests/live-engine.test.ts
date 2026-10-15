@@ -73,7 +73,10 @@ function source() {
     },
     eventOf: (id) => packages.get(id)?.manifest.eventId,
   };
-  return { s, add };
+  const setValid = (id: string, valid: boolean) => {
+    packages.get(id)!.valid = valid;
+  };
+  return { s, add, setValid };
 }
 const tech = { id: randomUUID(), displayName: "Technik A" },
   regieB = { id: randomUUID(), displayName: "Regie B" },
@@ -92,9 +95,9 @@ const cmd = (type: string, payload: object, extra: object = {}) => ({
 
 async function setup() {
   const dir = await mkdtemp(join(tmpdir(), "shownight-live-"));
-  const { s, add } = source();
+  const { s, add, setValid } = source();
   const engine = new LiveEngine(dir, s);
-  return { dir, engine, add, s };
+  return { dir, engine, add, s, setValid };
 }
 
 test("D021: Rechte für GO und Aktivierung", () => {
@@ -282,5 +285,115 @@ test("Ereignisse: Sequenz, neue Epoch nach Neustart, Zustand dauerhaft", async (
   } finally {
     reopened?.close();
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// Gegenprüfung PR #56: Reihenfolge, Ablaufende, Medieninhalt, Rückkehrprüfung.
+async function runningAt(
+  e: Awaited<ReturnType<typeof setup>>,
+  cues: Cue[],
+  gos: string[],
+) {
+  const v1 = e.add(manifest(1, cues));
+  await e.engine.execute(tech, rTech, cmd("stand.activate", { packageId: v1, expectedStandRevision: 0 }));
+  const runId = (await e.engine.execute(regieB, rLive, cmd("run.create", { showId, kind: "probe" }))).runId!;
+  const run = () => e.engine.snapshot(eventId, rLive).runs.find((r) => r.id === runId)!;
+  await e.engine.execute(regieB, rLive, cmd("run.start", {}, { runId, expectedLiveRevision: 1 }));
+  for (const id of gos) {
+    if (run().nextCueId !== id)
+      await e.engine.execute(regieB, rLive, cmd("cue.prepare", { cueId: id }, { runId, expectedLiveRevision: run().liveRevision }));
+    const r = await e.engine.execute(regieB, rLive, cmd("cue.go", { expectedNextCueId: id }, { runId, expectedLiveRevision: run().liveRevision }));
+    assert.equal(r.status, 200, r.message);
+  }
+  const activate = async (next: Cue[]) =>
+    e.engine.execute(tech, rTech, cmd("stand.activate", {
+      packageId: e.add(manifest(2, next)),
+      expectedStandRevision: e.engine.snapshot(eventId, rTech).stand.revision,
+    }));
+  return { runId, run, activate };
+}
+const c = (i: number, enabled = true): Cue => ({ id: cueIds[i], name: "C" + i, enabled });
+
+test("Standwechsel am Ablaufende: gespielte Einsätze kommen nicht zurück, neue nur nach Bestätigung", async () => {
+  for (const [label, next, expectNext, reason] of [
+    ["letzter Einsatz entfernt", [c(0), c(2)], null, "position_removed"],
+    ["Position nach vorn verschoben", [c(3), c(0), c(2)], null, null],
+    ["neuer Einsatz hinten", [c(0), c(2), c(3), { id: "NEW", name: "Zugabe", enabled: true }], "NEW", "cues_inserted"],
+  ] as const) {
+    const e = await setup();
+    try {
+      const extra = randomUUID();
+      const list = next.map((x) => (x.id === "NEW" ? { ...x, id: extra } : x));
+      const { run, activate } = await runningAt(e, [c(0), c(2), c(3)], [cueIds[0], cueIds[2], cueIds[3]]);
+      assert.equal(run().atEnd, true, label);
+      assert.equal((await activate(list)).status, 200, label);
+      assert.equal(run().nextCueId, expectNext === "NEW" ? extra : expectNext, label);
+      assert.equal(run().nextBlocked, reason, label);
+      if (expectNext) {
+        const go = await e.engine.execute(regieB, rLive, cmd("cue.go", { expectedNextCueId: extra }, { runId: run().id, expectedLiveRevision: run().liveRevision }));
+        assert.equal(go.code, "GO_LOCKED", label);
+      } else assert.equal(run().atEnd, true, label);
+    } finally {
+      e.engine.close();
+      await rm(e.dir, { recursive: true, force: true });
+    }
+  }
+});
+
+test("Standwechsel: verschobenes, eingefügtes oder entferntes Umfeld des GO-Ziels sperrt GO", async () => {
+  for (const [label, next, reason] of [
+    ["vorbereitetes Ziel nach vorn verschoben", [c(3), c(0), c(1), c(2, false)], "next_moved"],
+    ["Einsatz zwischen Position und Ziel eingefügt", [c(0), c(1), c(2, false), { id: "NEW", name: "Neu", enabled: true }, c(3)], "cues_inserted"],
+    ["Zwischeneinsatz aktiviert", [c(0), c(1), c(2, true), c(3)], "next_moved"],
+    ["Ziel entfernt", [c(0), c(1), c(2, false)], "next_removed"],
+    ["unverändert", [c(0), c(1), c(2, false), c(3)], null],
+  ] as const) {
+    const e = await setup();
+    try {
+      const base = [c(0), c(1), c(2, false), c(3)];
+      const list = next.map((x) => (x.id === "NEW" ? { ...x, id: randomUUID() } : x));
+      const { run, activate } = await runningAt(e, base, [cueIds[0]]);
+      // Ziel bewusst auf C3 gesetzt (überspringt C1/C2).
+      await e.engine.execute(regieB, rLive, cmd("cue.prepare", { cueId: cueIds[3] }, { runId: run().id, expectedLiveRevision: run().liveRevision }));
+      assert.equal((await activate(list)).status, 200, label);
+      assert.equal(run().nextBlocked, reason, label);
+    } finally {
+      e.engine.close();
+      await rm(e.dir, { recursive: true, force: true });
+    }
+  }
+});
+
+test("Standwechsel: geänderter Medieninhalt bei gleicher ID sperrt GO; Rückkehr prüft Dateien; fremder Durchlauf ohne Zustand", async () => {
+  const e = await setup();
+  try {
+    const mediaId = randomUUID();
+    const withMedia = (rev: number, sha: string) => {
+      const m = manifest(rev, [c(0), c(2), c(3)]) as any;
+      m.shows[0].cues[1].mediaIds = [mediaId];
+      m.media = [{ id: mediaId, name: "bild.png", sha256: sha, sizeBytes: 1, mime: "image/png", downloadPath: "" }];
+      return m as TransferManifest;
+    };
+    const v1 = e.add(withMedia(1, "a".repeat(64)));
+    await e.engine.execute(tech, rTech, cmd("stand.activate", { packageId: v1, expectedStandRevision: 0 }));
+    const runId = (await e.engine.execute(regieB, rLive, cmd("run.create", { showId, kind: "probe" }))).runId!;
+    const run = () => e.engine.snapshot(eventId, rLive).runs.find((r) => r.id === runId)!;
+    await e.engine.execute(regieB, rLive, cmd("run.start", {}, { runId, expectedLiveRevision: 1 }));
+    await e.engine.execute(regieB, rLive, cmd("cue.go", { expectedNextCueId: cueIds[0] }, { runId, expectedLiveRevision: run().liveRevision }));
+    const v2 = e.add(withMedia(2, "b".repeat(64)));
+    assert.equal((await e.engine.execute(tech, rTech, cmd("stand.activate", { packageId: v2, expectedStandRevision: 1 }))).status, 200);
+    assert.equal(run().nextBlocked, "next_changed");
+    // Vorheriger Stand inzwischen unvollständig: keine Rückkehr.
+    e.setValid(v1, false);
+    const back = await e.engine.execute(tech, rTech, cmd("stand.rollback", { expectedStandRevision: 2 }));
+    assert.equal(back.code, "PACKAGE_INVALID");
+    assert.equal(e.engine.snapshot(eventId, rTech).stand.packageId, v2);
+    // Ablehnung mit fremder Veranstaltung verrät keine Liverevision.
+    const foreign = await e.engine.execute(member, rMember, { ...cmd("cue.go", { expectedNextCueId: cueIds[2] }, { runId, expectedLiveRevision: 1 }), eventId: randomUUID() });
+    assert.equal(foreign.status, 403);
+    assert.equal(foreign.liveRevision, null);
+  } finally {
+    e.engine.close();
+    await rm(e.dir, { recursive: true, force: true });
   }
 });

@@ -520,6 +520,11 @@ export async function localServer(
       accounts.packageBindings().find((p) => p.id === pid)?.eventId,
   }));
   app.addHook("onClose", async () => liveEngine?.close());
+  // Several direction windows poll every second; the global 200/min per IP
+  // must never turn a GO into 429. Live routes get their own, higher limit.
+  const liveLimit = {
+    config: { rateLimit: { max: 3000, timeWindow: 60000 } },
+  };
   const rightsFor = (a: Actor, eventId: string): LiveRights => {
     accounts.eventAllowed(a, eventId);
     const g = accounts.grants(a).find((g) => g.eventId === eventId);
@@ -527,6 +532,7 @@ export async function localServer(
   };
   app.get<{ Params: { eventId: string } }>(
     "/api/local/live/:eventId",
+    liveLimit,
     async (req) => {
       const eventId = id.parse(req.params.eventId);
       const rights = rightsFor(req.actor, eventId);
@@ -539,13 +545,13 @@ export async function localServer(
   app.get<{
     Params: { eventId: string };
     Querystring: { epoch?: string; after?: string };
-  }>("/api/local/live/:eventId/events", async (req) => {
+  }>("/api/local/live/:eventId/events", liveLimit, async (req) => {
     const eventId = id.parse(req.params.eventId);
     rightsFor(req.actor, eventId);
     const after = z.coerce.number().int().min(0).parse(req.query.after ?? "0");
     return live().events(eventId, req.query.epoch, after);
   });
-  app.post("/api/local/live/commands", async (req, reply) => {
+  app.post("/api/local/live/commands", liveLimit, async (req, reply) => {
     const { eventId } = z.object({ eventId: id }).parse(req.body);
     const rights = rightsFor(req.actor, eventId);
     const result = await live().execute(

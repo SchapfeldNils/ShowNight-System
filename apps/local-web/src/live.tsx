@@ -22,7 +22,11 @@ const blockText = {
   next_removed:
     "Der nächste Einsatz fehlt im neuen Datenstand oder ist deaktiviert. Bitte einen Einsatz bewusst vorbereiten.",
   next_moved:
-    "Der nächste Einsatz wurde verschoben. GO ist gesperrt, bis der nächste Einsatz bewusst bestätigt ist.",
+    "Die Reihenfolge bis zum nächsten Einsatz hat sich geändert (verschoben, entfernt oder aktiviert/deaktiviert). GO ist gesperrt, bis der nächste Einsatz bewusst bestätigt ist.",
+  cues_inserted:
+    "Im neuen Datenstand wurden Einsätze vor dem nächsten Einsatz bzw. nach dem Ablaufende ergänzt. GO ist gesperrt, bis der nächste Einsatz bewusst bestätigt ist.",
+  position_removed:
+    "Der zuletzt ausgelöste Einsatz fehlt im neuen Datenstand. GO ist gesperrt, bis der nächste Einsatz bewusst bestätigt ist.",
 };
 const GO_LOCK_MS = 1000;
 const time = (iso: string) =>
@@ -65,9 +69,18 @@ export function LiveDirection({
   const meRef = useRef(me);
   meRef.current = me;
 
+  const currentEvent = useRef(eventId);
+  currentEvent.current = eventId;
   async function load(id = eventId) {
     if (!id) return;
     const s = await api<Snapshot>("/live/" + id);
+    // Late answers (other event, or older than what is shown) are discarded.
+    const c = cursor.current;
+    if (
+      currentEvent.current !== id ||
+      (c && c.epoch === s.authorityEpoch && s.sequence < c.sequence)
+    )
+      return;
     cursor.current = { epoch: s.authorityEpoch, sequence: s.sequence };
     setSnap(s);
     for (const pid of new Set([
@@ -159,7 +172,13 @@ export function LiveDirection({
   const eventPackages = packages.filter((p) => p.eventId === eventId);
   const stand = snap?.stand;
   const standManifest = stand?.packageId ? manifests[stand.packageId] : undefined;
-  const run = snap?.runs.find((r) => r.id === runId) ?? snap?.runs[0];
+  // The shown (and GO-operated) run never changes implicitly (D012 4): the
+  // first available run is pinned once; afterwards only the selection counts.
+  useEffect(() => {
+    if (!runId && snap?.runs.length) setRunId(snap.runs[0].id);
+  }, [runId, snap]);
+  useEffect(() => setRunId(""), [eventId]);
+  const run = snap?.runs.find((r) => r.id === runId);
   const runManifest = run ? manifests[run.packageId] : undefined;
   const cue = (id: string | null | undefined): LiveCue | undefined =>
     run?.cues.find((c) => c.id === id);
@@ -250,7 +269,7 @@ export function LiveDirection({
                   disabled={!target || busy}
                   onClick={() => setConfirmStand("activate")}
                 >
-                  Übersicht zur Aktivierung
+                  Aktivierung vorbereiten
                 </button>
                 {stand?.previousPackageId && (
                   <button
@@ -302,7 +321,7 @@ export function LiveDirection({
             {snap.runs.length > 0 && (
               <label>
                 Durchlauf
-                <select aria-label="Durchlauf" value={run?.id ?? ""} onChange={(e) => setRunId(e.target.value)}>
+                <select aria-label="Durchlauf" value={runId} onChange={(e) => setRunId(e.target.value)}>
                   {snap.runs.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.showName} · {r.kind === "probe" ? "Probe" : "Aufführung"} ·{" "}
@@ -424,6 +443,12 @@ export function LiveDirection({
                       disabled={busy || !!run.nextBlocked || goLockedUntil > Date.now()}
                       onPointerDown={() => {
                         armed.current = { runId: run.id, cueId: nextCue.id, rev: run.liveRevision };
+                      }}
+                      onPointerLeave={() => {
+                        armed.current = null;
+                      }}
+                      onPointerCancel={() => {
+                        armed.current = null;
                       }}
                       onClick={() => {
                         const a =
