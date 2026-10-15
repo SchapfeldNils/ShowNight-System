@@ -11,8 +11,15 @@ compose up -d --wait postgres
 tables=$(compose exec -T postgres psql -U shownight -d shownight -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
 [ "$tables" = "0" ] || { echo 'Zieldatenbank ist nicht leer; Wiederherstellung abgebrochen.' >&2; exit 1; }
 compose run --rm --no-deps --entrypoint sh app -c 'test -z "$(ls -A /data/media)"' || { echo 'Zielmedienvolume ist nicht leer.' >&2; exit 1; }
-# Only the generated root and UUID blob/upload filenames are permitted.
-tar -tf "$backup_dir/media.tar" | awk '$0 != "./" && $0 !~ /^\.\/[a-f0-9-]+(\.upload)?$/ {bad=1} END {exit bad}'
+# Only the generated root, UUID blob/upload filenames and the fixed software-update
+# layout (Issue #33: versions x.y.z, staging .upload-/.withdrawn-<12 hex>) are permitted.
+tar -tf "$backup_dir/media.tar" | awk '
+  $0 == "./" { next }
+  $0 ~ /^\.\/[a-f0-9-]+(\.upload)?$/ { next }
+  $0 ~ /^\.\/software-updates\/(windows-x64\/)?$/ { next }
+  $0 ~ /^\.\/software-updates\/windows-x64\/([0-9]+\.[0-9]+\.[0-9]+|\.(upload|withdrawn)-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])\/(manifest\.json|ShowNight-Streaming-Setup-x64\.exe)?$/ { next }
+  { bad = 1 }
+  END { exit bad }'
 compose exec -T postgres pg_restore -U shownight -d shownight --single-transaction --exit-on-error --no-owner --no-privileges < "$backup_dir/database.dump"
 compose run --rm -T --no-deps --entrypoint tar app -C /data/media -xf - < "$backup_dir/media.tar"
 printf '%s\n' 'Restore abgeschlossen. Mit ORIGINAL-MFA-Schlüssel starten, alle Paketprüfsummen prüfen. Login und Eventrechte in isolierter Umgebung nachweisen.'

@@ -178,6 +178,7 @@ try {
   assert.match(nativeUi.details, /Profil: fehlt/);
   assert.equal(nativeUi.startEnabled, false);
   assert.equal(nativeUi.stopEnabled, false);
+  assert.equal(nativeUi.installUpdateEnabled, false);
   assert.equal(nativeUi.openEnabled, false);
   const env = { ...process.env, LOCALAPPDATA: profile };
   const statusShortcut = powershell(
@@ -244,6 +245,21 @@ try {
   ];
   const privateBefore = await Promise.all(
     privateFiles.map((path) => readFile(path)),
+  );
+  // Issue #33: installierte Version und Updateprüfung ohne Serverschlüssel.
+  assert.equal(
+    JSON.parse(await readFile(join(folder, "version.json"), "utf8")).version,
+    buildInfo.version,
+  );
+  assert.equal(
+    JSON.parse(
+      execFileSync(runtime, [join(folder, "main.js"), "update-check"], {
+        env,
+        encoding: "utf8",
+        windowsHide: true,
+      }),
+    ).state,
+    "not-configured",
   );
   const preparedStatus = execFileSync(
     runtime,

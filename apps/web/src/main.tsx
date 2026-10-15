@@ -10,6 +10,7 @@ import type {
 import "./style.css";
 import { moduleKeys } from "../../../packages/contracts/src/index.js";
 import { Devices } from "./devices.js";
+import { SoftwareUpdates } from "./updates.js";
 import { OfflineExport } from "./offline.js";
 import { SceneDrafts } from "./scenes.js";
 import { Account } from "./account.js";
@@ -1475,6 +1476,7 @@ function App() {
         {page === "Diagnose" && diag && (
           <>
             <Devices api={api} run={run} />
+            <SoftwareUpdates api={api} />
             <section className="card">
               <h2>S1-Diagnosebeispiele · ausschließlich simuliert</h2>
               <p>

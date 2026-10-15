@@ -618,3 +618,30 @@ button:focus-visible {
 .timer-hint-large {
   font-size: clamp(28px, 4vw, 58px);
 }
+/* Issue #33 Softwareupdates */
+.release-list {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+}
+.release-list > li {
+  border-top: 1px solid #344156;
+  padding: 12px 0;
+  min-width: 0;
+}
+.release-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: baseline;
+}
+.release-row > * {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.release-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}

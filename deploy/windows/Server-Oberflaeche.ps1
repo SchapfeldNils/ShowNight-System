@@ -21,6 +21,14 @@ $script:lastStatus = $null
 $script:stopProcess = $null
 $script:stopRead = $null
 $script:stopStarted = [DateTime]::MinValue
+$script:updateProcess = $null
+$script:updateRead = $null
+$script:updateStarted = [DateTime]::MinValue
+$script:updateReady = $null
+$script:prepareProcess = $null
+$script:prepareRead = $null
+$script:prepareStarted = [DateTime]::MinValue
+$script:prepareConfirmed = $null
 $form = New-Object Windows.Forms.Form
 $form.Text = 'ShowNight · Lokaler Server'
 $form.Size = New-Object Drawing.Size(950,740)
@@ -33,12 +41,13 @@ $layout = New-Object Windows.Forms.TableLayoutPanel
 $layout.Dock = 'Fill'
 $layout.Padding = New-Object Windows.Forms.Padding(28)
 $layout.ColumnCount = 1
-$layout.RowCount = 7
+$layout.RowCount = 8
 foreach ($height in @(46,34,42,34)) {
     [void]$layout.RowStyles.Add((New-Object Windows.Forms.RowStyle([Windows.Forms.SizeType]::Absolute,$height)))
 }
 [void]$layout.RowStyles.Add((New-Object Windows.Forms.RowStyle([Windows.Forms.SizeType]::Percent,100)))
 [void]$layout.RowStyles.Add((New-Object Windows.Forms.RowStyle([Windows.Forms.SizeType]::Absolute,90)))
+[void]$layout.RowStyles.Add((New-Object Windows.Forms.RowStyle([Windows.Forms.SizeType]::Absolute,34)))
 [void]$layout.RowStyles.Add((New-Object Windows.Forms.RowStyle([Windows.Forms.SizeType]::Absolute,50)))
 $form.Controls.Add($layout)
 function Label([string]$text,[int]$size) {
@@ -90,13 +99,20 @@ $stopButton = Button 'Server stoppen'
 $open = Button 'Server im Browser'
 $folder = Button 'Datenordner'
 $guide = Button 'Anleitung'
+$checkUpdate = Button 'Nach Updates suchen'
+$installUpdate = Button 'Update installieren'
+$installUpdate.Enabled = $false
 $start.Enabled = $false
 $stopButton.Enabled = $false
 $open.Enabled = $false
 $folder.Enabled = $false
 $footer = Label 'Serverstart öffnet ein eigenes Fenster. Beenden über „Server stoppen“ (alternativ Strg+C im Serverfenster). Oberfläche: vorläufige Gestaltung.' 9
 $footer.ForeColor = $subtitle.ForeColor
-$layout.Controls.Add($footer,0,6)
+$updateLabel = Label 'Softwareupdates: noch nicht geprüft' 10
+$updateLabel.ForeColor = $subtitle.ForeColor
+$updateLabel.AccessibleName = 'Status der Softwareupdates'
+$layout.Controls.Add($updateLabel,0,6)
+$layout.Controls.Add($footer,0,7)
 function Read-Status {
     if ($script:statusProcess) { return }
     $refresh.Enabled = $false
@@ -128,9 +144,100 @@ function Read-Status {
         $refresh.Enabled = $true
     }
 }
+function Check-Update {
+    # Issue #33: prüft und lädt nur geprüfte Updates herunter, installiert nie selbst.
+    if ($script:updateProcess) { return }
+    $checkUpdate.Enabled = $false
+    $installUpdate.Enabled = $false
+    $script:updateReady = $null
+    $updateLabel.Text = 'Softwareupdates: Prüfung läuft …'
+    $info = New-Object Diagnostics.ProcessStartInfo
+    $info.FileName = $runtime
+    $info.Arguments = '"' + $entry + '" update-check'
+    $info.WorkingDirectory = $PSScriptRoot
+    $info.UseShellExecute = $false
+    $info.CreateNoWindow = $true
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    $info.StandardOutputEncoding = [Text.Encoding]::UTF8
+    $script:updateProcess = New-Object Diagnostics.Process
+    $script:updateProcess.StartInfo = $info
+    try {
+        [void]$script:updateProcess.Start()
+        $script:updateRead = $script:updateProcess.StandardOutput.ReadToEndAsync()
+        $script:updateError = $script:updateProcess.StandardError.ReadToEndAsync()
+        $script:updateStarted = [DateTime]::UtcNow
+    } catch {
+        $script:updateProcess.Dispose()
+        $script:updateProcess = $null
+        $updateLabel.Text = 'Softwareupdates: Prüfung nicht möglich.'
+        $checkUpdate.Enabled = $true
+    }
+}
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 250
 $timer.Add_Tick({
+    if ($script:prepareProcess) {
+        $prepareExpired = ([DateTime]::UtcNow - $script:prepareStarted).TotalSeconds -gt 90
+        if ($script:prepareProcess.HasExited -or $prepareExpired) {
+            $launched = $false
+            try {
+                if ($prepareExpired) { $script:prepareProcess.Kill(); throw 'Timeout' }
+                $raw = $script:prepareRead.GetAwaiter().GetResult()
+                if ($raw.Length -gt 65536) { throw 'Limit' }
+                $p = $raw | ConvertFrom-Json
+                if (!$p.ok) {
+                    $updateLabel.Text = 'Softwareupdates: ' + $p.message
+                } elseif ($p.version -ne $script:prepareConfirmed) {
+                    # Review PR #52: nur die ausdrücklich bestätigte Version installieren.
+                    $updateLabel.Text = 'Softwareupdates: Inzwischen liegt Version ' + $p.version + ' bereit. Bitte erneut bestätigen.'
+                    $script:updateReady = $p.version
+                } elseif (!(Test-Path -LiteralPath $p.path -PathType Leaf)) {
+                    throw 'Datei'
+                } else {
+                    $log = Join-Path $env:TEMP ('ShowNight-Update-' + $p.version + '.log')
+                    # Setup beendet den eigenen Server geordnet (Issue #32) und behält alle Daten.
+                    Start-Process -FilePath $p.path -ArgumentList @('/SILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',('/LOG="' + $log + '"'))
+                    $launched = $true
+                }
+            } catch {
+                $updateLabel.Text = 'Softwareupdates: Installation nicht gestartet. Nichts geändert; erneut nach Updates suchen.'
+            } finally {
+                $script:prepareProcess.Dispose()
+                $script:prepareProcess = $null
+                $checkUpdate.Enabled = $true
+                $installUpdate.Enabled = !$launched -and [bool]$script:updateReady
+            }
+            if ($launched) {
+                [void][Windows.Forms.MessageBox]::Show('Das Update wird installiert. Danach „ShowNight Streaming starten“ erneut öffnen.', 'ShowNight · Softwareupdate', 'OK', 'Information')
+                $form.Close()
+            }
+        }
+    }
+    if ($script:updateProcess) {
+        # Download kann dauern; nach 15 Minuten abbrechen.
+        $updateExpired = ([DateTime]::UtcNow - $script:updateStarted).TotalMinutes -gt 15
+        if ($script:updateProcess.HasExited -or $updateExpired) {
+            try {
+                if ($updateExpired) { $script:updateProcess.Kill(); throw 'Timeout' }
+                if ($script:updateProcess.ExitCode -ne 0) { throw 'Status' }
+                $raw = $script:updateRead.GetAwaiter().GetResult()
+                if ($raw.Length -gt 65536) { throw 'Limit' }
+                $u = $raw | ConvertFrom-Json
+                $updateLabel.Text = 'Softwareupdates: ' + $u.message
+                if ($u.state -eq 'ready') {
+                    $script:updateReady = $u.version
+                    $installUpdate.Enabled = $true
+                }
+            } catch {
+                $updateLabel.Text = 'Softwareupdates: Prüfung nicht bestätigt. Installierte Version bleibt in Betrieb.'
+            } finally {
+                $script:updateProcess.Dispose()
+                $script:updateProcess = $null
+                $checkUpdate.Enabled = $true
+            }
+        }
+    }
     if ($script:stopProcess) {
         $stopExpired = ([DateTime]::UtcNow - $script:stopStarted).TotalSeconds -gt 40
         if ($script:stopProcess.HasExited -or $stopExpired) {
@@ -225,6 +332,43 @@ $stopButton.Add_Click({
         $state.Text = 'Stoppwerkzeug nicht verfügbar. Vollständige Installation und Anleitung prüfen.'
     }
 })
+$checkUpdate.Add_Click({ Check-Update })
+$installUpdate.Add_Click({
+    if (!$script:updateReady -or $script:updateProcess -or $script:prepareProcess) { return }
+    $confirmed = $script:updateReady
+    $answer = [Windows.Forms.MessageBox]::Show(
+        'Version ' + $confirmed + ' installieren?' + [Environment]::NewLine + [Environment]::NewLine +
+        'Der lokale Server wird dafür geordnet beendet. Daten, Profil und Pakete bleiben erhalten. ' +
+        'Während einer Probe oder Veranstaltung bitte „Nein“ wählen und später aktualisieren.',
+        'ShowNight · Softwareupdate', 'YesNo', 'Question')
+    if ($answer -ne 'Yes') { return }
+    $installUpdate.Enabled = $false
+    $checkUpdate.Enabled = $false
+    $updateLabel.Text = 'Softwareupdates: Version ' + $confirmed + ' wird online bestätigt und erneut geprüft …'
+    $info = New-Object Diagnostics.ProcessStartInfo
+    $info.FileName = $runtime
+    $info.Arguments = '"' + $entry + '" update-prepare'
+    $info.WorkingDirectory = $PSScriptRoot
+    $info.UseShellExecute = $false
+    $info.CreateNoWindow = $true
+    $info.RedirectStandardOutput = $true
+    $info.StandardOutputEncoding = [Text.Encoding]::UTF8
+    # Review PR #52: nicht blockierend lesen; Auswertung und Frist im Timer.
+    $script:prepareProcess = New-Object Diagnostics.Process
+    $script:prepareProcess.StartInfo = $info
+    $script:prepareConfirmed = $confirmed
+    try {
+        [void]$script:prepareProcess.Start()
+        $script:prepareRead = $script:prepareProcess.StandardOutput.ReadToEndAsync()
+        $script:prepareStarted = [DateTime]::UtcNow
+    } catch {
+        $script:prepareProcess.Dispose()
+        $script:prepareProcess = $null
+        $updateLabel.Text = 'Softwareupdates: Prüfung nicht möglich. Nichts geändert.'
+        $installUpdate.Enabled = $true
+        $checkUpdate.Enabled = $true
+    }
+})
 $open.Add_Click({
     $uri = $null
     if ($script:lastStatus -and [Uri]::TryCreate($script:lastStatus.origin,[UriKind]::Absolute,[ref]$uri) -and $uri.Scheme -eq 'https' -and $uri.Port -eq 3443) {
@@ -239,7 +383,7 @@ $folder.Add_Click({
 $guide.Add_Click({
     Start-Process -FilePath (Join-Path $env:WINDIR 'System32\notepad.exe') -ArgumentList ('"' + (Join-Path $PSScriptRoot 'Anleitung.md') + '"')
 })
-$form.Add_Shown({ $timer.Start(); Read-Status })
+$form.Add_Shown({ $timer.Start(); Read-Status; Check-Update })
 $form.Add_FormClosed({
     $timer.Stop()
     $timer.Dispose()
@@ -249,6 +393,14 @@ $form.Add_FormClosed({
     }
     # Ein laufender Stoppbefehl wird nicht abgebrochen; er beendet sich selbst.
     if ($script:stopProcess) { $script:stopProcess.Dispose() }
+    if ($script:updateProcess) {
+        if (!$script:updateProcess.HasExited) { $script:updateProcess.Kill() }
+        $script:updateProcess.Dispose()
+    }
+    if ($script:prepareProcess) {
+        if (!$script:prepareProcess.HasExited) { $script:prepareProcess.Kill() }
+        $script:prepareProcess.Dispose()
+    }
 })
 if ($UiCheck) {
     # CI constructs the actual controls and reads a synthetic profile without
@@ -264,6 +416,7 @@ if ($UiCheck) {
         details = $details.Text
         startEnabled = $start.Enabled
         stopEnabled = $stopButton.Enabled
+        installUpdateEnabled = $installUpdate.Enabled
         openEnabled = $open.Enabled
         ready = ($null -ne $script:lastStatus -and $script:lastStatus.ready)
     } | ConvertTo-Json -Compress

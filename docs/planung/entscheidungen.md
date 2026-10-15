@@ -151,6 +151,14 @@
 - Erster weiterer Baustein: S3-01 Inhaltspakete mit lokaler SQLite-Ablage. Kein neues Rechte-/Ausfallmodell, keine Liveaktivierung und keine Ablösung des geplanten Windows-Renderers durch Browserausgabe.
 - Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
 
+## D020 – Softwareupdates für den Streaming-Rechner
+
+- Status: vom Betreiber in der Claude-Unterhaltung ausgewählt (15. Oktober 2026); direkte Bestätigung des Betreibers in [Issue #33](https://github.com/SchapfeldNils/ShowNight-System/issues/33) ausstehend
+- Updatequelle: Upload der geprüften Setup-Datei im Online-Adminbereich (nur Admin mit MFA). Keine Netcup-Zugangsdaten in GitHub.
+- Echtheit: HTTPS plus SHA-256, keine eigene Betreibersignatur. Umsetzung signiert das Manifest zusätzlich mit dem vorhandenen Offline-Signaturschlüssel des Online-Servers. Restrisiko ausdrücklich: Wer die Netcup-VM kontrolliert, kann ein falsches Update verteilen.
+- Installation: automatisch prüfen und herunterladen, installieren erst nach Bestätigung in der Serveroberfläche. Updates während laufender Shows werden nicht automatisch installiert (Architektur).
+- Dokument: [Softwareupdates](../entwicklung/s3-softwareupdates.md).
+
 ## Weitere Entscheidungen nach D017
 
 ### Native Szenenkomposition – technische Konkretisierung, 14. Oktober 2026

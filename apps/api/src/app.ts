@@ -29,6 +29,7 @@ import type { Config } from "./config.js";
 import { migrationVersions, type DB } from "./db.js";
 import { authRoutes, actor } from "./auth.js";
 import { timerRoutes } from "./timers.js";
+import { updateRoutes } from "./updates.js";
 import { accountRoutes } from "./account.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
@@ -88,6 +89,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   await app.register(websocket, { options: { maxPayload: 4096 } });
   authRoutes(app, db, cfg);
   timerRoutes(app, db);
+  updateRoutes(app, cfg);
   accountRoutes(app, db, cfg);
   contentRoutes(app, db, cfg);
   sceneRoutes(app, db);

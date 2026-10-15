@@ -41,6 +41,23 @@ await rm(stage, { recursive: true, force: true });
 await mkdir(stage, { recursive: true });
 await mkdir(out, { recursive: true });
 await cp(source, stage, { recursive: true });
+// Eine Versionsquelle: AppVersion in streaming.iss. version.json dient der
+// installierten Anwendung zum Vergleich mit Onlineupdates (Issue #33).
+const appVersion = /^AppVersion=(\d+\.\d+\.\d+)\r?$/m.exec(
+  await readFile(resolve("deploy/windows/streaming.iss"), "utf8"),
+)?.[1];
+if (!appVersion) throw new Error("AppVersion in streaming.iss fehlt.");
+// Die Updateveröffentlichung liest die Version aus der Versionsressource (Issue #33).
+if (
+  /^VersionInfoVersion=(.+?)\r?$/m.exec(
+    await readFile(resolve("deploy/windows/streaming.iss"), "utf8"),
+  )?.[1] !== appVersion
+)
+  throw new Error("VersionInfoVersion muss AppVersion entsprechen.");
+await writeFile(
+  join(stage, "version.json"),
+  JSON.stringify({ version: appVersion, platform: "windows-x64" }),
+);
 await writeFile(
   join(stage, "Streaming-Start.cmd"),
   '@echo off\r\ncall "%~dp0Server-Oberflaeche.cmd"\r\n',
@@ -123,6 +140,15 @@ execFileSync(
 );
 const name = "ShowNight-Streaming-Setup-x64.exe";
 const bytes = await readFile(join(out, name));
+// Gegenprobe zur Serverlogik: VS_FIXEDFILEINFO enthält genau AppVersion.0.
+{
+  const at = bytes.indexOf(Buffer.from([0xbd, 0x04, 0xef, 0xfe]));
+  const ms = at < 0 ? 0 : bytes.readUInt32LE(at + 8),
+    ls = at < 0 ? 0 : bytes.readUInt32LE(at + 12);
+  const found = [ms >>> 16, ms & 0xffff, ls >>> 16, ls & 0xffff].join(".");
+  if (found !== appVersion + ".0")
+    throw new Error("Versionsressource des Setups passt nicht: " + found);
+}
 await writeFile(
   join(out, name + ".sha256"),
   createHash("sha256").update(bytes).digest("hex") + "  " + name + "\n",
@@ -131,7 +157,7 @@ await writeFile(
   join(out, "build-info.json"),
   JSON.stringify(
     {
-      version: "0.3.11",
+      version: appVersion,
       rendererIncluded: renderer,
       stage: "software-preparation",
       signed: false,
