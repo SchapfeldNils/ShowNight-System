@@ -618,3 +618,59 @@ button:focus-visible {
 .timer-hint-large {
   font-size: clamp(28px, 4vw, 58px);
 }
+/* S8-01 Ticketvorbereitung */
+.ticket-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+}
+.ticket-list > li {
+  border-top: 1px solid #344156;
+  padding: 12px 0;
+  min-width: 0;
+}
+.ticket-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: baseline;
+}
+.ticket-row > * {
+  overflow-wrap: anywhere;
+}
+.ticket-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.ticket-form {
+  border-top: 1px solid #344156;
+  padding-top: 8px;
+  min-width: 0;
+}
+.ticket-list .ticket-form {
+  border-top: 0;
+  padding-top: 0;
+}
+.ticket-summary {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 18px;
+  margin: 0 0 16px;
+}
+.ticket-summary dt {
+  color: #99a5b8;
+}
+.ticket-summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 500px) {
+  .ticket-summary {
+    grid-template-columns: 1fr;
+  }
+  .ticket-summary dd {
+    margin-bottom: 8px;
+  }
+}
