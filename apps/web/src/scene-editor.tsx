@@ -709,6 +709,7 @@ function LayerProperties({
           <label>
             Ebenenbild
             <select
+              aria-label="Ebenenbild"
               value={l.mediaId}
               onChange={(e) => update(l.id, { mediaId: e.target.value })}
             >
@@ -728,6 +729,7 @@ function LayerProperties({
           <label>
             Bildanpassung
             <select
+              aria-label="Bildanpassung"
               value={l.fit}
               onChange={(e) =>
                 update(l.id, { fit: e.target.value as "contain" | "cover" })
