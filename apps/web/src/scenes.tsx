@@ -33,6 +33,7 @@ export function SceneDrafts({
   ownerId,
   canEdit,
   media,
+  mediaLoaded = true,
   api,
   onScenes,
   onSaved,
@@ -42,6 +43,7 @@ export function SceneDrafts({
   ownerId: string;
   canEdit: boolean;
   media: MediaRecord[];
+  mediaLoaded?: boolean;
   api: Api;
   onScenes: (scenes: SceneRecord[]) => void;
   onSaved: (before: number, after: number) => void;
@@ -469,6 +471,8 @@ export function SceneDrafts({
             selectedId={layerId}
             onSelect={setLayerId}
             actions={actions}
+            mediaLoaded={mediaLoaded}
+            notice={{ status, error, blocked }}
           />
         </>
       )}

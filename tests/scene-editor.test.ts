@@ -205,3 +205,39 @@ test("Szeneneditor: Reihenfolge ändern bleibt in den Grenzen", () => {
   assert.equal(moveLayer(s, a.id, -1), s);
   assert.equal(moveLayer(s, "fehlt", 1), s);
 });
+
+test("Szeneneditor: hohe Bilder behalten ihr Seitenverhältnis, Pfeiltasten ändern keine Größe", () => {
+  const tall = placeBox(scene(), "image", undefined, 0.25);
+  assert.deepEqual([tall.width, tall.height], [270, 1080]);
+  assert.deepEqual(nudge({ x: 1.5, y: 2, width: 100.5, height: 50.4 }, 1, 0), {
+    x: 3,
+    y: 2,
+    width: 100.5,
+    height: 50.4,
+  });
+});
+
+test("Szeneneditor: Prüfübersicht meldet ungültige Namen und wartet auf die Medienliste", () => {
+  let s = { ...scene(), name: "   " };
+  s = {
+    ...s,
+    layers: [
+      { ...newLayer(s, "rectangle", randomUUID()), name: " " },
+      newLayer(s, "image", randomUUID(), { mediaId: randomUUID() }),
+    ],
+  };
+  assert.equal(sceneDefinition.safeParse(s).success, false);
+  const checks = checkScene(s, null);
+  assert.deepEqual(
+    checks.map((c) => [c.level, c.layerId ?? null]),
+    [
+      ["error", null],
+      ["error", s.layers[0].id],
+    ],
+  );
+  // Once loaded, the unknown medium is reported as missing.
+  assert.equal(
+    checkScene(s, []).filter((c) => c.layerId === s.layers[1].id).length,
+    1,
+  );
+});

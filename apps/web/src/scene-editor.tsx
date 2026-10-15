@@ -1,6 +1,12 @@
 // Interactive browser scene editor (Issue #44, package 1). Works on the
 // existing SceneDefinition; saving, leases and recovery stay in SceneDrafts.
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import type {
   SceneDefinition,
   SceneLayer,
@@ -64,12 +70,18 @@ export function SceneEditor({
   selectedId,
   onSelect,
   actions,
+  mediaLoaded = true,
+  notice,
   newId = () => crypto.randomUUID(),
 }: {
   draft: SceneDefinition;
   editing: boolean;
   busy: boolean;
   media: MediaRecord[];
+  /** False until the media list was loaded once; avoids false "missing" hints. */
+  mediaLoaded?: boolean;
+  /** Save status and errors, repeated inside the large canvas overlay. */
+  notice?: { status: string; error: string; blocked: boolean };
   mediaUrl: (id: string) => string;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
@@ -91,7 +103,11 @@ export function SceneEditor({
     (m) => IMAGE_MIMES.includes(m.mime) && m.status !== "failed",
   );
   const known = new Set(media.map((m) => m.id));
-  const checks = checkScene(draft, media);
+  const checks = checkScene(draft, mediaLoaded ? media : null);
+  // A blocked save must never stay hidden behind the overlay.
+  useEffect(() => {
+    if (notice?.blocked || notice?.error) setLarge(false);
+  }, [notice?.blocked, notice?.error]);
   const full = draft.layers.length >= 64;
   const handle =
     Math.max(draft.logicalWidth, draft.logicalHeight) / (large ? 120 : 80);
@@ -164,6 +180,7 @@ export function SceneEditor({
   function moveDrag(e: PointerEvent<SVGSVGElement>) {
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
+    if (e.buttons === 0) return endDrag(e);
     const p = point(e.clientX, e.clientY);
     if (!p) return;
     const dx = p.x - d.start.x,
@@ -207,7 +224,22 @@ export function SceneEditor({
 
   function onKey(e: KeyboardEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
-    if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+    // Text entry keeps the browser's own editing keys; checkboxes, colour
+    // fields and buttons use the editor shortcuts.
+    const textEntry =
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT" ||
+      target.isContentEditable ||
+      (target instanceof HTMLInputElement &&
+        !["checkbox", "radio", "color", "button", "range"].includes(
+          target.type,
+        ));
+    if (textEntry) return;
+    // No commands while a pointer drag rebuilds the layer from its start state.
+    if (drag.current) {
+      e.preventDefault();
+      return;
+    }
     const mod = e.ctrlKey || e.metaKey,
       k = e.key.toLowerCase();
     if (mod && k === "z" && !e.shiftKey) {
@@ -242,7 +274,7 @@ export function SceneEditor({
       );
     } else if (
       (e.key === "Delete" || e.key === "Backspace") &&
-      target.tagName !== "BUTTON"
+      target.classList.contains("scene-stage")
     ) {
       e.preventDefault();
       remove(selected.id);
@@ -324,6 +356,11 @@ export function SceneEditor({
             {large ? "Große Arbeitsfläche verlassen" : "Große Arbeitsfläche"}
           </button>
         </span>
+        {large && notice && (
+          <span className="scene-notice" aria-hidden="true">
+            {notice.status}
+          </span>
+        )}
       </div>
       {showLayers && (
         <aside className="scene-layers" role="complementary" aria-label="Ebenen">
@@ -340,7 +377,8 @@ export function SceneEditor({
                     onClick={() => onSelect(l.id)}
                   >
                     <span className="layer-icon" aria-hidden="true">
-                      {l.kind === "image" && known.has(l.mediaId) ? (
+                      {l.kind === "image" &&
+                      (known.has(l.mediaId) || !mediaLoaded) ? (
                         <img src={mediaUrl(l.mediaId)} alt="" />
                       ) : l.kind === "image" ? (
                         "!"
@@ -399,7 +437,7 @@ export function SceneEditor({
                 <button
                   className="secondary"
                   draggable={editing && !full}
-                  disabled={!editing || busy || full}
+                  disabled={!editing || full}
                   onDragStart={(e) => {
                     e.dataTransfer.setData(MEDIA_DRAG_TYPE, m.id);
                     e.dataTransfer.setData("text/plain", m.name);
@@ -431,6 +469,8 @@ export function SceneEditor({
           const id = e.dataTransfer.getData(MEDIA_DRAG_TYPE);
           if (!editing || !id) return;
           e.preventDefault();
+          // Only media of this show/event; foreign IDs would block saving.
+          if (!images.some((m) => m.id === id)) return;
           const p = point(e.clientX, e.clientY);
           add("image", { mediaId: id, center: p ?? undefined });
         }}
@@ -438,7 +478,7 @@ export function SceneEditor({
         <SceneSketch
           definition={draft}
           mediaUrl={mediaUrl}
-          missing={(id) => !known.has(id)}
+          missing={(id) => mediaLoaded && !known.has(id)}
           svgRef={svg}
           svgProps={{
             onPointerDown: (e) => {
@@ -448,6 +488,7 @@ export function SceneEditor({
             onPointerMove: moveDrag,
             onPointerUp: endDrag,
             onPointerCancel: endDrag,
+            onLostPointerCapture: endDrag,
             className:
               "scene-sketch" + (editing ? " scene-sketch-editable" : ""),
           }}
@@ -557,6 +598,7 @@ export function SceneEditor({
         >
           {selected ? (
             <LayerProperties
+              mediaLoaded={mediaLoaded}
               key={selected.id}
               layer={selected}
               index={draft.layers.indexOf(selected)}
@@ -610,19 +652,35 @@ function NumberField({
   step?: number;
   onValue: (v: number) => void;
 }) {
+  // Local text keeps partial input (e.g. "2" on the way to "24"); only values
+  // inside the contract range are applied, the rest is corrected on blur.
+  const [text, setText] = useState(String(value));
+  useEffect(() => {
+    setText((t) => (Number(t) === value && t !== "" ? t : String(value)));
+  }, [value]);
   return (
     <label>
       {label}
       <input
         type="number"
-        value={value}
+        value={text}
         min={min}
         max={max}
         step={step}
         onChange={(e) => {
-          if (e.target.value === "") return;
+          setText(e.target.value);
           const v = Number(e.target.value);
-          if (Number.isFinite(v)) onValue(Math.min(max, Math.max(min, v)));
+          if (e.target.value !== "" && Number.isFinite(v) && v >= min && v <= max)
+            onValue(v);
+        }}
+        onBlur={() => {
+          const v = Number(text);
+          const next =
+            text === "" || !Number.isFinite(v)
+              ? value
+              : Math.min(max, Math.max(min, v));
+          setText(String(next));
+          if (next !== value) onValue(next);
         }}
       />
     </label>
@@ -630,6 +688,7 @@ function NumberField({
 }
 
 function LayerProperties({
+  mediaLoaded,
   layer: l,
   index,
   count,
@@ -642,6 +701,7 @@ function LayerProperties({
   remove,
   duplicate,
 }: {
+  mediaLoaded: boolean;
   layer: SceneLayer;
   index: number;
   count: number;
@@ -700,7 +760,7 @@ function LayerProperties({
       )}
       {l.kind === "image" && (
         <>
-          {!media.some((m) => m.id === l.mediaId) && (
+          {mediaLoaded && !media.some((m) => m.id === l.mediaId) && (
             <p className="error">
               Medium fehlt oder ist für diese Show nicht verfügbar. Bitte ein
               vorhandenes Bild wählen.

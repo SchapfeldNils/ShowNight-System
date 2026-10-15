@@ -23,8 +23,15 @@ Zusätzlich (F07 „Mausbedienung und genaue Zahlenwerte“, Abschnitt 5 „Undo
 - Ebenen auf der Arbeitsfläche anklicken, verschieben und über den Eckgriff skalieren; Umschalt hält beim Skalieren das Seitenverhältnis, Alt unterdrückt das Einrasten.
 - Einrasten an Rand und Mitte der Szene mit sichtbaren Hilfslinien, abschaltbar.
 - Pfeiltasten verschieben um 1, mit Umschalt um 10 logische Pixel; Entf entfernt die gewählte Ebene.
+- Zahlenfelder übernehmen Werte erst, wenn sie im gültigen Bereich liegen; begonnene Eingaben (z. B. „2“ auf dem Weg zu „24“) werden nicht sofort korrigiert, sondern erst beim Verlassen des Feldes.
 - Rückgängig/Wiederholen (Strg+Z, Strg+Y bzw. Strg+Umschalt+Z) mit höchstens 100 Schritten. Ein Ziehvorgang ist ein Schritt; Eingaben im selben Feld innerhalb einer Sekunde werden zusammengefasst. Der Verlauf gilt nur für die laufende Bearbeitung und wird beim Freigeben verworfen.
-- Prüfübersicht der Szene: fehlende, fehlgeschlagene oder noch nicht geprüfte Medien, vollständig außerhalb liegende oder vollständig transparente sichtbare Ebenen und leere Texte. Ein Klick wählt die betroffene Ebene.
+- Prüfübersicht der Szene: leere oder zu lange Szenen-/Ebenennamen (verhindern das Speichern), fehlende, fehlgeschlagene oder noch nicht geprüfte Medien, vollständig außerhalb liegende oder vollständig transparente sichtbare Ebenen und leere Texte. Ein Klick wählt die betroffene Ebene.
+
+Die Große Arbeitsfläche zeigt den Speicherstatus und wird bei Speicher- oder Sperrfehlern automatisch verlassen, damit Meldung und Freigabe sichtbar sind. Abgelegte Medien werden nur angenommen, wenn sie zur Show bzw. Veranstaltung gehören. Bis die Medienliste einmal geladen ist, werden keine Medien als fehlend gemeldet.
+
+## Gegenprüfung vor dem Codex-Review
+
+Eine unabhängige Subagenten-Prüfung (Claude, ohne Kenntnis der Umsetzung) an `499645f` fand keinen P1-Befund, drei P2- und acht P3-Befunde. Behoben im Fixcommit direkt nach `499645f` (Hash im PR #55): Zahleneingabe, Statusanzeige in der Großansicht, Prüfung abgelegter Medien-IDs, Ziehabbruch, Tastenkürzel auf Checkboxen/Farbfeldern, Entf nur auf der Arbeitsfläche, Seitenverhältnis hoher Bilder, Pfeiltasten ohne Größenrundung, Medienliste noch nicht geladen, Namensfehler in der Prüfübersicht, Medienleiste unabhängig vom Speichervorgang. Diese Vorprüfung ersetzt das Review durch Codex nicht.
 
 ## Nicht enthalten (Folgepakete)
 
@@ -50,7 +57,7 @@ Diese Punkte brauchen Schemaerweiterungen, Rendererarbeit oder Betreiberentschei
 - `tests/browser/scene-editor.spec.ts` (Teil von `pnpm test:browser`, eigene Testdatenbank Port 55462, HTTP 3006): Verschieben mit der Maus, Rückgängig/Wiederholen, Pfeiltasten, Eckgriff, Ziehen eines geprüften Bildes aus der Medienleiste, Umbenennen, Sichtbarkeit, Reihenfolge, Prüfübersicht, ausblendbare Bereiche, große Arbeitsfläche, mobile Breite ohne horizontales Scrollen, gespeicherter Serverstand nach Neuladen
 - Bestehende Prüfung `tests/browser/preparation.spec.ts` deckt weiterhin Sperre, fehlgeschlagene Speicherung und lokale Wiederherstellung ab
 
-In der Claude-Umgebung ist die npm-Registry gesperrt; dort liefen nur die Unit-Tests (7/7) mit einer Zod-Kopie sowie eine Chromium-Probe der Bedienung gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am jeweiligen PR-Commit.
+In der Claude-Umgebung ist die npm-Registry gesperrt; dort liefen nur die Unit-Tests (9/9) mit einer Zod-Kopie sowie eine Chromium-Probe der Bedienung gegen eine nachgebaute API. Maßgeblich sind die CI-Läufe am jeweiligen PR-Commit.
 
 ## Bekannte Grenzen
 

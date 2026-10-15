@@ -45,7 +45,16 @@ export function placeBox(
     H = scene.logicalHeight;
   let width = round(W * (kind === "text" ? 0.5 : 0.4)),
     height = round(H * (kind === "text" ? 0.15 : 0.4));
-  if (aspect && aspect > 0) height = Math.max(1, round(width / aspect));
+  if (aspect && aspect > 0) {
+    height = width / aspect;
+    // Tall media: limit by the scene height and keep the aspect ratio.
+    if (height > H) {
+      height = H;
+      width = H * aspect;
+    }
+    width = Math.max(1, round(width));
+    height = Math.max(1, round(height));
+  }
   width = clamp(width, 1, W);
   height = clamp(height, 1, H);
   const cx = center?.x ?? W / 2,
@@ -154,8 +163,14 @@ export function clampBox(box: Box): Box {
   };
 }
 
+/** Move by whole pixels; width and height stay exactly as they are. */
 export function nudge(box: Box, dx: number, dy: number): Box {
-  return clampBox({ ...box, x: box.x + dx, y: box.y + dy });
+  return {
+    x: round(clamp(box.x + dx, -LIMIT, LIMIT)),
+    y: round(clamp(box.y + dy, -LIMIT, LIMIT)),
+    width: box.width,
+    height: box.height,
+  };
 }
 
 /** Bounded undo/redo history of whole definitions. */
@@ -201,11 +216,25 @@ export type SceneCheck = {
  */
 export function checkScene(
   scene: SceneDefinition,
-  media: MediaRecord[],
+  /** null while the media list is not loaded yet: no media verdicts then. */
+  media: MediaRecord[] | null,
 ): SceneCheck[] {
   const out: SceneCheck[] = [];
+  const name = scene.name.trim();
+  if (!name || name.length > 200)
+    out.push({
+      level: "error",
+      message:
+        "Szenenname fehlt oder ist zu lang (1–200 Zeichen). Der Entwurf wird so nicht gespeichert.",
+    });
   for (const l of scene.layers) {
-    if (l.kind === "image") {
+    if (!l.name.trim() || l.name.trim().length > 200)
+      out.push({
+        level: "error",
+        layerId: l.id,
+        message: `Ebene ${scene.layers.indexOf(l) + 1}: Name fehlt oder ist zu lang (1–200 Zeichen). Der Entwurf wird so nicht gespeichert.`,
+      });
+    if (l.kind === "image" && media) {
       const m = media.find((m) => m.id === l.mediaId);
       if (!m)
         out.push({

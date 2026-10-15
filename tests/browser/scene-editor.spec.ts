@@ -141,6 +141,10 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
     await page
       .getByRole("button", { name: "Text hinzufügen", exact: true })
       .click();
+    // Partial input is not clamped while typing ("2" on the way to "24").
+    await field("Schriftgröße").selectText();
+    await field("Schriftgröße").pressSequentially("24");
+    await expect(field("Schriftgröße")).toHaveValue("24");
     await field("Ebenentext").fill("");
     const checks = page.getByRole("region", {
       name: "Prüfübersicht der Szene",

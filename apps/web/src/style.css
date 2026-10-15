@@ -831,3 +831,7 @@ button:focus-visible {
 .timer-hint-large {
   font-size: clamp(28px, 4vw, 58px);
 }
+.scene-notice {
+  color: #b8c0cc;
+  font-size: 13px;
+}
