@@ -6,6 +6,7 @@ import "./style.css";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
 import { RendererPanel } from "./renderer.js";
 import { ServerOverview } from "./server-overview.js";
+import { LiveDirection } from "./live.js";
 type Me = {
   id: string;
   displayName: string;
@@ -134,8 +135,8 @@ function App() {
       </header>
       <main>
         <aside className="banner">
-          Vorbereitungsmodus · Liveaktivierung und Geräteausgabe noch nicht
-          verfügbar · Mailversand aus
+          Lokaler Server · Showablauf nur als Simulation · keine Geräteausgabe ·
+          Mailversand aus
         </aside>
         {error && <p role="alert">{error}</p>}
         {message && <p role="status">{message}</p>}
@@ -308,6 +309,9 @@ function App() {
                 </article>
               ))}
             </section>
+            {packages.length > 0 && (
+              <LiveDirection me={me} packages={packages} api={api} />
+            )}
             {selected && (
               <section>
                 <h2>{selected.event.name}</h2>

@@ -36,6 +36,8 @@ import {
 } from "./renderer.js";
 import type { WindowsIoReport } from "../../../packages/contracts/src/local-status.js";
 import { unavailableWindowsIo } from "./windows-io.js";
+import { LiveEngine, type LiveRights } from "./live.js";
+import { liveRights } from "../../../packages/contracts/src/live.js";
 export async function localServer(
   accounts: LocalAccounts,
   packages: PackageStore,
@@ -499,11 +501,82 @@ export async function localServer(
       return accounts.block(req.actor, id.parse(req.params.userId), b.blocked);
     },
   );
+  // Showablauf Paket 1 (Issue #45, D021): simulated server-side live state.
+  // Opened on first use, so servers without live use create no live database.
+  let liveEngine: LiveEngine | null = null;
+  const live = () =>
+    (liveEngine ??= new LiveEngine(packages.root, {
+    manifest(pid) {
+      const binding = accounts.packageBindings().find((p) => p.id === pid);
+      if (!binding) throw new Error("Paket nicht vorbereitet.");
+      const m = packages.metadata(pid).manifest;
+      const headerHash = packageHeader(m).hash;
+      if (m.eventId !== binding.eventId || headerHash !== binding.manifestSha)
+        throw new Error("Paketinhalt verändert.");
+      return { manifest: m, headerHash };
+    },
+    verify: (pid) => packages.verify(pid),
+    eventOf: (pid) =>
+      accounts.packageBindings().find((p) => p.id === pid)?.eventId,
+  }));
+  app.addHook("onClose", async () => liveEngine?.close());
+  // Several direction windows poll every second; the global 200/min per IP
+  // must never turn a GO into 429. Live routes get their own, higher limit.
+  const liveLimit = {
+    config: { rateLimit: { max: 3000, timeWindow: 60000 } },
+  };
+  const rightsFor = (a: Actor, eventId: string): LiveRights => {
+    accounts.eventAllowed(a, eventId);
+    const g = accounts.grants(a).find((g) => g.eventId === eventId);
+    return liveRights(a.admin, g?.roles ?? []);
+  };
+  app.get<{ Params: { eventId: string } }>(
+    "/api/local/live/:eventId",
+    liveLimit,
+    async (req) => {
+      const eventId = id.parse(req.params.eventId);
+      const rights = rightsFor(req.actor, eventId);
+      return {
+        ...live().snapshot(eventId, rights),
+        history: live().history(eventId, 30),
+      };
+    },
+  );
+  app.get<{
+    Params: { eventId: string };
+    Querystring: { epoch?: string; after?: string };
+  }>("/api/local/live/:eventId/events", liveLimit, async (req) => {
+    const eventId = id.parse(req.params.eventId);
+    rightsFor(req.actor, eventId);
+    const after = z.coerce.number().int().min(0).parse(req.query.after ?? "0");
+    return live().events(eventId, req.query.epoch, after);
+  });
+  app.post("/api/local/live/commands", liveLimit, async (req, reply) => {
+    const { eventId } = z.object({ eventId: id }).parse(req.body);
+    const rights = rightsFor(req.actor, eventId);
+    const result = await live().execute(
+      { id: req.actor.id, displayName: req.actor.displayName },
+      rights,
+      req.body,
+      () => {
+        // Re-read session, block and roles after slow package verification.
+        const current = accounts.actor(req.cookies.sn_local_session);
+        if (!current || current.id !== req.actor.id)
+          return { view: false, operate: false, activate: false };
+        try {
+          return rightsFor(current, eventId);
+        } catch {
+          return { view: false, operate: false, activate: false };
+        }
+      },
+    );
+    return reply.code(result.status).send(result);
+  });
   app.post("/api/local/live/activate", async () => {
     throw new HttpError(
       409,
       "NOT_IMPLEMENTED",
-      "Liveaktivierung und Geräteausgabe noch nicht implementiert.",
+      "Liveaktivierung erfolgt über den Showablauf (stand.activate); Geräteausgabe ist noch nicht implementiert.",
     );
   });
   app.get("/health/live", async () => ({

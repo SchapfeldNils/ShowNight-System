@@ -1,5 +1,7 @@
 # Schnittstellen und Zustandsprotokoll – Entwicklungsstart
 
+15\. Oktober 2026, Issue #45 Paket 1 (PR offen, nicht gemergt): lokaler Showablauf als Simulation. `GET /api/local/live/:eventId` (Snapshot mit Epoch/Sequenz, Rechten, Durchläufen, Verlauf), `GET /api/local/live/:eventId/events?epoch&after` (fehlende Ereignisse oder `snapshotRequired`), `POST /api/local/live/commands` mit dem Envelope unten; umgesetzt sind `stand.activate`, `stand.rollback`, `run.create`, `run.start`, `cue.prepare`, `cue.go`, `run.end`. Vertrag `packages/contracts/src/live.ts`, Rechte D021. Keine Renderer-/Gerätenachricht. [Ablauf und Grenzen](s4-showablauf.md).
+
 15\. Oktober 2026, Issue #41: `GET/PUT /api/v1/shows/:id/timer-preparation`, PUT `{expectedRevision,preset}` unter bestehenden Showbearbeitungsrechten mit aktuellem Session-/MFA-/Origin-/CSRF-/Revisionsschutz. GET liefert Defaultrevision0 ohne Mutation. PUT gibt neue Timerrevision und vorherige/neue Showrevision zurück. Nur gespeicherte Vorbereitung; persönliche Browserprobe besitzt keine gemeinsamen Befehle/Livezustände. Kein Offlineexport. [Vertrag/Grenzen](stage-timer-vorbereitung.md).
 
 S3-Szenenkomposition (14. Oktober 2026): Admin-Diagnoseauftrag `prepare-scene` referenziert nur Paket/Szene. Server bindet Manifest-/Szenenrevision und übergibt höchstens 1 MiB großen gehashten UUID-Dateisnapshot; IPC bleibt auf 16 KiB begrenzt. `packageScenesSupported` und `packageScene` kennzeichnen Fähigkeit/geladenen Stand. Keine neue GO-/Live-/Rechtearchitektur. [Vertrag und Grenzen](s3-native-szenen.md).
