@@ -1,6 +1,10 @@
 name: Native renderer
 on:
   pull_request:
+    # Reine Doku-Änderungen brauchen keinen Windows-Nativbuild.
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   workflow_dispatch:
 concurrency:
   group: renderer-${{ github.event.pull_request.number || github.ref }}
@@ -26,23 +30,46 @@ jobs:
           @('PATH','INCLUDE','LIB','LIBPATH','VCToolsInstallDir','VCToolsVersion','WindowsSdkDir','WindowsSDKVersion','UniversalCRTSdkDir','UCRTVersion') | ForEach-Object { $value = [Environment]::GetEnvironmentVariable($_); if ($value) { "$_=$value" >> $env:GITHUB_ENV } }
       - run: pnpm typecheck
       - run: pnpm build
-      - name: Restore verified SDK download
+      # Caches: identische Pfadlisten für Restore und Save, sonst greift der
+      # Cache nie (bis Oktober 2026 der Fall). Skia ist an Runner-Image (MSVC)
+      # und Buildskript (Revision, Argumente) gebunden; GStreamer an die
+      # offiziell geprüfte SDK-Prüfsumme. Inhalte werden vom Buildskript
+      # weiterhin gegen Revision bzw. SHA256 geprüft.
+      - name: Runner image
+        id: image
+        shell: pwsh
+        run: '"version=$env:ImageVersion" >> $env:GITHUB_OUTPUT'
+      - name: Restore verified GStreamer SDK
         id: sdk-cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             .local/renderer-build/gstreamer-1.0-msvc-x86_64-1.28.8.exe
-            .local/renderer-build/gst.sha256sum
-          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v1
+            .local/renderer-build/gst
+          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v2
+      - name: Restore Skia build
+        id: skia-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: .local/renderer-build/skia
+          key: windows-skia-${{ steps.image.outputs.version }}-${{ hashFiles('scripts/renderer-build.mjs') }}-v1
       - name: Build native renderer from pinned sources
+        id: build
         run: pnpm renderer:build
-      - name: Preserve verified SDK download
-        if: always() && steps.sdk-cache.outputs.cache-hit != 'true'
+      - name: Save verified GStreamer SDK
+        if: always() && steps.build.outcome == 'success' && steps.sdk-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             .local/renderer-build/gstreamer-1.0-msvc-x86_64-1.28.8.exe
-          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v1
+            .local/renderer-build/gst
+          key: windows-gstreamer-1.28.8-e4c41ee6ee9c6c32-v2
+      - name: Save Skia build
+        if: always() && steps.build.outcome == 'success' && steps.skia-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: .local/renderer-build/skia
+          key: windows-skia-${{ steps.image.outputs.version }}-${{ hashFiles('scripts/renderer-build.mjs') }}-v1
       - name: Test real native process without display or audio output
         env:
           RENDERER_TEST_BROWSER: "true"
