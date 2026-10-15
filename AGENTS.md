@@ -1,5 +1,7 @@
 # Arbeitsregeln für Codex
 
+Zusammenarbeit mit Claude über Issues, PRs und Dokumentation: Vorschlag in [docs/entwicklung/zusammenarbeit.md](docs/entwicklung/zusammenarbeit.md). Die folgenden Betreiberregeln bleiben vorrangig.
+
 ## Auftrag und Lesen
 Lies README.md, docs/entwicklung/auftrag.md, docs/entwicklung/arbeitspakete.md, docs/entwicklung/datenmodell.md, docs/entwicklung/schnittstellen.md, docs/entwicklung/abnahmeplan.md, docs/anforderungen.md und docs/architektur.md vor der Umsetzung. Berücksichtige docs/gesamtkonzept.md, docs/planung/entscheidungen.md und docs/planung/offene-punkte.md.
 
