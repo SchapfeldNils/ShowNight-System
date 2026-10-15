@@ -87,11 +87,9 @@ export function updateRoutes(app: FastifyInstance, cfg: Config) {
     const [latest] = await listReleases(cfg);
     reply.header("Cache-Control", "no-store");
     if (!latest)
-      return reply
-        .code(404)
-        .send({
-          error: { code: "NO_UPDATE", message: "Kein Update veröffentlicht." },
-        });
+      return reply.code(404).send({
+        error: { code: "NO_UPDATE", message: "Kein Update veröffentlicht." },
+      });
     return latest;
   });
 
