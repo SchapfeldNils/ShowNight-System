@@ -62,6 +62,12 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
     await expect(
       page.getByText("Original gespeichert. Analyse läuft im Worker."),
     ).toBeVisible();
+
+    await page.getByRole("button", { name: "Szene anlegen", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Szene bearbeiten", exact: true })
+      .click();
+    // The media strip belongs to the editor; wait for the worker check there.
     await expect
       .poll(async () => {
         await workerTick(f.db, f.cfg);
@@ -70,11 +76,6 @@ test("Szeneneditor: Ebenen mit Maus, Tastatur und Medienleiste gestalten", async
           .count();
       }, { timeout: 30000, intervals: [500, 1000, 2000] })
       .toBe(1);
-
-    await page.getByRole("button", { name: "Szene anlegen", exact: true }).click();
-    await page
-      .getByRole("button", { name: "Szene bearbeiten", exact: true })
-      .click();
     await page
       .getByRole("button", { name: "Rechteck hinzufügen", exact: true })
       .click();
