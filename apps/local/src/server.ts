@@ -38,6 +38,7 @@ import type { WindowsIoReport } from "../../../packages/contracts/src/local-stat
 import { unavailableWindowsIo } from "./windows-io.js";
 import { LiveEngine, type LiveRights } from "./live.js";
 import { liveRights } from "../../../packages/contracts/src/live.js";
+import { localNetworkAddress } from "./network.js";
 export async function localServer(
   accounts: LocalAccounts,
   packages: PackageStore,
@@ -90,6 +91,8 @@ export async function localServer(
       "/api/local/auth/login",
       "/api/local/auth/mfa/verify",
       "/api/local/auth/invitation",
+      // Display links (P5) authenticate with their own token, see below.
+      "/api/local/monitor-display",
     ].includes(req.url.split("?")[0]);
     if (publicRoute) return;
     const a = accounts.actor(req.cookies.sn_local_session);
@@ -319,10 +322,7 @@ export async function localServer(
     rendererAdmin(req);
     const action = rendererSceneAction.parse(req.body);
     const manifest = available(req.actor, action.packageId);
-    const scene =
-      manifest.schemaVersion === 2
-        ? manifest.scenes?.find((item) => item.id === action.sceneId)
-        : undefined;
+    const scene = manifest.scenes?.find((item) => item.id === action.sceneId);
     if (!scene)
       throw new HttpError(404, "SCENE", "Szene nicht im vorbereiteten Paket.");
     const manifestSha256 = packageHeader(manifest).hash;
@@ -572,6 +572,70 @@ export async function localServer(
     );
     return reply.code(result.status).send(result);
   });
+  // Live-Bühnenmonitor (Issue #41, D024/P5): timer and hints only.
+  app.get<{ Params: { eventId: string } }>(
+    "/api/local/monitor/:eventId",
+    liveLimit,
+    async (req) => {
+      const eventId = id.parse(req.params.eventId);
+      rightsFor(req.actor, eventId);
+      return live().monitorView(eventId);
+    },
+  );
+  app.get("/api/local/monitor-display", liveLimit, async (req) => {
+    // Valid only in the local network, only for this read (no session).
+    if (!localNetworkAddress(req.ip))
+      throw new HttpError(403, "NETWORK", "Anzeige-Links gelten nur im lokalen Netz.");
+    const token = req.headers["x-monitor-link"];
+    const eventId =
+      typeof token === "string" ? live().linkEvent(token) : null;
+    if (!eventId)
+      throw new HttpError(401, "LINK", "Anzeige-Link ungültig, abgelaufen oder widerrufen.");
+    return live().monitorView(eventId);
+  });
+  const operator = (req: { actor: Actor }, eventId: string) => {
+    if (!rightsFor(req.actor, eventId).operate)
+      throw new HttpError(
+        403,
+        "FORBIDDEN",
+        "Anzeige-Links verwalten Admins und die Rollen „live“ bzw. „technik“.",
+      );
+    return { id: req.actor.id, displayName: req.actor.displayName };
+  };
+  app.get<{ Params: { eventId: string } }>(
+    "/api/local/live/:eventId/monitor-links",
+    async (req) => {
+      const eventId = id.parse(req.params.eventId);
+      operator(req, eventId);
+      return live().links(eventId);
+    },
+  );
+  app.post<{ Params: { eventId: string } }>(
+    "/api/local/live/:eventId/monitor-links",
+    async (req) => {
+      const eventId = id.parse(req.params.eventId);
+      const actor = operator(req, eventId);
+      const b = z
+        .strictObject({
+          label: z.string().trim().min(1).max(80),
+          validHours: z.int().min(1).max(720).nullable(),
+        })
+        .parse(req.body);
+      if (live().links(eventId).length >= 20)
+        throw new HttpError(409, "LIMIT", "Höchstens 20 aktive Anzeige-Links je Veranstaltung.");
+      return live().createLink(eventId, actor, b.label, b.validHours);
+    },
+  );
+  app.post<{ Params: { eventId: string; linkId: string } }>(
+    "/api/local/live/:eventId/monitor-links/:linkId/revoke",
+    async (req) => {
+      const eventId = id.parse(req.params.eventId);
+      const actor = operator(req, eventId);
+      if (!live().revokeLink(eventId, id.parse(req.params.linkId), actor))
+        throw new HttpError(404, "LINK", "Anzeige-Link nicht gefunden oder bereits widerrufen.");
+      return { revoked: true };
+    },
+  );
   app.post("/api/local/live/activate", async () => {
     throw new HttpError(
       409,

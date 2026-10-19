@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { sceneRecord } from "./scene.js";
+import { timerPreparation } from "./timer.js";
 export const id = z.uuid();
 export const name = z.string().trim().min(1).max(200);
 export const password = z.string().min(12).max(256);
@@ -97,9 +98,15 @@ export const mailInput = z.strictObject({
   text: z.string().min(1).max(20000),
 });
 export const mediaStatus = z.enum(["processing", "ready", "failed"]);
+export const timerRecord = z.strictObject({
+  showId: id,
+  revision: z.int().positive(),
+  preset: timerPreparation,
+});
+export type TimerRecord = z.infer<typeof timerRecord>;
 export const manifest = z
   .strictObject({
-    schemaVersion: z.union([z.literal(1), z.literal(2)]),
+    schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     id,
     eventId: id,
     createdAt: z.iso.datetime(),
@@ -135,6 +142,8 @@ export const manifest = z
     errors: z.array(z.string()),
     liveActivationSupported: z.literal(false),
     scenes: z.array(sceneRecord).max(2000).optional(),
+    /** Stage monitor drafts per show (version 3, Issue #41). */
+    timers: z.array(timerRecord).max(1000).optional(),
   })
   .superRefine((m, ctx) => {
     if (
@@ -150,6 +159,17 @@ export const manifest = z
       ctx.addIssue({
         code: "custom",
         message: "Paketversion 2 benötigt Szenen.",
+      });
+    // Version 3 exists for shows with timer drafts, with or without scenes.
+    if (m.schemaVersion !== 3 && m.timers !== undefined)
+      ctx.addIssue({
+        code: "custom",
+        message: "Timerentwürfe benötigen Paketversion 3.",
+      });
+    if (m.schemaVersion === 3 && !m.timers?.length)
+      ctx.addIssue({
+        code: "custom",
+        message: "Paketversion 3 benötigt Timerentwürfe.",
       });
   });
 export type Cue = z.infer<typeof cue>;

@@ -66,6 +66,17 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
             [eventId],
           )
         ).rows.map(sceneDto);
+        // Stage monitor drafts (migration 007) travel with version 3 (#41).
+        const timers = (
+          await c.query(
+            "SELECT t.show_id,t.revision,t.preset FROM timer_preparations t JOIN shows s ON s.id=t.show_id WHERE s.event_id=$1 ORDER BY s.created_at,t.show_id",
+            [eventId],
+          )
+        ).rows.map((t) => ({
+          showId: t.show_id,
+          revision: t.revision,
+          preset: t.preset,
+        }));
         const requiredMedia = new Set<string>([
           ...shows.flatMap((s) =>
             s.cues.flatMap((cue: { mediaIds: string[] }) => cue.mediaIds),
@@ -94,8 +105,9 @@ export function packageRoutes(app: FastifyInstance, db: DB, cfg: Config) {
               if (!mediaIds.has(mediaId))
                 errors.push(`Einsatz ${cue.name}: Medienreferenz fehlt.`);
         const m = manifest.parse({
-          schemaVersion: scenes.length ? 2 : 1,
+          schemaVersion: timers.length ? 3 : scenes.length ? 2 : 1,
           ...(scenes.length ? { scenes } : {}),
+          ...(timers.length ? { timers } : {}),
           id: randomUUID(),
           eventId,
           createdAt: new Date().toISOString(),

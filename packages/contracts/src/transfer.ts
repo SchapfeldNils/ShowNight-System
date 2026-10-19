@@ -70,6 +70,15 @@ export const transferManifest = manifest
         message: "Einsatz verweist auf fremde oder fehlende Szene.",
       });
     const unique = (ids: string[]) => new Set(ids).size === ids.length;
+    const timers = m.timers ?? [];
+    if (
+      !unique(timers.map((t) => t.showId)) ||
+      timers.some((t) => !m.shows.some((show) => show.id === t.showId))
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Ungültige Timerzuordnung im Paket.",
+      });
     if (
       !unique(m.shows.map((s) => s.id)) ||
       !unique(m.media.map((f) => f.id)) ||
