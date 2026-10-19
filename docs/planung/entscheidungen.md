@@ -194,16 +194,18 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 - Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) erbeten.
 - Entscheidung: S8-02 umfasst Saalplan-Editor und Gastshop; Shop zunächst nur als Käufervorschau, öffentlicher Link erst nach O11 und Betreiberfreigabe je Veranstaltung; Haltezeit 15 Minuten; Missbrauchsschutz über Limits und Fallenfeld ohne Captcha; Pflichtdaten Name, E-Mail, Telefon; optional Postversand mit Pflichtanschrift und einstellbarer Versandgebühr; neue Veranstaltungsrolle „Verkauf“ zusätzlich zu Admin und Leitung; Bestellmails nur Testmodus bis zur Freigabe.
 - Betroffen: [ticketshop-s8-02.md](ticketshop-s8-02.md), [anforderungen.md](../anforderungen.md) Kapitel 11–13.
-- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #43 erbeten): Die Rolle „Verkauf“ wird bis zum Einlass-/Abendkassenpaket nicht ins Offlinepaket übertragen (P7). Saalpläne werden zunächst nur zwischen Veranstaltungen kopiert, mit Recht auf beide; eine veranstaltungsübergreifende Vorlagenbibliothek folgt später (P8).
+- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #43 erbeten): Die Rolle „Verkauf“ wird bis zum Einlass-/Abendkassenpaket nicht ins Offlinepaket übertragen (P7). Saalpläne werden zunächst nur zwischen Veranstaltungen kopiert, mit Recht auf beide; eine veranstaltungsübergreifende Vorlagenbibliothek folgt später (P8). Ebenfalls im Claude-Chat beantwortet: „Verkauf“ ohne MFA-Pflicht (P1), „Verkauf“ bearbeitet auch Ticketarten, Preise, Kontingente und Verkaufszeiten (P2), Versandgebühr pauschal je Bestellung (P3), Vorschau mit getrenntem, löschbarem Testbestand (P4).
 
 ## D023 – Szeneneditor Paket 2: zuerst Videoebenen
 
 - Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #44](https://github.com/SchapfeldNils/ShowNight-System/issues/44) erbeten.
 - Entscheidung: Das nächste Editorpaket bringt Videoebenen aus der Medienbibliothek mit Abspielen, Pause und Zeitleiste im Editor (D006 Punkt 7) sowie dem bereits festgelegten Verhalten am Videoende. Vorlagen sowie Drehung, Sperren und Gruppen folgen danach. Keine Publikumsausgabe aus dem Editor.
 - Betroffen: [szeneneditor.md](szeneneditor.md), Szenenvertrag und Renderer.
+- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #44 erbeten): Am Videoende zunächst nur „letztes Bild“ oder „Wiederholen“; „Folgeinhalt“ und „Folgeaktion“ kommen mit Showablauf Paket 2 (P6).
 
 ## D024 – Live-Bühnenmonitor: Browser-Vollbild, Bedienrecht wie GO
 
 - Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #41](https://github.com/SchapfeldNils/ShowNight-System/issues/41) erbeten.
 - Entscheidung: Der Live-Bühnenmonitor zeigt Timer und Hinweise zuerst auf einer eigenen Vollbildseite des lokalen Servers (Rechner oder Tablet am Bühnenmonitor), nicht über den nativen Renderer-Ausgang. Bedienen dürfen globale Admins sowie die Rollen Live und Technik, wie GO in D021.
 - Betroffen: [s4-showablauf.md](../entwicklung/s4-showablauf.md) (nach Merge von #56), [stage-timer-vorbereitung.md](../entwicklung/stage-timer-vorbereitung.md).
+- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #41 erbeten): Die Monitorseite ist für angemeldete Teammitglieder und zusätzlich über einen widerrufbaren, nur lesenden Anzeige-Link erreichbar, den Admins, Live und Technik erzeugen (P5).

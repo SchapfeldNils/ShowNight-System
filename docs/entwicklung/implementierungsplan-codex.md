@@ -6,7 +6,7 @@ Grundlage: [D022–D024](../planung/entscheidungen.md) (PR #61, Bestätigung in 
 
 ## 0 Zuständigkeit und Voraussetzungen
 
-**Abweichung vom Standard (zusammenarbeit.md Abschnitt 2):** Für die Pakete C1–C4 implementiert Codex, Claude übernimmt Review und Nachprüfung. Diese Abweichung wird vom Betreiber im jeweiligen Issue bestätigt. Erst danach setzt Codex den Zuständigkeitskommentar (Vorlage in Abschnitt 6).
+**Abweichung vom Standard (zusammenarbeit.md Abschnitt 2):** Für die Pakete C1–C4 implementiert Codex, Claude übernimmt Review und Nachprüfung. Der Betreiber hat dem im Claude-Chat am 19\. Oktober 2026 zugestimmt; die direkte Bestätigung im jeweiligen Issue steht aus. Erst danach setzt Codex den Zuständigkeitskommentar (Vorlage in Abschnitt 6).
 
 | Paket | Issue | Branch (Vorschlag) | Basis | Migration | Startbedingung |
 |---|---|---|---|---|---|
@@ -15,7 +15,7 @@ Grundlage: [D022–D024](../planung/entscheidungen.md) (PR #61, Bestätigung in 
 | C3 Live-Bühnenmonitor | #41 | `codex/issue-41-buehnenmonitor` | `main` nach Merge von #56 | keine online | D024 in #41 bestätigt |
 | C4 Szeneneditor: Videoebenen | #44 | `codex/issue-44-videoebenen` | `main` | keine (Szenen-JSON) | D023 in #44 bestätigt |
 
-**Reihenfolge (Vorschlag):** C1 → C2 → C3 → C4. Begründung: Betreiberpriorität „zuerst sichtbare Online-Funktionen“; C2 baut direkt auf C1 auf. C3 und C4 berühren den Ticketcode nicht und können nach Betreiberentscheidung vorgezogen oder parallel von Claude implementiert werden (dann reviewt Codex). Keine zwei Verantwortlichen für dasselbe Paket.
+**Reihenfolge (vom Betreiber im Claude-Chat gewählt):** C1 → C2 → C3 → C4. Begründung: Betreiberpriorität „zuerst sichtbare Online-Funktionen“; C2 baut direkt auf C1 auf. C3 und C4 berühren den Ticketcode nicht und können nach Betreiberentscheidung vorgezogen oder parallel von Claude implementiert werden (dann reviewt Codex). Keine zwei Verantwortlichen für dasselbe Paket.
 
 **Empfohlene Merge-Reihenfolge der offenen PRs vor C1:** #60 und #58 (CI) → #61 (Entscheidungen, inklusive dieses Plans) → #49 (S8-01, Migration 008) → #56 (Showablauf) → #62, #53/#59 (Betrieb) → #51/#52 nach Codex-Review. Merges entscheidet der Betreiber.
 
@@ -33,8 +33,8 @@ Admins, Veranstaltungsleitung und die neue Veranstaltungsrolle „Verkauf“ zei
 - Neue Prüfung `salesAccess(db, user, eventId)` in `apps/api/src/permissions.ts`: Admin, `leitung` oder `verkauf`. **Fallstricke:**
   - `eventAccess` wertet jede Zeile in `grants` als Mitgliedschaft. Ausdrücklich testen, dass `verkauf` allein keine Show-Bearbeitung, keinen Paketexport, keine Szenen- oder Timerrechte und keine Liverechte gibt.
   - `apps/api/src/offline.ts` übernimmt Rollen aus `grants` unverändert ins Offlinepaket; `offlineRole` kennt `verkauf` nicht. Ohne Anpassung würde ein einziger Verkauf-Grant den Paketexport der Veranstaltung scheitern lassen. Nach P7 (Betreiberzustimmung im Claude-Chat) wird die Rolle bis zum Einlass-/Abendkassenpaket **bewusst nicht übertragen**: `verkauf` vor der Prüfung `!roles.length && !team && !u.admin` herausfiltern. Benutzer, deren einzige Rolle `verkauf` ist, fehlen dadurch im Offlinepaket; das wird in der Paketdoku genannt und getestet. In jedem Fall Regressionstest für den Paketexport mit Verkauf-Grant.
-  - MFA: Vorschlag P1 (Abschnitt 7) – `verkauf` verlangt MFA wie die Leitung, weil Käuferdaten verarbeitet werden.
-- S8-01-Routen (`ticketAccess` in `apps/api/src/tickets.ts`) nach Vorschlag P2 ebenfalls für `verkauf` öffnen.
+  - MFA (P1, Betreiberentscheidung): `verkauf` verlangt **keine** MFA. Die bestehende MFA-Pflicht für Admin und Leitung bleibt unverändert; `salesAccess` darf sie nicht abschwächen (Test: Leitung ohne MFA weiterhin abgewiesen, `verkauf` ohne MFA zugelassen).
+- S8-01-Routen (`ticketAccess` in `apps/api/src/tickets.ts`) nach P2 (Betreiberentscheidung) ebenfalls für `verkauf` öffnen: Ticketarten, Preise, Kontingente und Verkaufszeiten.
 
 ### Datenmodell (Migration 009)
 
@@ -75,13 +75,13 @@ Unit: Vertrag, Kennungsvergabe, Prüffunktion, Drehung/Überschneidung. API-Inte
 
 Das Team testet den vollständigen Käuferweg: Plätze auf Karte oder Liste wählen, 15 Minuten halten, Daten eingeben, optional Postversand, Bestellung mit Zahlungsreferenz und Bestelllink. Nichts davon ist öffentlich, kein echter Mailversand.
 
-### Vorschaubestand (Vorschlag P4)
+### Vorschaubestand (P4, Betreiberentscheidung)
 
 Anforderung Kapitel 11 verlangt eine Käufervorschau, die keinen echten Bestand blockiert; D022 macht die Vorschau zum einzigen Zugang. Lösung: derselbe Code mit einem Modus `vorschau|echt`. Vorschau-Holds und -Bestellungen liegen in einem getrennten Bestand (Modus Teil jedes Eindeutigkeitsschlüssels), blockieren sich gegenseitig, aber nie echten Bestand, und lassen sich mit „Vorschau zurücksetzen“ löschen. Für den Modus `echt` gibt es in C2 **keine Route**; er wird nur auf Service-Ebene getestet.
 
 ### Datenmodell (Migration 010)
 
-- `shop_settings`: Postversand an/aus, `shipping_fee_cents` je Bestellung (Vorschlag P3). Haltezeit fest 15 Minuten als Konstante. Keine Spalte für „öffentlich“.
+- `shop_settings`: Postversand an/aus, `shipping_fee_cents` pauschal je Bestellung (P3, Betreiberentscheidung); ohne Betrag ist Postversand nicht wählbar. Haltezeit fest 15 Minuten als Konstante. Keine Spalte für „öffentlich“.
 - `ticket_holds` (Modus, Sitzungsschlüssel als Hash, `expires_at` serverseitig) und `seat_claims` mit `UNIQUE(event_id, mode, seat_id)` als datenbankseitiger Doppelbuchungsschutz. Jeder Claim gehört entweder einem Hold oder einer Bestellung (`hold_id` oder `order_id`, genau eines gesetzt). Abgelaufene Claims im selben Vorgang vor dem Einfügen entfernen, zusätzlich Aufräumen im Worker.
 - **Bestellen als eine gesperrte Transaktion:** Der Abschluss sperrt den Hold der eigenen Sitzung (`FOR UPDATE`), prüft, dass er noch nicht abgelaufen ist, legt die Bestellung an und überträgt jeden Claim im selben Vorgang vom Hold auf die Bestellung. Abgelaufen heißt abgelehnt, auch wenn der Platz noch frei wirkt. Bereichskapazität bei freier Platzwahl wird dabei unter derselben Kontingentsperre erneut geprüft.
 - Schutz belegter Plätze bei der Planfreigabe (aus C1 hierher verschoben): Freigabe einer Revision, die Plätze mit Claims löscht, umbenennt oder deaktiviert, wird abgelehnt.
@@ -117,7 +117,7 @@ Timer und Regiehinweise laufen im lokalen Livezustand und erscheinen auf einer V
 
 1. **Paketübertragung:** Timerentwürfe (Migration 007, `stage-timer-vorbereitung.md`) werden bisher nicht in Offlinepakete übernommen. Heute wählt `apps/api/src/packages.ts` Version 1 ohne Szenen und Version 2 mit Szenen, und Version 2 verlangt mindestens eine Szene. Ein optionales Feld in Version 2 reicht deshalb nicht für Shows mit Timer, aber ohne Szene. Neue **Paketversion 3** mit optionalen Szenen und optionalen Timerentwürfen; der Export wählt 3, sobald Timer vorhanden sind, sonst wie bisher. Der lokale Server nimmt 1–3 an. Regressionstests: Timer ohne Szenen, Timer mit Szenen, alte Pakete 1 und 2 unverändert.
 2. **Lokaler Livezustand** (`apps/local/src/live.ts`, `packages/contracts/src/live.ts`): neue Befehle `timer.load`, `timer.start`, `timer.pause`, `timer.resume`, `timer.reset`, `timer.adjust` (±Sekunden), `hint.show`, `hint.hide` mit `commandId`, `expectedLiveRevision` und Idempotenz wie bei GO. Serverzeit maßgeblich: Zustand speichert Anker und Restzeit, Anzeigen rechnen mit gemessenem Uhrversatz. Zustand in SQLite, damit ein Neustart ihn nicht verliert. Hinweisablauf unabhängig von Timerpause (Regel aus der Vorbereitung). Countdown, Laufzeit und Zieluhrzeit, Überziehung, Warnfarben.
-3. **Monitorseite** (`apps/local-web`): nur Timer und Hinweise, große Schrift, Vollbildschaltfläche, Bildschirm-Wachhaltung wo verfügbar, automatisches Wiederverbinden. Bei Verbindungsverlust kompakte Ausfallmeldung mit Zeitpunkt des letzten Stands (F20) statt stillem Einfrieren.
+3. **Monitorseite** (`apps/local-web`): Zugang nach P5 (Betreiberentscheidung) für angemeldete Teammitglieder der Veranstaltung **und** über einen Anzeige-Link. Den Link erzeugen und widerrufen Admins, `live` und `technik` je Veranstaltung; er ist zufällig, nur als Hash in SQLite gespeichert, optional befristet, nur im lokalen Netz gültig und berechtigt ausschließlich zum Lesen von Timer und Hinweisen (keine Befehle, keine anderen Daten, keine Sitzung für andere Seiten). Liste aktiver Links mit Erstellzeit und Widerruf; Widerruf trennt verbundene Anzeigen sofort. Inhalt: nur Timer und Hinweise, große Schrift, Vollbildschaltfläche, Bildschirm-Wachhaltung wo verfügbar, automatisches Wiederverbinden. Bei Verbindungsverlust kompakte Ausfallmeldung mit Zeitpunkt des letzten Stands (F20) statt stillem Einfrieren.
 4. **Bedienung** in der Liveansicht aus #56: Timersteuerung und Hinweise mit Schnelltexten.
 
 ### Nicht in C3
@@ -126,7 +126,7 @@ Ausgabe über den nativen Renderer, Timer auf Netcup, Bindung an Einsätze (F14,
 
 ### Prüfungen
 
-Unit für Zeitrechnung (Pause, Fortsetzen, Korrektur, Überziehung, Zieluhrzeit, Hinweisablauf), Rechte, Idempotenz, Revisionskonflikte, Neustart mit gespeichertem Zustand, Paketimport mit und ohne Timer. Browser: Monitor in Tablet- und Monitorgröße, Wiederverbinden, Ausfallmeldung. Ergebnisse als Software-/Browserprüfung kennzeichnen, nicht als Bühnenabnahme.
+Unit für Zeitrechnung (Pause, Fortsetzen, Korrektur, Überziehung, Zieluhrzeit, Hinweisablauf), Rechte, Anzeige-Link (nur lesen, Befehle abgewiesen, Widerruf trennt sofort, Ablauf, kein Zugriff auf andere Routen), Idempotenz, Revisionskonflikte, Neustart mit gespeichertem Zustand, Paketimport mit und ohne Timer. Browser: Monitor in Tablet- und Monitorgröße, Wiederverbinden, Ausfallmeldung. Ergebnisse als Software-/Browserprüfung kennzeichnen, nicht als Bühnenabnahme.
 
 ## 4 Paket C4: Szeneneditor – Videoebenen (D023)
 
@@ -136,7 +136,7 @@ Videos aus der Medienbibliothek als Ebene platzieren und im Editor mit Abspielen
 
 ### Umfang
 
-- **Vertrag** `packages/contracts/src/scene.ts`: neue Ebenenart `video` mit `mediaId`, `fit` und `endBehavior: "letztes-bild" | "wiederholen"`. „Folgeinhalt“ und „Folgeaktion“ (Anforderungen Abschnitt Videoende, A09) kommen mit dem Showablauf und Einsatzüberschreibung (Vorschlag P6). `sceneMediaIds` um Videos erweitern.
+- **Vertrag** `packages/contracts/src/scene.ts`: neue Ebenenart `video` mit `mediaId`, `fit` und `endBehavior: "letztes-bild" | "wiederholen"`. „Folgeinhalt“ und „Folgeaktion“ (Anforderungen Abschnitt Videoende, A09) kommen mit dem Showablauf und Einsatzüberschreibung (P6, Betreiberentscheidung). `sceneMediaIds` um Videos erweitern.
 - **Alle Verbraucher der Ebenenarten anpassen** (sonst bricht die Prüfung still): `apps/api/src/scenes.ts` (Medienbindung, nur Videoformate zulassen), `apps/api/src/content.ts`, `apps/api/src/packages.ts` (Videomedien ins Paket), `apps/local/src/server.ts` und `apps/local/src/renderer-scene.ts`, `packages/contracts/src/renderer-scene.ts` (Snapshot kennt nur PNG/JPEG und verlangt exakte Bindung), `apps/renderer/src/package_scene.h`.
 - **Renderer:** Videoebenen werden in C4 nicht nativ zusammengesetzt. `prepare-scene` lehnt Szenen mit Videoebene ausdrücklich mit deutscher Meldung ab („Videoebenen werden von der nativen Ausgabe noch nicht unterstützt“), statt sie wegzulassen. Native Wiedergabe ist ein eigenes Folgepaket.
 - **Editor:** Werkzeug „Video“, Ziehen aus der Medienleiste, Miniatur in der Ebenenliste. SVG kann Video nicht direkt abspielen: Wiedergabe über ein HTML-`<video>` (z. B. `foreignObject` oder deckungsgleiche HTML-Schicht) – Auswahl, Ziehen und Skalieren müssen unverändert funktionieren. Gemeinsame Szenenuhr: Abspielen, Pause, Zeitleiste mit Springen, aktuelle Zeit und Dauer (`analysis.duration`). Wiedergabezustand gehört nicht zur Definition, nicht in Rückgängig/Wiederholen und nicht ins Autospeichern. Am Ende `letztes-bild` hält, `wiederholen` beginnt neu.
@@ -169,18 +169,18 @@ Bereiche: <Dateien/Module>.
 Ausdrücklich nicht enthalten: <Liste aus diesem Plan>.
 ```
 
-## 7 Offene Betreiberpunkte
+## 7 Betreiberpunkte
 
-Die Umsetzung beginnt mit den markierten Vorschlägen nur, wenn der Betreiber sie im Issue bestätigt; sonst bleibt der betroffene Teil offen. Eine Zustimmung im Claude-Chat ist hier festgehalten, ersetzt aber nicht die direkte Bestätigung im Issue (zusammenarbeit.md Abschnitt 7).
+Alle Punkte hat der Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet. Das ist hier festgehalten, ersetzt aber nicht die direkte Bestätigung im jeweiligen Issue (zusammenarbeit.md Abschnitt 7). Abweichungen vom ursprünglichen Vorschlag: P1 (keine MFA) und P5 (Anzeige-Link).
 
-| Nr. | Frage | Vorschlag | Issue |
+| Nr. | Frage | Entscheidung | Issue |
 |---|---|---|---|
-| P1 | MFA für die Rolle „Verkauf“? | Ja, wie Leitung (Käuferdaten) | #43 |
-| P2 | Darf „Verkauf“ auch Ticketarten, Preise und Kontingente aus S8-01 bearbeiten? | Ja, als „Shop-Einstellungen“ laut D022 | #43 |
-| P3 | Versandgebühr: Höhe, je Bestellung oder je Karte? | Einstellbar je Veranstaltung, Betrag je Bestellung; ohne Betrag kein Postversand anbietbar | #43 |
-| P4 | Vorschau mit getrenntem Vorschaubestand, löschbar? | Ja (Abschnitt 2) | #43 |
-| P5 | Wer darf die Monitorseite ansehen: nur angemeldete Teammitglieder oder zusätzlich ein widerrufbarer Anzeige-Link für Tablets? | Zunächst Anmeldung mit beliebiger Veranstaltungsrolle; Anzeige-Link erst nach Bestätigung | #41 |
-| P6 | Videoende „Folgeinhalt/Folgeaktion“ erst mit Showablauf Paket 2? | Ja; C4 nur „letztes Bild“ und „Wiederholen“ | #44 |
-| P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | **Zugestimmt** (Claude-Chat, 19\. Oktober 2026): weglassen, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren | #43 |
-| P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | **Zugestimmt** (Claude-Chat, 19\. Oktober 2026): zunächst nur Kopieren zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später | #43 |
+| P1 | MFA für die Rolle „Verkauf“? | **Nein**, keine MFA für „Verkauf“ (Claude-Chat, 19\. Oktober 2026) | #43 |
+| P2 | Darf „Verkauf“ auch Ticketarten, Preise und Kontingente aus S8-01 bearbeiten? | **Ja**, alles im Ticketbereich (Claude-Chat, 19\. Oktober 2026) | #43 |
+| P3 | Versandgebühr: Höhe, je Bestellung oder je Karte? | **Pauschal je Bestellung**, Betrag je Veranstaltung einstellbar; ohne Betrag kein Postversand (Claude-Chat, 19\. Oktober 2026) | #43 |
+| P4 | Vorschau mit getrenntem Vorschaubestand, löschbar? | **Ja**, getrennt und löschbar (Abschnitt 2; Claude-Chat, 19\. Oktober 2026) | #43 |
+| P5 | Wer darf die Monitorseite ansehen: nur angemeldete Teammitglieder oder zusätzlich ein widerrufbarer Anzeige-Link für Tablets? | **Anmeldung und zusätzlich widerrufbarer Anzeige-Link** (Abschnitt 3; Claude-Chat, 19\. Oktober 2026) | #41 |
+| P6 | Videoende „Folgeinhalt/Folgeaktion“ erst mit Showablauf Paket 2? | **Ja**, C4 nur „letztes Bild“ und „Wiederholen“ (Claude-Chat, 19\. Oktober 2026) | #44 |
+| P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | **Weglassen**, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren (Claude-Chat, 19\. Oktober 2026) | #43 |
+| P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | **Zunächst nur Kopieren** zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später (Claude-Chat, 19\. Oktober 2026) | #43 |
 | O11 | Veranstalter-, Datenschutz- und Vertragsangaben | Voraussetzung für jeden öffentlichen Link | #43 |
