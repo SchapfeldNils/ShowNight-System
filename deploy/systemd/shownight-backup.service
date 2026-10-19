@@ -18,4 +18,10 @@ ExecStart=/bin/sh deploy/backup-run.sh <PRIVAT>/stack.env <ARCHIVVERZEICHNIS> <P
 UMask=0077
 NoNewPrivileges=true
 Nice=10
-TimeoutStartSec=2h
+# Kein Abbruch durch Zeitlimit: ein Kill mitten in der Wartung würde App/Worker
+# gestoppt lassen. Überlappung verhindert flock in backup-run.sh.
+TimeoutStartSec=infinity
+# Läuft nach jedem Ende, auch nach Kill/Stopp: startet App/Worker nur, wenn
+# diese Sicherung sie gestoppt und nicht bestätigt wieder gestartet hat.
+ExecStopPost=/bin/sh deploy/backup-recover.sh <PRIVAT>/stack.env
+TimeoutStopSec=10min

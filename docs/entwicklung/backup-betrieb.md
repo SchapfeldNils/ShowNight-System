@@ -22,13 +22,20 @@ Das neue `scripts/backup-vault.mjs` verschlüsselt Datenbank, Medienarchiv, SHA2
 
 Deshalb ruft `backup.sh` vor jedem Stopp `node scripts/stack-check.mjs <stack.env> deploy/compose.yaml postgres app worker` auf:
 - Je Dienst muss der Compose-Konfigurations-Hash (`docker compose config --hash`) dem Label `com.docker.compose.config-hash` des laufenden Containers entsprechen.
-- Weil dieser Hash nur den Volume-Schlüssel enthält, nicht den aufgelösten Namen, werden zusätzlich die tatsächlich eingebundenen Volumes mit den aufgelösten Namen aus `docker compose config --format json` verglichen.
+- Weil dieser Hash nur Schlüssel und Referenzen enthält, werden zusätzlich verglichen:
+  - die tatsächlich eingebundenen Volumes mit den aufgelösten Namen aus `docker compose config --format json`,
+  - die verbundenen Netzwerke mit den aufgelösten Netzwerknamen (z. B. `PROXY_NETWORK_NAME`; ein falscher Name ließe App/Worker nach dem Stopp nicht wieder starten),
+  - die Image-ID des laufenden Containers mit der Image-ID, auf die die Image-Referenz jetzt lokal zeigt (nach `docker load` oder `pull` desselben Tags würde Compose den Container sonst mit dem neuen Image neu erzeugen).
 - Bei Abweichung bricht die Sicherung ab, **bevor** etwas gestoppt wird, und nennt den betroffenen Dienst. Die Prüfung liest nur.
 - Node ist damit auch für `backup.sh` allein Voraussetzung (für `backup-run.sh` war es das bereits).
 
 Nach jeder Änderung am Portainer-Stack (Image, Volumes, Umgebungswerte) muss die private `stack.env` nachgeführt werden, sonst verweigert der nächste Lauf die Sicherung. Das ist gewollt.
 
-Geprüft durch `tests/backup-runner.test.mjs` mit Docker-Attrappe (abweichender Hash, abweichendes Volume: kein Stopp, kein Neustart) sowie in CI durch die echten Containerabläufe (`tests/container-smoke.sh`, Netcup-Rehearsal), in denen die Vorprüfung gegen echte Compose-Stacks läuft.
+Geprüft durch `tests/backup-runner.test.mjs` mit Docker-Attrappe (abweichender Hash, Volume, Netzwerkname oder Image: kein Stopp, kein Neustart) sowie in CI durch die echten Containerabläufe (`tests/container-smoke.sh`, Netcup-Rehearsal), in denen die Vorprüfung gegen echte Compose-Stacks läuft.
+
+## Abbruch während der Wartung
+
+`backup.sh` legt vor dem Stopp die Markierung `<stack.env>.backup-stopped` an und entfernt sie erst nach bestätigtem Wiederanlauf. Abbruchsignale (INT, TERM, HUP) lösen denselben Wiederanlauf aus wie ein Fehler. Wird der Prozess hart beendet oder scheitert der Wiederanlauf, bleibt die Markierung stehen: `sh deploy/backup-recover.sh <stack.env>` startet dann App und Worker und entfernt sie. Ohne Markierung tut das Skript nichts, bewusst gestoppte Dienste bleiben aus. In der systemd-Vorlage läuft es als `ExecStopPost` nach jedem Ende des Dienstes.
 
 ## Zeitgesteuerte Sicherung (Vorlage)
 
