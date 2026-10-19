@@ -64,9 +64,12 @@ function emptyQuestion(type: QuizQuestion["type"]): any {
 export function QuizPreparation({
   eventId,
   api,
+  onShowRevision,
 }: {
   eventId: string;
   api: Api;
+  // Rundenänderungen erhöhen die Show-Revision; die Showverwaltung zieht nach.
+  onShowRevision: (showId: string, before: number, after: number) => void;
 }) {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [libraryId, setLibraryId] = useState("");
@@ -229,6 +232,9 @@ export function QuizPreparation({
           showId={showId}
           libraries={overview.libraries}
           api={api}
+          onShowRevision={(before, after) =>
+            onShowRevision(showId, before, after)
+          }
         />
       )}
     </>
@@ -261,6 +267,7 @@ function LibraryEditor({
       const d = await api<typeof data>(`/quiz-libraries/${libraryId}`);
       setData(d);
       setRename(d!.library.name);
+      return d;
     } catch (e) {
       setError((e as Error).message);
     }
@@ -278,9 +285,15 @@ function LibraryEditor({
         onChanged();
         return true;
       })
-      .catch((e: Error) => {
+      .catch(async (e: Error) => {
         setError(e.message);
-        void load();
+        const d = await load();
+        // Offener Entwurf bleibt, speichert aber künftig gegen den aktuellen Stand.
+        setEditing((cur) =>
+          cur && cur !== "new"
+            ? (d?.questions.find((q) => q.id === cur.id) ?? cur)
+            : cur,
+        );
         return false;
       });
   if (!data)
@@ -408,7 +421,7 @@ function LibraryEditor({
       )}
       {editing ? (
         <QuestionForm
-          key={editing === "new" ? "new" : editing.id + editing.revision}
+          key={editing === "new" ? "new" : editing.id}
           initial={editing === "new" ? null : editing.question}
           onCancel={() => setEditing(null)}
           onSave={(question) =>
@@ -651,13 +664,18 @@ function RoundsEditor({
   showId,
   libraries,
   api,
+  onShowRevision,
 }: {
   showId: string;
   libraries: QuizLibrary[];
   api: Api;
+  onShowRevision: (before: number, after: number) => void;
 }) {
   const [rounds, setRounds] = useState<QuizRound[] | null>(null);
   const [showRevision, setShowRevision] = useState(0);
+  // Kartenfassung je Runde: steigt nur nach erfolgreichem Speichern, damit ein
+  // Konflikt den Entwurf nicht durch Neuaufbau der Karte verwirft.
+  const [cardVersion, setCardVersion] = useState<Record<string, number>>({});
   const [pool, setPool] = useState<QuizQuestionRecord[]>([]);
   const [error, setError] = useState(""),
     [notice, setNotice] = useState("");
@@ -669,6 +687,7 @@ function RoundsEditor({
       );
       setRounds(data.rounds);
       setShowRevision(data.showRevision);
+      return data.showRevision;
     } catch (e) {
       setError((e as Error).message);
     }
@@ -685,14 +704,26 @@ function RoundsEditor({
       )
       .catch(() => setPool([]));
   }, [showId, libraries]);
-  const act = (work: () => Promise<unknown>, done: string) =>
-    work()
+  const act = (work: () => Promise<unknown>, done: string) => {
+    const before = showRevision;
+    return work()
       .then(() => {
         setError("");
         setNotice(done);
+        return true;
       })
-      .catch((e: Error) => setError(e.message))
-      .finally(load);
+      .catch((e: Error) => {
+        setError(e.message);
+        return false;
+      })
+      .then(async (ok) => {
+        const after = await load();
+        if (ok && after !== undefined) onShowRevision(before, after);
+        return ok;
+      });
+  };
+  const renew = (roundId: string) =>
+    setCardVersion((v) => ({ ...v, [roundId]: (v[roundId] ?? 0) + 1 }));
   if (!rounds)
     return (
       <section className="card">
@@ -737,7 +768,7 @@ function RoundsEditor({
       )}
       {rounds.map((r, index) => (
         <RoundCard
-          key={r.id + r.revision}
+          key={r.id + ":" + (cardVersion[r.id] ?? 0)}
           round={r}
           pool={pool}
           first={index === 0}
@@ -747,8 +778,11 @@ function RoundsEditor({
             act(
               () => api(`/quiz-rounds/${r.id}`, "PUT", body),
               "Runde gespeichert.",
-            )
+            ).then((ok) => {
+              if (ok) renew(r.id);
+            })
           }
+          onDiscard={() => renew(r.id)}
           onDelete={() =>
             act(
               () =>
@@ -797,6 +831,7 @@ function RoundCard({
   last,
   onMove,
   onSave,
+  onDiscard,
   onDelete,
 }: {
   round: QuizRound;
@@ -805,8 +840,10 @@ function RoundCard({
   last: boolean;
   onMove: (delta: number) => void;
   onSave: (body: unknown) => Promise<unknown>;
+  onDiscard: () => void;
   onDelete: () => void;
 }) {
+  const [baseRevision] = useState(round.revision);
   const [name, setName] = useState(round.name);
   const [settings, setSettings] = useState<QuizRoundSettings>(round.settings);
   const [items, setItems] = useState(
@@ -824,6 +861,15 @@ function RoundCard({
     });
   return (
     <article className="quiz-round" aria-label={"Runde " + round.name}>
+      {round.revision !== baseRevision && (
+        <div role="alert" className="error">
+          Diese Runde wurde inzwischen geändert. „Runde speichern“ ersetzt den
+          neueren Stand durch deinen Entwurf.{" "}
+          <button type="button" onClick={onDiscard}>
+            Entwurf verwerfen und aktuellen Stand laden
+          </button>
+        </div>
+      )}
       <div className="grid">
         <label>
           Rundenname

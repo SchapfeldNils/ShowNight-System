@@ -111,6 +111,24 @@ async function questionAccess(
   questionId: string,
   lock = false,
 ) {
+  if (lock) {
+    // Erst die Bibliothek, dann die Frage sperren (wie beim Löschen der Bibliothek):
+    // sonst speichert eine Änderung, die das laufende Löschen gleich wieder entfernt.
+    const libraryId = (
+      await c.query("SELECT library_id FROM quiz_questions WHERE id=$1", [
+        questionId,
+      ])
+    ).rows[0]?.library_id;
+    if (
+      !libraryId ||
+      !(
+        await c.query("SELECT 1 FROM quiz_libraries WHERE id=$1 FOR SHARE", [
+          libraryId,
+        ])
+      ).rowCount
+    )
+      missing();
+  }
   const q = (
     await c.query(
       "SELECT * FROM quiz_questions WHERE id=$1" + (lock ? " FOR UPDATE" : ""),

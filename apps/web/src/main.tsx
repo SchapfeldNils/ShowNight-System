@@ -727,7 +727,22 @@ function App() {
           />
         )}
         {page === "Quiz" && active && (
-          <QuizPreparation key={active.id} eventId={active.id} api={api} />
+          <QuizPreparation
+            key={active.id}
+            eventId={active.id}
+            api={api}
+            onShowRevision={(showId, before, after) => {
+              // Nur nachziehen, wenn niemand sonst die Show dazwischen geändert hat.
+              const bump = <T extends { id: string; revision: number }>(
+                s: T,
+              ) =>
+                s.id === showId && s.revision === before
+                  ? { ...s, revision: after }
+                  : s;
+              setShows((list) => list.map(bump));
+              setEditShow((current) => current && bump(current));
+            }}
+          />
         )}
         {page === "Übersicht" && (
           <>

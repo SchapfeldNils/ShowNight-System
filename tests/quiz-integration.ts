@@ -688,6 +688,41 @@ test(
       );
 
       await t.test(
+        "Fragenänderung während laufender Bibliothekslöschung meldet 404 statt Erfolg",
+        async () => {
+          const temp = await ok(`/events/${event.id}/quiz/libraries`, "POST", {
+            name: "Wird gelöscht",
+          });
+          const question = await ok(
+            `/quiz-libraries/${temp.id}/questions`,
+            "POST",
+            { question: textQuestion },
+          );
+          // Eine fremde Transaktion löscht die Bibliothek und hält dabei deren Sperre.
+          const deleting = await db.connect();
+          try {
+            await deleting.query("BEGIN");
+            await deleting.query(
+              "SELECT 1 FROM quiz_libraries WHERE id=$1 FOR UPDATE",
+              [temp.id],
+            );
+            const update = req(`/quiz-questions/${question.id}`, "PUT", {
+              expectedRevision: question.revision,
+              question: { ...textQuestion, prompt: "Geändert" },
+            });
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            await deleting.query("DELETE FROM quiz_libraries WHERE id=$1", [
+              temp.id,
+            ]);
+            await deleting.query("COMMIT");
+            assert.equal((await update).statusCode, 404);
+          } finally {
+            deleting.release();
+          }
+        },
+      );
+
+      await t.test(
         "Gelöschte Bibliothek: Runde behält festen Stand; Migration wiederholbar",
         async () => {
           const lib = await ok(`/quiz-libraries/${library.id}`);
