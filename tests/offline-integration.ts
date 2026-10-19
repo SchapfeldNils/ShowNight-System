@@ -331,6 +331,56 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
     await t.test(
       "Veranstaltungsrechte, geschütztes Originalmedium und fremde Kontooperationen",
       async () => {
+        // Showablauf Paket 1 (#45, D021): HTTP-Anbindung, Rechte, Simulation.
+        const live = (type: string, payload: object, extra: object = {}) =>
+          req("/live/commands", "POST", {
+            protocolVersion: 1,
+            commandId: randomUUID(),
+            eventId,
+            type,
+            payload,
+            ...extra,
+          });
+        const s0 = await req("/live/" + eventId);
+        assert.equal(s0.statusCode, 200, s0.body);
+        assert.equal(s0.json().simulated, true);
+        assert.deepEqual(s0.json().rights, { view: true, operate: true, activate: true });
+        assert.equal((await req("/live/" + secondEvent)).statusCode, 404);
+        const act = await live("stand.activate", {
+          packageId: manifest.id,
+          expectedStandRevision: 0,
+        });
+        assert.equal(act.statusCode, 200, act.body);
+        assert.equal(act.json().accepted, true);
+        const s1 = (await req("/live/" + eventId)).json();
+        assert.equal(s1.stand.packageId, manifest.id);
+        assert.equal(s1.history.at(-1).type, "stand.activate");
+        const ev = (
+          await req(`/live/${eventId}/events?epoch=${s0.json().authorityEpoch}&after=${s0.json().sequence}`)
+        ).json();
+        assert.equal(ev.snapshotRequired, false);
+        assert.deepEqual(ev.events.map((e: any) => e.type), ["stand.activate"]);
+        assert.equal(
+          (await live("run.create", { showId: randomUUID(), kind: "probe" })).statusCode,
+          404,
+        );
+        assert.equal(
+          (
+            await req("/live/commands", "POST", { eventId, type: "cue.go" })
+          ).statusCode,
+          400,
+        );
+        assert.equal(
+          (
+            await req(
+              "/live/commands",
+              "POST",
+              { protocolVersion: 1, commandId: randomUUID(), eventId, type: "run.create", payload: { showId: randomUUID(), kind: "probe" } },
+              { "x-csrf-token": "" },
+            )
+          ).statusCode,
+          403,
+        );
         assert.equal((await req("/packages/" + manifest.id)).statusCode, 200);
         const m = await req("/packages/" + manifest.id + "/media/" + mediaId);
         assert.equal(m.statusCode, 200, m.body);
@@ -343,6 +393,23 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
         lc = "sn_local_session=" + l.cookies[0].value;
         ls = l.json().csrfToken;
         assert.equal((await req("/packages")).json().length, 1);
+        // Members may watch the flow but not operate it.
+        assert.deepEqual((await req("/live/" + eventId)).json().rights, {
+          view: true,
+          operate: false,
+          activate: false,
+        });
+        const denied = await live("run.create", {
+          showId: randomUUID(),
+          kind: "probe",
+        });
+        assert.equal(denied.statusCode, 403);
+        assert.equal(
+          (
+            await live("stand.rollback", { expectedStandRevision: 1 })
+          ).statusCode,
+          403,
+        );
         assert.equal((await req("/packages/" + randomUUID())).statusCode, 404);
         assert.equal(
           (await req("/events/" + eventId + "/users")).statusCode,
@@ -380,6 +447,12 @@ test("S3-02: signierte Offlinekonten, MFA, Rechte und lokaler HTTPS-Dienst", asy
         assert.equal(
           (await req("/events/" + eventId + "/users")).statusCode,
           200,
+        );
+        // Event lead without live/technik role: no live operation (D021).
+        assert.equal(
+          (await live("run.create", { showId: randomUUID(), kind: "probe" }))
+            .statusCode,
+          403,
         );
         assert.equal(
           (await req("/events/" + secondEvent + "/users")).statusCode,

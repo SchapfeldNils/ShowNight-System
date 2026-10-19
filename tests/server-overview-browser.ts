@@ -65,6 +65,54 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
   };
   let fail = false;
   let old = false;
+  // Number of upcoming live snapshot reads that fail (Codex-Review #56).
+  let liveSnapshotFailures = 0;
+  // Synthetic live snapshot (Issue #45): one running rehearsal, simulated only.
+  const runId = "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b01",
+    cueA = "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b02",
+    cueB = "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b03";
+  const liveSnapshot = (rights = { view: true, operate: true, activate: true }) => ({
+    protocolVersion: 1,
+    authorityId: "local-server",
+    authorityEpoch: "synthetic-epoch",
+    sequence: 4,
+    eventId,
+    simulated: true,
+    stand: {
+      revision: 1,
+      packageId,
+      eventRevision: 1,
+      activatedAt: new Date().toISOString(),
+      activatedBy: "Synthetische Technik",
+      previousPackageId: null,
+      previousEventRevision: null,
+    },
+    runs: [
+      {
+        id: runId,
+        showId: "6f0d5d55-8f1e-4c43-9f5e-3d1d1f0a0b04",
+        showName: "Synthetische Show",
+        kind: "probe",
+        status: "running",
+        liveRevision: 3,
+        packageId,
+        eventRevision: 1,
+        cues: [
+          { id: cueA, name: "Begrüßung", triggerHint: "Moderation bereit", enabled: true, sceneId: null, sceneName: null },
+          { id: cueB, name: "Finale", triggerHint: "", enabled: true, sceneId: null, sceneName: null },
+        ],
+        nextCueId: cueA,
+        nextBlocked: null,
+        positionCueId: null,
+        atEnd: false,
+        output: null,
+        createdAt: new Date().toISOString(),
+        lastAction: null,
+      },
+    ],
+    rights,
+    history: [],
+  });
   const status = (): ServerStatus => {
     const checkedAt = new Date(Date.now() - (old ? 60000 : 0)).toISOString();
     return {
@@ -122,8 +170,32 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
             }
           : {}),
       });
-      const body =
-        path === "/me"
+      const liveSnapshotRead =
+        path === "/live/" + eventId && liveSnapshotFailures > 0;
+      if (liveSnapshotRead) liveSnapshotFailures--;
+      const body = liveSnapshotRead
+        ? { error: { message: "Synthetischer Lesefehler" } }
+        : path.startsWith("/live/")
+        ? path.endsWith("/events")
+          ? { epoch: "synthetic-epoch", snapshotRequired: false, events: [] }
+          : path === "/live/commands"
+            ? {
+                commandId: (route.request().postDataJSON() as { commandId: string }).commandId,
+                accepted: false,
+                replayed: false,
+                status: 409,
+                code: "LIVE_REVISION",
+                message: "Synthetische Ablehnung · Zustand neu laden",
+                runId,
+                liveRevision: 3,
+                sequence: 4,
+              }
+            : liveSnapshot(
+                admin
+                  ? { view: true, operate: true, activate: true }
+                  : { view: true, operate: false, activate: false },
+              )
+        : path === "/me"
           ? {
               id: "synthetic-admin",
               displayName: "Synthetisches Testkonto",
@@ -165,7 +237,12 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
                         },
                       };
       await route.fulfill({
-        status: path === "/server-status" && fail ? 503 : 200,
+        status:
+          (path === "/server-status" && fail) || liveSnapshotRead
+            ? 503
+            : path === "/live/commands"
+              ? 409
+              : 200,
         contentType: "application/json",
         body: JSON.stringify(body),
       });
@@ -428,6 +505,85 @@ test("Lokale Serverübersicht: ehrliche Geräteanzeigen, manuelle Aktualisierung
         },
       );
     }
+    await t.test(
+      "Showablauf: Simulation sichtbar, GO sendet das gezeigte Ziel mit Revision, Ablehnung ohne Wiederholung",
+      async () => {
+        requests.length = 0;
+        const { context, page, errors } = await fixture(true, true);
+        try {
+          const live = page.getByRole("region", { name: "Showablauf", exact: true });
+          await expect(live.getByRole("note")).toContainText("SIMULATION");
+          await expect(
+            live.getByRole("region", { name: "Publikumsausgabe (Simulation)", exact: true }),
+          ).toBeVisible();
+          const go = live.getByRole("button", { name: "GO · Begrüßung", exact: true });
+          await expect(go).toBeEnabled();
+          await go.click();
+          await expect(live.getByRole("alert")).toContainText("Synthetische Ablehnung");
+          await page.waitForTimeout(1500);
+          const commands = requests.filter((r) => r.path === "/live/commands");
+          assert.equal(commands.length, 1, "Abgelehnte Befehle werden nie automatisch wiederholt");
+          const body = commands[0].body as Record<string, unknown>;
+          assert.equal(body.type, "cue.go");
+          assert.equal(body.runId, runId);
+          assert.equal(body.expectedLiveRevision, 3);
+          assert.deepEqual(body.payload, { expectedNextCueId: cueA });
+          assert.equal(body.protocolVersion, 1);
+          assert.equal(commands[0].csrf, "synthetic-csrf");
+          await page.setViewportSize({ width: 390, height: 844 });
+          assert.equal(
+            await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+            true,
+          );
+          await page.screenshot({ path: "test-results/lokaler-showablauf.png", fullPage: true });
+          assert.deepEqual(errors, []);
+        } finally {
+          await context.close();
+        }
+      },
+    );
+    await t.test(
+      "Showablauf: nach fehlgeschlagenem ersten Lesen erholt sich die Ansicht selbst, ohne Befehle zu senden",
+      async () => {
+        requests.length = 0;
+        liveSnapshotFailures = 2;
+        const { context, page, errors } = await fixture(true, true);
+        try {
+          const live = page.getByRole("region", { name: "Showablauf", exact: true });
+          await expect(live.getByRole("alert")).toContainText("Synthetischer Lesefehler");
+          await expect(
+            live.getByRole("button", { name: "GO · Begrüßung", exact: true }),
+          ).toBeVisible({ timeout: 10000 });
+          await expect(live.getByRole("alert")).toHaveCount(0);
+          const snapshotReads = requests.filter((r) => r.path === "/live/" + eventId);
+          assert.ok(snapshotReads.length >= 3, "erneute Snapshotabfragen");
+          assert.equal(
+            requests.filter((r) => r.method === "POST").length,
+            0,
+            "Lesen wiederholt nie einen Befehl",
+          );
+          assert.deepEqual(errors, []);
+        } finally {
+          liveSnapshotFailures = 0;
+          await context.close();
+        }
+      },
+    );
+    await t.test(
+      "Showablauf: Leitung ohne Live-/Technikrolle sieht den Ablauf, aber kein GO",
+      async () => {
+        const { context, page, errors } = await fixture(false, true);
+        try {
+          const live = page.getByRole("region", { name: "Showablauf", exact: true });
+          await expect(live.getByText("Begrüßung", { exact: true }).first()).toBeVisible();
+          await expect(live.getByRole("button", { name: /^GO/ })).toHaveCount(0);
+          await expect(live.getByRole("button", { name: "Aktivierung vorbereiten" })).toHaveCount(0);
+          assert.deepEqual(errors, []);
+        } finally {
+          await context.close();
+        }
+      },
+    );
   } finally {
     await browser.close();
     await app.close();

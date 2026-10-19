@@ -188,3 +188,12 @@ Status: ausdrücklich beauftragt, keine neue Fachentscheidung. Bestehende lokale
 ## Online-Kontowiederherstellung – 15. Oktober 2026
 
 Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit gestalteter Mail; auf Rückfrage erhält jedes Konto eine eigene bestätigte E-Mail-Adresse, auch bei reinem Benutzernamen. Bestätigung bleibt Voraussetzung für Wiederherstellung. MFA und Rollen bleiben erhalten. Geeignete Entwicklungsstände sollen zu einer sichtbaren Online-Version zusammengeführt/mergt werden; weitere lokale Fachentwicklung folgt danach. Ticketshop und Stage Timer bleiben offen und im Gesamtumfang. Keine Produktionsbereitstellung oder echte E-Mail durch die Softwareprüfungen.
+
+## D021 – Liverechte und Simulationsumfang im ersten Showablauf
+
+- Status: **bestätigt** am 15\. Oktober 2026. Der Betreiber hat Codex auf die vollständig ausgeschriebene Frage direkt geantwortet: „Ja, D021 genau so bestätigen“. Codex hat das in [Issue #45](https://github.com/SchapfeldNils/ShowNight-System/issues/45#issuecomment-6195771736) protokolliert. Die frühere Auswahl im Claude-Chat ist kein Nachweis.
+- Entscheidung:
+  1. Nächsten Einsatz vorbereiten, GO, Durchlauf anlegen/starten/beenden: globale Admins sowie Veranstaltungsrollen `live` und `technik`. Leitung oder Inhaltsrechte allein genügen nicht.
+  2. Datenstand live aktivieren und zum vorherigen Stand zurückkehren: globale Admins und Rolle `technik`.
+  3. GO wirkt im ersten Paket nur auf den serverseitigen, deutlich als Simulation gekennzeichneten Livezustand. Kein Renderer-Take, keine Geräte-, Ton-, Licht- oder HDMI-Ausgabe.
+- Betroffen: [s4-showablauf.md](../entwicklung/s4-showablauf.md), [schnittstellen.md](../entwicklung/schnittstellen.md), [datenmodell.md](../entwicklung/datenmodell.md).
