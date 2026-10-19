@@ -79,7 +79,7 @@ compose source up -d --wait app worker
 export SN_PROBE_FIXTURE=''
 probe source enroll 6 "$private/fixture.json"
 export SN_PROBE_FIXTURE=$(cat "$private/fixture.json")
-# A harmless completed test job must retain its persisted test mode across migration 007.
+# A harmless completed test job must retain its persisted test mode across migrations 007 and 011.
 compose source exec -T postgres psql -U shownight -d shownight -v ON_ERROR_STOP=1 -c "INSERT INTO mail_jobs(id,business_key,recipient,subject,body,status) VALUES(gen_random_uuid(),'release-existing-test','release@example.invalid','Synthetische Probe','Keine echte Nachricht','simulated')" >/dev/null
 # Exact candidate runner, encrypted archive and authenticated extraction, all private.
 mkdir "$private/archives"
@@ -98,15 +98,15 @@ make_env rollback shownight:netcup-release-schema6
 compose source stop app worker
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/target.env" "$private/restored"
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5,6,7
+versions target 1,2,3,4,5,6,7,11
 compose target run --rm app node dist/api/cli.js migrate
-versions target 1,2,3,4,5,6,7
+versions target 1,2,3,4,5,6,7,11
 mail_default=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='mail_jobs' AND column_name='delivery_mode'")
 [ "$mail_default" = "'test'::text" ] || { echo 'Testversand-Default fehlt.' >&2; exit 1; }
 old_mail=$(compose target exec -T postgres psql -U shownight -d shownight -Atc "SELECT count(*) FROM mail_jobs WHERE business_key='release-existing-test' AND delivery_mode='test' AND status='simulated'")
 [ "$old_mail" = 1 ] || { echo 'Bestehender Testauftrag verändert.' >&2; exit 1; }
 compose target up -d --wait app worker
-probe target check 7 "$private/target-check.json"
+probe target check 11 "$private/target-check.json"
 compose target stop app worker
 # Return uses the SAME original snapshot in another fresh stack, never SQL downgrade.
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh "$private/rollback.env" "$private/restored"
@@ -126,8 +126,8 @@ const read=async name=>JSON.parse(await readFile(`${root}/${name}`, 'utf8'));
 const old=await read('baseline-image.json'), current=await read('candidate-image.json');
 const target=await read('target-check.json'), rollback=await read('rollback-check.json');
 // Deliberate allowlist: private MFA/password/fixture/config data never enters proof.
-const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'f232483fd04f47dfa8c973fe1892859a3e84d27b',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:6,targetSchema:7,rollbackSchema:6,targetMigrations:[1,2,3,4,5,6,7],rollbackMigrations:[1,2,3,4,5,6],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
+const result={checkedAt:new Date().toISOString(),candidateCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),baselineCommit:'f232483fd04f47dfa8c973fe1892859a3e84d27b',baselineRebuilt:true,productionDigestMatched:false,architecture:current.Architecture,baselineImageID:old.Id,candidateImageID:current.Id,syntheticOnly:true,productionChanged:false,mailDeliveryEnabled:false,sourceSchema:6,targetSchema:11,rollbackSchema:6,targetMigrations:[1,2,3,4,5,6,7,11],rollbackMigrations:[1,2,3,4,5,6],migrationRepeated:true,mailDeliveryModeDefault:'test',encryptedBackup:true,sameBackupForUpgradeAndRollback:true,originalMfaKeyPreserved:true,checks:{target:target.passed,rollback:rollback.passed}};
 assert.equal(target.passed,true);assert.equal(rollback.passed,true);
 await writeFile('test-results/netcup-release/result.json',JSON.stringify(result,null,2)+'\n');
-console.log('Isolierter Schema-6→7- und Rückkehrnachweis bestanden; keine Produktivänderung.');
+console.log('Isolierter Schema-6→11- und Rückkehrnachweis bestanden; keine Produktivänderung.');
 PROOF

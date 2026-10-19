@@ -47,7 +47,7 @@ async function run() {
   const password = process.env.SN_PROBE_PASSWORD;
   ensure(
     ["enroll", "check"].includes(mode) &&
-      [6, 7].includes(schema) &&
+      [6, 7, 11].includes(schema) &&
       typeof password === "string" &&
       password.length >= 12,
   );
