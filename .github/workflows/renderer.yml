@@ -5,6 +5,16 @@ on:
     paths-ignore:
       - "docs/**"
       - "**/*.md"
+  # Caches aus PR-Läufen sind nur im jeweiligen PR sichtbar. Läufe auf main
+  # legen sie für alle PRs an: nach jedem Merge und wöchentlich nach neuen
+  # Windows-Runner-Images (Montag 04:17 UTC).
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  schedule:
+    - cron: "17 4 * * 1"
   workflow_dispatch:
 concurrency:
   group: renderer-${{ github.event.pull_request.number || github.ref }}
