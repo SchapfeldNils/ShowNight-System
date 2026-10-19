@@ -1,6 +1,6 @@
 # Szeneneditor – Paket 1: Bedienung im Browserentwurf (Issue #44)
 
-Stand: 15\. Oktober 2026. Status: in Umsetzung als Pull Request, nicht gemergt, nicht produktiv.
+Stand: 15\. Oktober 2026. Status: über PR #55 in `main` gemergt (`0834409`), nicht produktiv. Das Produktivupdate ist in [netcup-update-schema7.md](netcup-update-schema7.md) vorbereitet und braucht eine eigene Betreiberfreigabe.
 
 Grundlage: bestätigte Planungsrunde [szeneneditor.md](../planung/szeneneditor.md) (D006), Anforderungen F06/F07 und Abschnitt 5 in [anforderungen.md](../anforderungen.md). Verantwortlich: Claude (Umsetzung), Review: Codex.
 
