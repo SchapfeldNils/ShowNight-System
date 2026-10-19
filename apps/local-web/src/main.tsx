@@ -7,6 +7,7 @@ import type { TransferManifest } from "../../../packages/contracts/src/transfer.
 import { RendererPanel } from "./renderer.js";
 import { ServerOverview } from "./server-overview.js";
 import { LiveDirection } from "./live.js";
+import { MonitorPage, type MonitorSource } from "./monitor.js";
 type Me = {
   id: string;
   displayName: string;
@@ -521,4 +522,23 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);
+// Stage monitor pages (Issue #41): #/monitor/<eventId> with the local
+// session, #/anzeige/<token> with a display link. The token stays in the
+// fragment and is never sent as part of a URL.
+function monitorSource(): MonitorSource | null {
+  const session = /^#\/monitor\/([0-9a-f-]{36})$/.exec(location.hash);
+  if (session) return { kind: "session", eventId: session[1] };
+  const link = /^#\/anzeige\/([A-Za-z0-9_-]{43})$/.exec(location.hash);
+  if (link) return { kind: "link", token: link[1] };
+  return null;
+}
+function Root() {
+  const [source, setSource] = useState(monitorSource);
+  useEffect(() => {
+    const change = () => setSource(monitorSource());
+    addEventListener("hashchange", change);
+    return () => removeEventListener("hashchange", change);
+  }, []);
+  return source ? <MonitorPage source={source} /> : <App />;
+}
+createRoot(document.getElementById("root")!).render(<Root />);

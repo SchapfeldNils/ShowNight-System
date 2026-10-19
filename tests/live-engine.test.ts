@@ -442,7 +442,7 @@ test("Codex-Review #56: nach neuem Einsatz am Ablaufende kehrt ein gespielter Ei
   }
 });
 
-test("Liveschema: Version 1 wird um die Standwechselgrenze ergänzt", async () => {
+test("Liveschema: Version 1 wird um Standwechselgrenze und Bühnenmonitor ergänzt", async () => {
   const dir = await mkdtemp(join(tmpdir(), "shownight-live-v1-"));
   try {
     const { DatabaseSync } = await import("node:sqlite");
@@ -461,8 +461,13 @@ test("Liveschema: Version 1 wird um die Standwechselgrenze ergänzt", async () =
     const check = new DatabaseSync(join(dir, "live.sqlite"));
     const cols = (check.prepare("PRAGMA table_info(live_runs)").all() as { name: string }[]).map((c) => c.name);
     assert.ok(cols.includes("passed_guard"));
-    assert.equal(Number(check.prepare("PRAGMA user_version").get()?.user_version), 2);
+    assert.equal(Number(check.prepare("PRAGMA user_version").get()?.user_version), 3);
+    const tables = (check.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]).map((t) => t.name);
+    assert.ok(tables.includes("live_monitors") && tables.includes("live_monitor_links"));
+    // A newer, unknown schema is refused instead of being modified.
+    check.exec("PRAGMA user_version=4");
     check.close();
+    assert.throws(() => new LiveEngine(dir, source().s), /nicht unterstützt/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

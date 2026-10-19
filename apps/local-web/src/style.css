@@ -185,3 +185,94 @@
   overflow: auto;
   font-size: 13px;
 }
+/* Live-Bühnenmonitor (Issue #41); vorläufige Gestaltung auf Basis der
+   Stage-Timer-Vorbereitung. */
+.stage-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #07090d;
+  color: #f4f6fa;
+}
+.stage-page > .stage-monitor {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+}
+.stage-monitor {
+  background: #07090d;
+  border: 1px solid #465360;
+  border-radius: 10px;
+  padding: 24px 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #f4f6fa;
+}
+.stage-digits {
+  display: block;
+  font:
+    700 clamp(64px, 22vw, 360px) / 1.05 ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.stage-hint {
+  font-size: clamp(28px, 6vw, 96px);
+  white-space: pre-wrap;
+  margin: 0.2em 0;
+}
+.stage-hint-large {
+  font-size: clamp(40px, 9vw, 150px);
+}
+.stage-status,
+.stage-empty {
+  color: #bfc7d5;
+  font-size: clamp(16px, 2.4vw, 32px);
+}
+.stage-monitor.compact .stage-digits {
+  font-size: clamp(32px, 6vw, 72px);
+}
+.stage-monitor.compact .stage-hint {
+  font-size: clamp(16px, 2.4vw, 28px);
+}
+.stage-monitor.compact .stage-hint-large {
+  font-size: clamp(20px, 3vw, 36px);
+}
+.stage-monitor.compact .stage-status,
+.stage-monitor.compact .stage-empty {
+  font-size: 14px;
+}
+.stage-offline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px 12px;
+  background: #ff727c;
+  color: #07090d;
+  font-weight: 700;
+  text-align: center;
+}
+.stage-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  color: #6f7a88;
+  font-size: 12px;
+}
+.stage-tools button {
+  padding: 4px 10px;
+}
+:fullscreen .stage-tools {
+  opacity: 0.25;
+}
+.monitor-link {
+  display: block;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}

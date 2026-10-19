@@ -17,6 +17,15 @@ export const privateIPv4 = z.string().refine((value) => {
     a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)
   );
 }, "Eine private IPv4-Adresse ohne führende Nullen ist erforderlich.");
+/** Loopback or private IPv4 (also IPv4-mapped); everything else is outside. */
+export function localNetworkAddress(ip: string) {
+  const v4 = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
+  return (
+    v4 === "::1" ||
+    /^127\.(\d{1,3}\.){2}\d{1,3}$/.test(v4) ||
+    privateIPv4.safeParse(v4).success
+  );
+}
 export const lanSetup = z.strictObject({
   version: z.literal(1),
   address: privateIPv4,

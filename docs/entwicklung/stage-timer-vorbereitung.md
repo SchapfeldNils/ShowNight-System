@@ -16,7 +16,7 @@ Migration 007 speichert revisionsgebundene Showentwürfe. `GET/PUT /api/v1/shows
 
 Die persönliche Probe berechnet Zeit aus `performance.now()` und einem Anker statt aus gezählten Intervallticks. Zeitkorrekturen verschieben den angezeigten Wert, Countdown zählt abwärts, Laufzeit aufwärts. Monotone Browserzeit ist keine zugesicherte Hardware-/Schlafzustands- oder Offline-Livezeitquelle. Kein dauerhafter laufender Timer auf Netcup, keine Geräte-, Ton- oder Mailaktion.
 
-Timerentwürfe werden in diesem Paket ausdrücklich noch **nicht** in Offline-Inhaltspakete übernommen. Die bestehende Paketstruktur bleibt erhalten. Ein fehlender Export wird nicht als simulierte Übertragung behauptet; der lokale Timer benötigt einen eigenen Laufzustand und Übertragungsvertrag.
+Damaliger Stand dieses Pakets: Timerentwürfe wurden noch **nicht** in Offline-Inhaltspakete übernommen. Seit L1 ([s4-buehnenmonitor.md](s4-buehnenmonitor.md), Entwurf-PR) überträgt Paketversion 3 die Entwürfe an den lokalen Server. Die bestehende Paketstruktur bleibt erhalten. Ein fehlender Export wird nicht als simulierte Übertragung behauptet; der lokale Timer benötigt einen eigenen Laufzustand und Übertragungsvertrag.
 
 ## Prüfungen und offene Grenzen
 

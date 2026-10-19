@@ -2,11 +2,12 @@
 // Simulated output only: GO changes the server-side state and history, it
 // sends nothing to the renderer, devices, audio or HDMI.
 import { DatabaseSync } from "node:sqlite";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { join } from "node:path";
 import {
   activationCommands,
   liveCommand,
+  monitorCommands,
   operateCommands,
   type BlockReason,
   type LiveCommand,
@@ -16,8 +17,20 @@ import {
   type LiveOutput,
   type LiveRun,
   type LiveSnapshot,
+  type MonitorHint,
+  type MonitorLink,
+  type MonitorState,
+  type MonitorTimer,
+  type MonitorView,
 } from "../../../packages/contracts/src/live.js";
 import type { TransferManifest } from "../../../packages/contracts/src/transfer.js";
+import { defaultTimerPreparation } from "../../../packages/contracts/src/timer.js";
+import {
+  clockValue,
+  correctClock,
+  formatClock,
+  type PreviewClock,
+} from "../../web/src/timer-preview.js";
 
 export type StandSource = {
   /** Manifest and header hash of an imported package. Throws if absent/changed. */
@@ -62,6 +75,13 @@ type RunRow = {
    */
   passed_guard: string | null;
 };
+type MonitorRow = {
+  event_id: string;
+  revision: number;
+  timer_json: string | null;
+  hint_json: string | null;
+  last_action_json: string | null;
+};
 type StandRow = {
   event_id: string;
   revision: number;
@@ -73,6 +93,8 @@ type StandRow = {
   previous_header_sha: string | null;
 };
 
+const tokenHash = (token: string) =>
+  createHash("sha256").update("shownight-monitor-link:" + token).digest("hex");
 const kindLabel = { probe: "Probe", auffuehrung: "Aufführung" } as const;
 const stable = (v: unknown): string =>
   JSON.stringify(v, (_k, value) =>
@@ -101,7 +123,7 @@ export class LiveEngine {
     const version = Number(
       this.db.prepare("PRAGMA user_version").get()?.user_version ?? 0,
     );
-    if (version !== 0 && version !== 1 && version !== 2) {
+    if (version < 0 || version > 3) {
       this.db.close();
       throw new Error("Lokales Liveschema nicht unterstützt.");
     }
@@ -130,6 +152,16 @@ export class LiveEngine {
       at TEXT NOT NULL, summary TEXT NOT NULL
     ) STRICT;
     CREATE INDEX IF NOT EXISTS live_events_event ON live_events(event_id, sequence);
+    CREATE TABLE IF NOT EXISTS live_monitors(
+      event_id TEXT PRIMARY KEY, revision INTEGER NOT NULL,
+      timer_json TEXT, hint_json TEXT, last_action_json TEXT
+    ) STRICT;
+    CREATE TABLE IF NOT EXISTS live_monitor_links(
+      id TEXT PRIMARY KEY, event_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE,
+      label TEXT NOT NULL, created_at TEXT NOT NULL, created_by TEXT NOT NULL,
+      expires_at TEXT, revoked_at TEXT, revoked_by TEXT
+    ) STRICT;
+    CREATE INDEX IF NOT EXISTS live_monitor_links_event ON live_monitor_links(event_id, created_at);
     `);
     // Version 2: cues already passed before a stand switch (JSON array).
     if (
@@ -138,7 +170,8 @@ export class LiveEngine {
       )
     )
       this.db.exec("ALTER TABLE live_runs ADD COLUMN passed_guard TEXT");
-    this.db.exec("PRAGMA user_version=2");
+    // Version 3: stage monitor state and display links (Issue #41).
+    this.db.exec("PRAGMA user_version=3");
   }
   close() {
     this.db.close();
@@ -320,8 +353,113 @@ export class LiveEngine {
         ),
       },
       runs,
+      monitor: this.monitor(eventId),
+      serverTime: this.now().toISOString(),
       rights,
     };
+  }
+
+  private monitor(eventId: string): MonitorState {
+    const row = this.db
+      .prepare("SELECT * FROM live_monitors WHERE event_id=?")
+      .get(eventId) as MonitorRow | undefined;
+    return {
+      revision: row?.revision ?? 0,
+      timer: row?.timer_json ? (JSON.parse(row.timer_json) as MonitorTimer) : null,
+      hint: row?.hint_json ? (JSON.parse(row.hint_json) as MonitorHint) : null,
+      lastAction: row?.last_action_json ? JSON.parse(row.last_action_json) : null,
+    };
+  }
+  /** Timer and hints only; an expired hint is not delivered (F20, P5). */
+  monitorView(eventId: string): MonitorView {
+    const m = this.monitor(eventId);
+    const now = this.now();
+    return {
+      protocolVersion: 1,
+      simulated: true,
+      serverTime: now.toISOString(),
+      revision: m.revision,
+      timer: m.timer,
+      hint:
+        m.hint && (!m.hint.expiresAt || Date.parse(m.hint.expiresAt) > now.getTime())
+          ? m.hint
+          : null,
+    };
+  }
+
+  /** Display links (P5): random token, only its hash is stored. */
+  createLink(
+    eventId: string,
+    actor: LiveActor,
+    label: string,
+    validHours: number | null,
+  ): MonitorLink & { token: string } {
+    const token = randomBytes(32).toString("base64url");
+    const now = this.now();
+    const link: MonitorLink = {
+      id: randomUUID(),
+      label,
+      createdAt: now.toISOString(),
+      createdBy: actor.displayName,
+      expiresAt: validHours
+        ? new Date(now.getTime() + validHours * 3600_000).toISOString()
+        : null,
+    };
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      this.db
+        .prepare("INSERT INTO live_monitor_links VALUES(?,?,?,?,?,?,?,NULL,NULL)")
+        .run(link.id, eventId, tokenHash(token), label, link.createdAt, actor.displayName, link.expiresAt);
+      this.log(eventId, null, "monitor.link.create", null, actor, `Anzeige-Link „${label}“ erstellt`);
+      this.db.exec("COMMIT");
+    } catch (e) {
+      this.db.exec("ROLLBACK");
+      throw e;
+    }
+    return { ...link, token };
+  }
+  links(eventId: string): MonitorLink[] {
+    return (
+      this.db
+        .prepare(
+          "SELECT * FROM live_monitor_links WHERE event_id=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?) ORDER BY created_at",
+        )
+        .all(eventId, this.now().toISOString()) as Record<string, string | null>[]
+    ).map((r) => ({
+      id: String(r.id),
+      label: String(r.label),
+      createdAt: String(r.created_at),
+      createdBy: String(r.created_by),
+      expiresAt: r.expires_at,
+    }));
+  }
+  revokeLink(eventId: string, linkId: string, actor: LiveActor) {
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const r = this.db
+        .prepare(
+          "UPDATE live_monitor_links SET revoked_at=?,revoked_by=? WHERE id=? AND event_id=? AND revoked_at IS NULL RETURNING label",
+        )
+        .get(this.now().toISOString(), actor.displayName, linkId, eventId) as
+        | { label: string }
+        | undefined;
+      if (r) this.log(eventId, null, "monitor.link.revoke", null, actor, `Anzeige-Link „${r.label}“ widerrufen`);
+      this.db.exec("COMMIT");
+      return !!r;
+    } catch (e) {
+      this.db.exec("ROLLBACK");
+      throw e;
+    }
+  }
+  /** Event of a valid (not revoked, not expired) display token, else null. */
+  linkEvent(token: string): string | null {
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+    const r = this.db
+      .prepare(
+        "SELECT event_id FROM live_monitor_links WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)",
+      )
+      .get(tokenHash(token), this.now().toISOString()) as { event_id: string } | undefined;
+    return r?.event_id ?? null;
   }
 
   /** Events after a sequence. A different epoch or a gap requires a snapshot. */
@@ -463,6 +601,7 @@ export class LiveEngine {
         message: out.message,
         runId: out.runId,
         liveRevision: out.liveRevision,
+        monitorRevision: out.monitorRevision ?? null,
         sequence: this.sequence(),
       };
       this.store(cmd, actor, hash, result);
@@ -490,6 +629,7 @@ export class LiveEngine {
         message: "Befehlskennung wurde bereits für einen anderen Befehl verwendet.",
         runId: null,
         liveRevision: null,
+        monitorRevision: null,
         sequence: this.sequence(),
       };
     return { ...(JSON.parse(known.result_json) as LiveCommandResult), replayed: true };
@@ -512,6 +652,8 @@ export class LiveEngine {
       message: e.message,
       runId: "runId" in cmd ? cmd.runId : null,
       liveRevision: run?.live_revision ?? null,
+      monitorRevision:
+        "expectedMonitorRevision" in cmd ? this.monitor(cmd.eventId).revision : null,
       sequence: this.sequence(),
     };
     // Refusals are stored too: a retransmission must not execute later on a
@@ -593,7 +735,14 @@ export class LiveEngine {
   private apply(
     cmd: LiveCommand,
     actor: LiveActor,
-  ): { message: string; runId: string | null; liveRevision: number | null } {
+  ): {
+    message: string;
+    runId: string | null;
+    liveRevision: number | null;
+    monitorRevision?: number;
+  } {
+    if (monitorCommands.includes(cmd.type))
+      return this.applyMonitor(cmd as MonitorCommand, actor);
     switch (cmd.type) {
       case "stand.activate":
       case "stand.rollback":
@@ -748,6 +897,207 @@ export class LiveEngine {
         return { message: summary, runId: r.id, liveRevision: n.live_revision };
       }
     }
+    throw new Refusal(400, "COMMAND", "Unbekannter Befehl.");
+  }
+
+  /**
+   * Stage timer and hints (Issue #41, D024). The local server's clock is
+   * authoritative: the state stores value and anchor, displays add the time
+   * since the anchor using their measured clock offset.
+   */
+  private applyMonitor(cmd: MonitorCommand, actor: LiveActor) {
+    const row = this.db
+      .prepare("SELECT * FROM live_monitors WHERE event_id=?")
+      .get(cmd.eventId) as MonitorRow | undefined;
+    const revision = row?.revision ?? 0;
+    if (revision !== cmd.expectedMonitorRevision) {
+      const last = row?.last_action_json
+        ? (JSON.parse(row.last_action_json) as { type: string; by: string })
+        : null;
+      throw new Refusal(
+        409,
+        "MONITOR_REVISION",
+        "Bühnenmonitor hat sich inzwischen geändert" +
+          (last ? ` (zuletzt ${actionLabel(last.type)} durch ${last.by})` : "") +
+          ". Bitte aktuellen Stand prüfen und bewusst neu auslösen.",
+      );
+    }
+    const now = this.now();
+    const nowMs = now.getTime();
+    let timer = row?.timer_json ? (JSON.parse(row.timer_json) as MonitorTimer) : null;
+    let hint = row?.hint_json ? (JSON.parse(row.hint_json) as MonitorHint) : null;
+    const clockMode = (t: MonitorTimer) => (t.mode === "elapsed" ? "elapsed" : "countdown");
+    const clock = (t: MonitorTimer): PreviewClock => ({
+      valueMs: t.valueMs,
+      anchorMs: t.anchorAt ? Date.parse(t.anchorAt) : null,
+    });
+    const store = (t: MonitorTimer, c: PreviewClock): MonitorTimer => ({
+      ...t,
+      valueMs: c.valueMs,
+      anchorAt: c.anchorMs === null ? null : new Date(c.anchorMs).toISOString(),
+    });
+    const needTimer = () => {
+      if (!timer)
+        throw new Refusal(409, "NO_TIMER", "Es ist kein Timer geladen.");
+      return timer;
+    };
+    const noTarget = (t: MonitorTimer) => {
+      if (t.mode === "target")
+        throw new Refusal(
+          409,
+          "TIMER_MODE",
+          "Eine Zieluhrzeit läuft unabhängig und lässt sich nicht pausieren oder zurücksetzen. Bitte korrigieren oder neu laden.",
+        );
+    };
+    let summary: string;
+    switch (cmd.type) {
+      case "timer.load": {
+        const stand = this.stand(cmd.eventId);
+        if (!stand.package_id || !stand.header_sha)
+          throw new Refusal(409, "NO_STAND", "Für diese Veranstaltung ist noch kein Datenstand aktiv.");
+        const manifest = this.bound(stand.package_id, stand.header_sha);
+        const show = manifest.shows.find((s) => s.id === cmd.payload.showId);
+        if (!show) throw new Refusal(404, "SHOW", "Show ist im aktiven Datenstand nicht enthalten.");
+        const draft = manifest.timers?.find((t) => t.showId === show.id);
+        const preset = draft?.preset ?? defaultTimerPreparation;
+        const base = {
+          showId: show.id,
+          showName: show.name,
+          draftRevision: draft?.revision ?? null,
+          started: false,
+          warningSeconds: preset.warningSeconds,
+          normalColor: preset.normalColor,
+          warningColor: preset.warningColor,
+          overrunColor: preset.overrunColor,
+          showOverrun: preset.showOverrun,
+        };
+        if (cmd.payload.targetAt) {
+          if (cmd.payload.durationSeconds !== undefined)
+            throw new Refusal(422, "TIMER", "Zieluhrzeit und Dauer schließen sich aus.");
+          const target = Date.parse(cmd.payload.targetAt);
+          if (target <= nowMs || target - nowMs > 86400_000)
+            throw new Refusal(422, "TIMER", "Die Zieluhrzeit muss in den nächsten 24 Stunden liegen.");
+          timer = {
+            ...base,
+            mode: "target",
+            targetAt: new Date(target).toISOString(),
+            initialMs: target - nowMs,
+            valueMs: target - nowMs,
+            anchorAt: now.toISOString(),
+            started: true,
+          };
+        } else {
+          const seconds =
+            preset.mode === "countdown"
+              ? (cmd.payload.durationSeconds ?? preset.durationSeconds)
+              : 0;
+          if (preset.mode === "elapsed" && cmd.payload.durationSeconds !== undefined)
+            throw new Refusal(422, "TIMER", "Eine Laufzeit hat keine Dauer.");
+          timer = {
+            ...base,
+            mode: preset.mode,
+            targetAt: null,
+            initialMs: seconds * 1000,
+            valueMs: seconds * 1000,
+            anchorAt: null,
+          };
+        }
+        summary =
+          `Timer für „${show.name}“ geladen` +
+          (timer.mode === "target"
+            ? ` · Zieluhrzeit ${clockTime(timer.targetAt!)} läuft`
+            : timer.mode === "countdown"
+              ? ` · Countdown ${formatClock(timer.initialMs)}`
+              : " · Laufzeit") +
+          (draft ? "" : " · Standardwerte (kein Entwurf im Paket)");
+        break;
+      }
+      case "timer.start":
+      case "timer.resume": {
+        const t = needTimer();
+        noTarget(t);
+        if (t.anchorAt) throw new Refusal(409, "TIMER_STATE", "Der Timer läuft bereits.");
+        if (cmd.type === "timer.start" && t.started)
+          throw new Refusal(409, "TIMER_STATE", "Der Timer wurde bereits gestartet. Bitte fortsetzen oder zurücksetzen.");
+        if (cmd.type === "timer.resume" && !t.started)
+          throw new Refusal(409, "TIMER_STATE", "Der Timer wurde noch nicht gestartet.");
+        timer = { ...t, started: true, anchorAt: now.toISOString() };
+        summary = cmd.type === "timer.start" ? "Timer gestartet" : "Timer fortgesetzt";
+        break;
+      }
+      case "timer.pause": {
+        const t = needTimer();
+        noTarget(t);
+        if (!t.anchorAt) throw new Refusal(409, "TIMER_STATE", "Der Timer läuft nicht.");
+        timer = store(t, { valueMs: clockValue(clock(t), clockMode(t), nowMs), anchorMs: null });
+        summary = `Timer pausiert bei ${formatClock(timer.valueMs)}`;
+        break;
+      }
+      case "timer.reset": {
+        const t = needTimer();
+        noTarget(t);
+        timer = { ...t, valueMs: t.initialMs, anchorAt: null, started: false };
+        summary = "Timer zurückgesetzt";
+        break;
+      }
+      case "timer.adjust": {
+        const t = needTimer();
+        const delta = cmd.payload.deltaSeconds;
+        timer = store(t, correctClock(clock(t), clockMode(t), nowMs, delta));
+        if (timer.mode === "elapsed" && timer.valueMs < 0)
+          timer = { ...timer, valueMs: 0 };
+        if (timer.mode === "target")
+          timer = {
+            ...timer,
+            targetAt: new Date(Date.parse(t.targetAt!) + delta * 1000).toISOString(),
+          };
+        summary = `Zeit korrigiert um ${delta > 0 ? "+" : "−"}${formatClock(Math.abs(delta) * 1000)}`;
+        break;
+      }
+      case "timer.clear": {
+        needTimer();
+        timer = null;
+        summary = "Timer ausgeblendet";
+        break;
+      }
+      case "hint.show": {
+        const p = cmd.payload;
+        hint = {
+          text: p.text,
+          layout: p.layout,
+          shownAt: now.toISOString(),
+          expiresAt: p.expirySeconds
+            ? new Date(nowMs + p.expirySeconds * 1000).toISOString()
+            : null,
+        };
+        summary =
+          `Hinweis „${p.text.length > 60 ? p.text.slice(0, 57) + "…" : p.text}“ angezeigt` +
+          (p.layout === "replace" ? " anstelle des Timers" : "") +
+          (p.expirySeconds ? ` · Ablauf ${p.expirySeconds} s` : "");
+        break;
+      }
+      case "hint.hide": {
+        if (!hint || (hint.expiresAt && Date.parse(hint.expiresAt) <= nowMs))
+          throw new Refusal(409, "NO_HINT", "Es wird kein Hinweis angezeigt.");
+        hint = null;
+        summary = "Hinweis ausgeblendet";
+        break;
+      }
+    }
+    const next = revision + 1;
+    this.db
+      .prepare(
+        "INSERT INTO live_monitors VALUES(?,?,?,?,?) ON CONFLICT(event_id) DO UPDATE SET revision=excluded.revision,timer_json=excluded.timer_json,hint_json=excluded.hint_json,last_action_json=excluded.last_action_json",
+      )
+      .run(
+        cmd.eventId,
+        next,
+        timer ? JSON.stringify(timer) : null,
+        hint ? JSON.stringify(hint) : null,
+        JSON.stringify({ type: cmd.type, by: actor.displayName, at: now.toISOString() }),
+      );
+    this.log(cmd.eventId, null, cmd.type, null, actor, summary);
+    return { message: summary, runId: null, liveRevision: null, monitorRevision: next };
   }
 
   /** D009: complete activation or none; running output stays as it is. */
@@ -895,6 +1245,10 @@ export class LiveEngine {
   }
 }
 
+type MonitorCommand = Extract<LiveCommand, { expectedMonitorRevision: number }>;
+const clockTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
 export function actionLabel(type: string) {
   return (
     {
@@ -906,6 +1260,17 @@ export function actionLabel(type: string) {
       "cue.prepare": "Vorbereitung",
       "cue.go": "GO",
       "run.end": "Beenden",
+      "timer.load": "Timer laden",
+      "timer.start": "Timerstart",
+      "timer.pause": "Timerpause",
+      "timer.resume": "Timer fortsetzen",
+      "timer.reset": "Timer zurücksetzen",
+      "timer.adjust": "Zeitkorrektur",
+      "timer.clear": "Timer ausblenden",
+      "hint.show": "Hinweis",
+      "hint.hide": "Hinweis ausblenden",
+      "monitor.link.create": "Anzeige-Link",
+      "monitor.link.revoke": "Linkwiderruf",
     }[type] ?? type
   );
 }
