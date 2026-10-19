@@ -16,7 +16,7 @@ Drei Teil-PRs, jeweils eigener Branch `claude/q1…` und eigener Zuständigkeits
 | Q1b Lokaler Quizablauf | Quizstand im Offlinepaket (nächste freie Paketversion nach L1, voraussichtlich 4). Lokal: Teams anlegen, Beitritt per QR-/Beitrittscode, Bestätigung durch die Regie, Ersatzgerät übernimmt Teamzustand. Frage öffnen, Frist, Abgabe ändern/bestätigen, Wertung (Auswahl automatisch, Freitextvorschlag mit Regieentscheidung, Schätzung geringste Abweichung), Korrektur mit Pflichtgrund nach Abschluss, ungültig für alle oder einzelne Teams, getrennter Arbeits- und veröffentlichter Stand, Probenstand getrennt. Teilnehmerseite und Quizregie in der lokalen Weboberfläche. | Lokaler Server, local-web | Q1a, #56 gemergt, L1-Paketversion 3 gemergt |
 | Q1c Leinwand und Bühnenmonitor | Feste Standardansichten Frage, Antworten, Countdown, Auflösung, Runden- und Gesamtstand, nur nach Veröffentlichung. Kompakter Tablet-Ausfallhinweis (Teamname) auf dem Bühnenmonitor aus L1, verschwindet bei Wiederverbindung. Solange die echte Rendererausgabe (L2) fehlt, deutlich als Vorschau markiert. | Lokaler Server, local-web, Renderer | Q1b, L1 gemergt |
 
-Veröffentlichen, Frage öffnen, Frist ändern und Korrekturen folgen D021 (globale Admins, `live`, `technik`), bis Punkt 7 von D029 geklärt ist. Konkurrierende Regiebefehle ordnet und dedupliziert der Server wie bei GO.
+Veröffentlichen, Frage öffnen, Frist ändern und Korrekturen folgen D021 (globale Admins, `live`, `technik`), wie in D029 Punkt 7 festgelegt. Konkurrierende Regiebefehle ordnet und dedupliziert der Server wie bei GO.
 
 ## Prüfungen (A12)
 
