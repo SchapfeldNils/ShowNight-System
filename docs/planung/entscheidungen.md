@@ -194,6 +194,7 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 - Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) erbeten.
 - Entscheidung: S8-02 umfasst Saalplan-Editor und Gastshop; Shop zunächst nur als Käufervorschau, öffentlicher Link erst nach O11 und Betreiberfreigabe je Veranstaltung; Haltezeit 15 Minuten; Missbrauchsschutz über Limits und Fallenfeld ohne Captcha; Pflichtdaten Name, E-Mail, Telefon; optional Postversand mit Pflichtanschrift und einstellbarer Versandgebühr; neue Veranstaltungsrolle „Verkauf“ zusätzlich zu Admin und Leitung; Bestellmails nur Testmodus bis zur Freigabe.
 - Betroffen: [ticketshop-s8-02.md](ticketshop-s8-02.md), [anforderungen.md](../anforderungen.md) Kapitel 11–13.
+- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #43 erbeten): Die Rolle „Verkauf“ wird bis zum Einlass-/Abendkassenpaket nicht ins Offlinepaket übertragen (P7). Saalpläne werden zunächst nur zwischen Veranstaltungen kopiert, mit Recht auf beide; eine veranstaltungsübergreifende Vorlagenbibliothek folgt später (P8).
 
 ## D023 – Szeneneditor Paket 2: zuerst Videoebenen
 

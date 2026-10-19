@@ -32,14 +32,14 @@ Admins, Veranstaltungsleitung und die neue Veranstaltungsrolle „Verkauf“ zei
 - Migration 009 erweitert die `CHECK`-Bedingung von `grants.role` um `verkauf` (Constraint ersetzen, bestehende Zeilen unverändert). Vertrag `packages/contracts/src/index.ts` (Rollen-Enum), Rollenauswahl in `apps/web/src/main.tsx` (Rollenliste um Zeile 2080) mit Anzeigename „Verkauf“.
 - Neue Prüfung `salesAccess(db, user, eventId)` in `apps/api/src/permissions.ts`: Admin, `leitung` oder `verkauf`. **Fallstricke:**
   - `eventAccess` wertet jede Zeile in `grants` als Mitgliedschaft. Ausdrücklich testen, dass `verkauf` allein keine Show-Bearbeitung, keinen Paketexport, keine Szenen- oder Timerrechte und keine Liverechte gibt.
-  - `apps/api/src/offline.ts` übernimmt Rollen aus `grants` unverändert ins Offlinepaket; `offlineRole` kennt `verkauf` nicht. Ohne Anpassung würde ein einziger Verkauf-Grant den Paketexport der Veranstaltung scheitern lassen. Wie die Rolle offline behandelt wird, entscheidet der Betreiber (P7): entweder `offlineRole` und lokale Rechteprüfung versioniert erweitern, oder die Rolle bis zum Einlass-/Abendkassenpaket ausdrücklich nicht übertragen. Bei der zweiten Variante fallen Benutzer, deren einzige Rolle `verkauf` ist, aus dem Offlinepaket heraus; das wird dokumentiert und getestet. In jedem Fall Regressionstest für den Paketexport mit Verkauf-Grant.
+  - `apps/api/src/offline.ts` übernimmt Rollen aus `grants` unverändert ins Offlinepaket; `offlineRole` kennt `verkauf` nicht. Ohne Anpassung würde ein einziger Verkauf-Grant den Paketexport der Veranstaltung scheitern lassen. Nach P7 (Betreiberzustimmung im Claude-Chat) wird die Rolle bis zum Einlass-/Abendkassenpaket **bewusst nicht übertragen**: `verkauf` vor der Prüfung `!roles.length && !team && !u.admin` herausfiltern. Benutzer, deren einzige Rolle `verkauf` ist, fehlen dadurch im Offlinepaket; das wird in der Paketdoku genannt und getestet. In jedem Fall Regressionstest für den Paketexport mit Verkauf-Grant.
   - MFA: Vorschlag P1 (Abschnitt 7) – `verkauf` verlangt MFA wie die Leitung, weil Käuferdaten verarbeitet werden.
 - S8-01-Routen (`ticketAccess` in `apps/api/src/tickets.ts`) nach Vorschlag P2 ebenfalls für `verkauf` öffnen.
 
 ### Datenmodell (Migration 009)
 
 - `seat_plans`: genau ein Plan je Veranstaltung; `definition jsonb` (validiert über Vertrag), `revision`, `published_revision`, `published_at`, `created_by/updated_by`. Speichern mit `expectedRevision` wie beim Timerentwurf (kein stilles Überschreiben, Konflikt 409, eigene Eingaben bleiben sichtbar).
-- Wiederverwendung ohne neuen Rechtebereich: „Plan aus anderer Veranstaltung übernehmen“ kopiert die Definition einer Quellveranstaltung in den Zielplan. Erforderlich ist `salesAccess` auf **beiden** Veranstaltungen. Veranstaltungsübergreifende Vorlagen mit eigenem Rechtebereich sind Betreiberpunkt P8 und nicht Teil von C1.
+- Wiederverwendung ohne neuen Rechtebereich: „Plan aus anderer Veranstaltung übernehmen“ kopiert die Definition einer Quellveranstaltung in den Zielplan. Erforderlich ist `salesAccess` auf **beiden** Veranstaltungen. Eine veranstaltungsübergreifende Vorlagenbibliothek mit eigenem Rechtebereich folgt später (P8, Betreiberzustimmung im Claude-Chat) und ist nicht Teil von C1.
 - `ticket_areas` und `ticket_seats` als **materialisierte Bestandszeilen**, erzeugt beim Freigeben: Bereich (Art „feste Plätze“ oder „freie Platzwahl“, Kontingent aus S8-01, Kapazität bei freier Platzwahl, Lückenregel `aus|hinweis|verbindlich`), Platz (stabile UUID aus der Definition, Kennung, Bereich, aktiv). Eindeutigkeit `(event_id, lower(label))`. C2 referenziert diese Zeilen per Fremdschlüssel.
 - Schutz belegter Plätze (A24): Freigeben einer neuen Revision darf Plätze mit Holds oder Bestellungen weder löschen noch umbenennen noch deaktivieren. Diese Prüfung entsteht **in C2** zusammen mit Migration 010, weil es vorher keine Holds und Bestellungen gibt. C1 hält Platz-UUIDs über Revisionen stabil, damit C2 darauf aufbauen kann.
 
@@ -171,7 +171,7 @@ Ausdrücklich nicht enthalten: <Liste aus diesem Plan>.
 
 ## 7 Offene Betreiberpunkte
 
-Die Umsetzung beginnt mit den markierten Vorschlägen nur, wenn der Betreiber sie im Issue bestätigt; sonst bleibt der betroffene Teil offen.
+Die Umsetzung beginnt mit den markierten Vorschlägen nur, wenn der Betreiber sie im Issue bestätigt; sonst bleibt der betroffene Teil offen. Eine Zustimmung im Claude-Chat ist hier festgehalten, ersetzt aber nicht die direkte Bestätigung im Issue (zusammenarbeit.md Abschnitt 7).
 
 | Nr. | Frage | Vorschlag | Issue |
 |---|---|---|---|
@@ -181,6 +181,6 @@ Die Umsetzung beginnt mit den markierten Vorschlägen nur, wenn der Betreiber si
 | P4 | Vorschau mit getrenntem Vorschaubestand, löschbar? | Ja (Abschnitt 2) | #43 |
 | P5 | Wer darf die Monitorseite ansehen: nur angemeldete Teammitglieder oder zusätzlich ein widerrufbarer Anzeige-Link für Tablets? | Zunächst Anmeldung mit beliebiger Veranstaltungsrolle; Anzeige-Link erst nach Bestätigung | #41 |
 | P6 | Videoende „Folgeinhalt/Folgeaktion“ erst mit Showablauf Paket 2? | Ja; C4 nur „letztes Bild“ und „Wiederholen“ | #44 |
-| P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | Weglassen, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren | #43 |
-| P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | Zunächst nur Kopieren zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später | #43 |
+| P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | **Zugestimmt** (Claude-Chat, 19\. Oktober 2026): weglassen, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren | #43 |
+| P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | **Zugestimmt** (Claude-Chat, 19\. Oktober 2026): zunächst nur Kopieren zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später | #43 |
 | O11 | Veranstalter-, Datenschutz- und Vertragsangaben | Voraussetzung für jeden öffentlichen Link | #43 |
