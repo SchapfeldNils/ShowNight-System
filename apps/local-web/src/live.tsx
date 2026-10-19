@@ -10,6 +10,8 @@ import type {
   LiveRun,
   LiveSnapshot,
 } from "../../../packages/contracts/src/live.js";
+import { MonitorControl } from "./monitor-control.js";
+import type { ServerClock } from "./monitor.js";
 
 type Pkg = { id: string; eventId: string; name: string; eventRevision: number };
 type Me = { id: string; csrfToken: string; admin: boolean };
@@ -57,6 +59,7 @@ export function LiveDirection({
     [confirmStand, setConfirmStand] = useState<"activate" | "rollback" | null>(null),
     [newShow, setNewShow] = useState(""),
     [newKind, setNewKind] = useState<"probe" | "auffuehrung">("probe");
+  const [clock, setClock] = useState<ServerClock | null>(null);
   const [manifests, setManifests] = useState<Record<string, TransferManifest>>({});
   const requested = useRef(new Set<string>());
   const cursor = useRef<{ epoch: string; sequence: number } | null>(null);
@@ -84,7 +87,9 @@ export function LiveDirection({
   };
   async function load(id = eventId) {
     if (!id) return;
+    const sent = performance.now();
     const s = await api<Snapshot>("/live/" + id);
+    const received = performance.now();
     // Never render a malformed answer (e.g. an error body or older server).
     if (s?.protocolVersion !== 1 || !s.stand || !Array.isArray(s.runs) || !Array.isArray(s.history))
       throw new Error("Showablauf auf diesem Server nicht verfügbar.");
@@ -97,6 +102,8 @@ export function LiveDirection({
       return;
     cursor.current = { epoch: s.authorityEpoch, sequence: s.sequence };
     setSnap(s);
+    if (s.serverTime)
+      setClock({ serverMs: Date.parse(s.serverTime), perfMs: sent + (received - sent) / 2 });
     // Recovered after a failed read: remove the reading error (command
     // results are separate notices and stay untouched).
     if (readFailed.current) {
@@ -159,6 +166,7 @@ export function LiveDirection({
     type: string,
     payload: object,
     run?: LiveRun,
+    monitorRevision?: number,
   ): Promise<LiveCommandResult | null> {
     setBusy(true);
     setNotice(null);
@@ -169,6 +177,7 @@ export function LiveDirection({
       type,
       payload,
       ...(run ? { runId: run.id, expectedLiveRevision: run.liveRevision } : {}),
+      ...(monitorRevision !== undefined ? { expectedMonitorRevision: monitorRevision } : {}),
     };
     try {
       const r = await fetch("/api/local/live/commands", {
@@ -566,6 +575,17 @@ export function LiveDirection({
                 </details>
               )}
             </article>
+          )}
+          {snap.monitor && clock && (
+            <MonitorControl
+              eventId={eventId}
+              snap={snap}
+              clock={clock}
+              manifest={standManifest}
+              busy={busy}
+              send={(type, payload, rev) => send(type, payload, undefined, rev)}
+              api={api}
+            />
           )}
           <article aria-label="Verlauf">
             <h3>Verlauf</h3>

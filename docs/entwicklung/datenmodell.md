@@ -1,5 +1,7 @@
 # Fachliches Datenmodell – erster Showablauf
 
+19\. Oktober 2026, Issue #41 L1 (Entwurf-PR): Paketmanifest Version 3 trägt `timers` (Showkennung, Entwurfsrevision, Vorgabe aus Migration 007). `live.sqlite` Version 3 ergänzt `live_monitors` (Monitorrevision, Timer mit Wert/Anker/Modus, Hinweis mit Ablauf, letzte Aktion je Veranstaltung) und `live_monitor_links` (Bezeichnung, Token nur als SHA-256-Hash, Ersteller, Ablauf, Widerruf). Online-PostgreSQL unverändert. [Vertrag](s4-buehnenmonitor.md).
+
 15\. Oktober 2026, Issue #45 Paket 1 (PR offen): neue lokale SQLite-Datei `live.sqlite` neben `packages.sqlite` mit `live_stands` (aktiver und vorheriger Stand je Veranstaltung, gebunden an Paket-ID und Manifest-Hash, Standrevision), `live_runs` (Durchlauf mit Art, Status, Liverevision, gebundenem Stand, gemeinsamem nächsten Einsatz, GO-Sperrgrund, Ablaufposition, eingefrorener simulierter Ausgabe), `live_commands` (commandId, Benutzer, Anfrage-Hash, gespeichertes Ergebnis) und `live_events` (fortlaufende Sequenz, Benutzer, Zeit, Zusammenfassung). Online-PostgreSQL unverändert. [Vertrag](s4-showablauf.md).
 
 15\. Oktober 2026, Issue #41: Migration007 `timer_preparations` speichert genau einen eigenständig revisionsgebundenen Monitorentwurf pro Show. Countdown/Laufzeit, Sekunden-/Warnwerte, Farben, Überziehungsanzeige und Hinweistext/-layout/-ablauf. Änderung erhöht auch Showrevision/Historie; Kopie erhält unabhängigen Entwurf. Kein laufender Timer oder neuer Paketvertrag. [Vertrag/Grenzen](stage-timer-vorbereitung.md).

@@ -4,6 +4,7 @@ import { randomUUID, randomBytes } from "node:crypto";
 import { fixture } from "./fixture.js";
 import { hash, hashPassword, totp } from "../apps/api/src/security.js";
 import { defaultTimerPreparation } from "../packages/contracts/src/timer.js";
+import { transferManifest } from "../packages/contracts/src/transfer.js";
 import { migrate, database } from "../apps/api/src/db.js";
 
 test(
@@ -357,6 +358,27 @@ test(
             revision: 0,
             preset: defaultTimerPreparation,
           });
+        },
+      );
+      await t.test(
+        "Paketversion 3 überträgt Timerentwürfe; ohne Entwurf bleibt Version 1 (#41)",
+        async () => {
+          const draft = await ok(path(copy.id));
+          const m = await ok(`/events/${event.id}/packages`, "POST", {});
+          assert.equal(m.schemaVersion, 3);
+          assert.equal(m.scenes, undefined, "Version 3 ohne Szenen");
+          assert.deepEqual(m.timers, [
+            { showId: copy.id, revision: draft.revision, preset: draft.preset },
+          ]);
+          assert.ok(
+            transferManifest.safeParse({ ...m, status: "valid", errors: [] }).success,
+          );
+          const plain = await ok("/events", "POST", {
+            name: "Synthetischer Abend ohne Timer",
+          });
+          const none = await ok(`/events/${plain.id}/packages`, "POST", {});
+          assert.equal(none.schemaVersion, 1);
+          assert.equal(none.timers, undefined);
         },
       );
     } finally {
