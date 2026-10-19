@@ -521,26 +521,46 @@ if (process.env.RENDERER_TEST_PORTABLE === "true")
     const runtime = join(folder, "node.exe"),
       main = join(folder, "main.js");
     const env = { ...process.env, LOCALAPPDATA: profile };
+    // Diagnostics for the sporadic CI failure (PR #49/#58): keep the last part
+    // of the CLI output, without secrets, and report exit code and duration.
+    const redact = (text: string) =>
+      text
+        .replaceAll(f.password, "[REDACTED]")
+        .replace(/[A-Za-z0-9_\-+/=]{32,}/g, "[REDACTED]")
+        .slice(-4000);
     async function cli(mode: string, file?: string) {
+      const started = Date.now();
+      let output = "";
+      const keep = (b: Buffer) => {
+        output = (output + b.toString()).slice(-16000);
+      };
       await new Promise<void>((resolve, reject) => {
         const child = spawn(runtime, [main, mode, ...(file ? [file] : [])], {
           cwd: folder,
           env,
           windowsHide: true,
-          stdio: "ignore",
+          stdio: ["ignore", "pipe", "pipe"],
         });
+        child.stdout!.on("data", keep);
+        child.stderr!.on("data", keep);
+        const detail = (what: string) =>
+          new Error(
+            `Portabler Befehl ${mode}: ${what} nach ${Date.now() - started} ms.\n` +
+              redact(output),
+          );
         const timer = setTimeout(() => {
           child.kill();
-          reject(new Error("Portabler Befehl zu langsam."));
+          reject(detail("zu langsam"));
         }, 30000);
         child.once("error", reject);
-        child.once("close", (code) => {
+        child.once("close", (code, signal) => {
           clearTimeout(timer);
           code === 0
             ? resolve()
-            : reject(new Error("Portabler Befehl fehlgeschlagen: " + mode));
+            : reject(detail(`fehlgeschlagen (Exitcode ${code}, Signal ${signal})`));
         });
       });
+      console.log(`Portabler Befehl ${mode}: ${Date.now() - started} ms`);
     }
     let server: ReturnType<typeof spawn> | null = null;
     try {
@@ -569,12 +589,21 @@ if (process.env.RENDERER_TEST_PORTABLE === "true")
         cwd: folder,
         env,
         windowsHide: true,
-        stdio: ["ignore", "pipe", "ignore"],
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      let serverOutput = "";
+      server.stderr!.on("data", (b: Buffer) => {
+        serverOutput = (serverOutput + b.toString()).slice(-16000);
       });
       await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(
           () =>
-            reject(new Error("Portabler HTTPS-Rendererstart fehlgeschlagen.")),
+            reject(
+              new Error(
+                "Portabler HTTPS-Rendererstart fehlgeschlagen.\n" +
+                  redact(serverOutput),
+              ),
+            ),
           25000,
         );
         server!.stdout!.on("data", (b) => {
@@ -583,9 +612,14 @@ if (process.env.RENDERER_TEST_PORTABLE === "true")
             resolve();
           }
         });
-        server!.once("exit", () => {
+        server!.once("exit", (code) => {
           clearTimeout(timer);
-          reject(new Error("Portabler Server vorzeitig beendet."));
+          reject(
+            new Error(
+              `Portabler Server vorzeitig beendet (Exitcode ${code}).\n` +
+                redact(serverOutput),
+            ),
+          );
         });
       });
       let cookie = "",
