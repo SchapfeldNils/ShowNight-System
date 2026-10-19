@@ -73,7 +73,19 @@ jobs:
       - name: Test real native process without display or audio output
         env:
           RENDERER_TEST_BROWSER: "true"
-        run: pnpm test:renderer
+        shell: pwsh
+        # Wie beim portablen Test: Fehlerzeilen und Ende als eine Annotation.
+        run: |
+          pnpm test:renderer 2>&1 | Tee-Object -FilePath native-test.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            $lines = Get-Content native-test.log | Where-Object { $_.Trim() }
+            $hits = $lines | Select-String -Pattern 'Error|error|fehlgeschlagen|Fehler|expected|actual|at |Timeout|toHave|toBe' | Select-Object -First 40 | ForEach-Object { $_.Line }
+            $text = (@('--- Fehlerzeilen ---') + $hits + @('--- Ende der Ausgabe ---') + ($lines | Select-Object -Last 40)) -join "`n"
+            $text = $text -replace '%','%25' -replace "`r",'' -replace "`n",'%0A'
+            "::error title=Nativer Renderer-Test::$text"
+            exit $code
+          }
       - run: pnpm renderer:package
       - name: Test portable server and renderer bundle
         env:
