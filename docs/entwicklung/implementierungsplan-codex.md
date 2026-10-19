@@ -191,15 +191,7 @@ Alle Punkte hat der Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet. D
 
 Betreiberangaben im Claude-Chat vom 19\. Oktober 2026: erste Veranstaltung am **10\. April 2027**, öffentlicher Kartenverkauf ab **Anfang Januar 2027**. Zum Verkaufsstart zwingend: Überweisung mit manueller Bestätigung, Tickets als PDF mit QR per E-Mail und Gruppenbuchungen. Interner Verkauf durch das Team (Vorverkaufsstelle, Barzahlung) ist zum Januar nicht zwingend. Einlass per QR-Scan mit Smartphone/Tablet.
 
-| Ziel (spätestens) | Inhalt | Verantwortlich |
-|---|---|---|
-| Mitte November 2026 | C1 gemergt | Codex |
-| Anfang Dezember 2026 | C2 gemergt | Codex |
-| Mitte Dezember 2026 | C5 und C6 gemergt; Netcup-Update mit Schema bis 010+ | Codex |
-| Ende Dezember 2026 | C7 gemergt; O11-Angaben vollständig; Probeverkauf intern | Codex, Betreiber |
-| Anfang Januar 2027 | Öffentlicher Link und echter Bestellmailversand nach ausdrücklicher Betreiberfreigabe | Betreiber |
-| Mitte Februar 2027 | C3 und C4 gemergt | Claude |
-| Mitte März 2027 | C8 gemergt, Einlassprobe mit echten Geräten (#46) | Codex, Betreiber |
+**Termine:** Der Betreiber hat danach festgelegt, dass alle Software für den 10\. April bis **31\. Dezember 2026** umgesetzt sein muss (D028). Wochenziele, Stränge und Zuständigkeiten stehen in [gesamtplan-2026.md](gesamtplan-2026.md) und ersetzen frühere Zieltermine in diesem Abschnitt. C3/C4 liegen dort in Strang C (Claude 1), C1/C2/C5–C8 in Strang A (Codex 1).
 
 Die Folgepakete werden vor Beginn jeweils wie C1/C2 im Issue #43 ausgearbeitet und bestätigt. Bekannte Betreiberentscheidungen:
 

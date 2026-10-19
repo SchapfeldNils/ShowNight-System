@@ -229,3 +229,9 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 - Entscheidung: Codex führt das Netcup-Update auf Schema 7 nach Merge von #53 und #59 gemäß Anleitung durch. Die verschlüsselte externe Sicherung geht auf einen Netcup Storage Space; Aufbewahrung 7 tägliche, 4 wöchentliche und 3 monatliche Archive.
 - Betroffen: [netcup-update-schema7.md](../entwicklung/netcup-update-schema7.md) (nach Merge von #53), [backup-betrieb.md](../entwicklung/backup-betrieb.md).
 
+## D028 – Gesamter Umfang für den 10\. April bis 31\. Dezember 2026
+
+- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [PR #63](https://github.com/SchapfeldNils/ShowNight-System/pull/63) erbeten.
+- Entscheidung: Alle Software für die erste Veranstaltung wird bis 31\. Dezember 2026 umgesetzt: Leinwand mit Szenen und Videos, Kameras, Ton/Musik, Licht, Controller, Quiz mit Tablets, Jury/Buzzer, Moderationskarten/Moderatorgerät, Helferschichten, Aufgaben/Kalender, Bühnenplan/Requisiten/Kostüme, Sponsoren/Finanzen sowie die Ticketlinie. Je Modul gilt ein Kernumfang; Ausbau nach dem 10\. April. Januar bis März 2027 sind für Hardwareabnahme und Proben vorgesehen. Vier parallele Stränge mit 2 Claude- und 2 Codex-Sitzungen, Prüfung immer über Kreuz.
+- Betroffen: [gesamtplan-2026.md](../entwicklung/gesamtplan-2026.md); ergänzt D025 (Zeitplan).
+
