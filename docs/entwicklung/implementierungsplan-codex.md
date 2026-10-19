@@ -1,6 +1,6 @@
 # Implementierungsplan für Codex: Ticketshop S8-02, Live-Bühnenmonitor, Videoebenen
 
-Stand: 19\. Oktober 2026. Status: **Plan**, vom Betreiber im Claude-Chat angefragt; keine umgesetzte Software. Erstellt von Claude anhand von `main` (`0834409`) und der offenen PRs #49, #56 und #61.
+Stand: 19\. Oktober 2026, überarbeitet nach Codex-Review 5571293868. Status: **Plan**, vom Betreiber im Claude-Chat angefragt; keine umgesetzte Software. Erstellt von Claude anhand von `main` (`0834409`) und der offenen PRs #49, #56 und #61.
 
 Grundlage: [D022–D024](../planung/entscheidungen.md) (PR #61, Bestätigung in #43, #41 und #44 erbeten), [ticketshop-s8-02.md](../planung/ticketshop-s8-02.md), Kapitel 11–13 und F20/F38–F40/A10/A24 in [anforderungen.md](../anforderungen.md), [zusammenarbeit.md](zusammenarbeit.md).
 
@@ -32,16 +32,16 @@ Admins, Veranstaltungsleitung und die neue Veranstaltungsrolle „Verkauf“ zei
 - Migration 009 erweitert die `CHECK`-Bedingung von `grants.role` um `verkauf` (Constraint ersetzen, bestehende Zeilen unverändert). Vertrag `packages/contracts/src/index.ts` (Rollen-Enum), Rollenauswahl in `apps/web/src/main.tsx` (Rollenliste um Zeile 2080) mit Anzeigename „Verkauf“.
 - Neue Prüfung `salesAccess(db, user, eventId)` in `apps/api/src/permissions.ts`: Admin, `leitung` oder `verkauf`. **Fallstricke:**
   - `eventAccess` wertet jede Zeile in `grants` als Mitgliedschaft. Ausdrücklich testen, dass `verkauf` allein keine Show-Bearbeitung, keinen Paketexport, keine Szenen- oder Timerrechte und keine Liverechte gibt.
-  - `apps/api/src/offline.ts` übernimmt Rollen aus `grants` unverändert ins Offlinepaket; `offlineRole` kennt `verkauf` nicht. Ohne Filter würde ein einziger Verkauf-Grant den Paketexport der Veranstaltung scheitern lassen. `verkauf` vor der Prüfung `!roles.length && !team && !u.admin` herausfiltern (S8-02 hat keinen Offlineverkauf) und mit Regressionstest absichern.
+  - `apps/api/src/offline.ts` übernimmt Rollen aus `grants` unverändert ins Offlinepaket; `offlineRole` kennt `verkauf` nicht. Ohne Anpassung würde ein einziger Verkauf-Grant den Paketexport der Veranstaltung scheitern lassen. Wie die Rolle offline behandelt wird, entscheidet der Betreiber (P7): entweder `offlineRole` und lokale Rechteprüfung versioniert erweitern, oder die Rolle bis zum Einlass-/Abendkassenpaket ausdrücklich nicht übertragen. Bei der zweiten Variante fallen Benutzer, deren einzige Rolle `verkauf` ist, aus dem Offlinepaket heraus; das wird dokumentiert und getestet. In jedem Fall Regressionstest für den Paketexport mit Verkauf-Grant.
   - MFA: Vorschlag P1 (Abschnitt 7) – `verkauf` verlangt MFA wie die Leitung, weil Käuferdaten verarbeitet werden.
 - S8-01-Routen (`ticketAccess` in `apps/api/src/tickets.ts`) nach Vorschlag P2 ebenfalls für `verkauf` öffnen.
 
 ### Datenmodell (Migration 009)
 
 - `seat_plans`: genau ein Plan je Veranstaltung; `definition jsonb` (validiert über Vertrag), `revision`, `published_revision`, `published_at`, `created_by/updated_by`. Speichern mit `expectedRevision` wie beim Timerentwurf (kein stilles Überschreiben, Konflikt 409, eigene Eingaben bleiben sichtbar).
-- `seat_plan_templates`: wiederverwendbare Vorlagen (Name, Definition, Ersteller). Anwenden kopiert in den Veranstaltungsplan; nur solange keine Holds oder Bestellungen existieren.
+- Wiederverwendung ohne neuen Rechtebereich: „Plan aus anderer Veranstaltung übernehmen“ kopiert die Definition einer Quellveranstaltung in den Zielplan. Erforderlich ist `salesAccess` auf **beiden** Veranstaltungen. Veranstaltungsübergreifende Vorlagen mit eigenem Rechtebereich sind Betreiberpunkt P8 und nicht Teil von C1.
 - `ticket_areas` und `ticket_seats` als **materialisierte Bestandszeilen**, erzeugt beim Freigeben: Bereich (Art „feste Plätze“ oder „freie Platzwahl“, Kontingent aus S8-01, Kapazität bei freier Platzwahl, Lückenregel `aus|hinweis|verbindlich`), Platz (stabile UUID aus der Definition, Kennung, Bereich, aktiv). Eindeutigkeit `(event_id, lower(label))`. C2 referenziert diese Zeilen per Fremdschlüssel.
-- Freigeben einer neuen Revision darf Plätze mit Holds oder Bestellungen weder löschen noch umbenennen noch deaktivieren (A24 „belegte Planplätze geschützt“); C1 legt diese Prüfung an, C2 liefert die belegenden Tabellen und Tests.
+- Schutz belegter Plätze (A24): Freigeben einer neuen Revision darf Plätze mit Holds oder Bestellungen weder löschen noch umbenennen noch deaktivieren. Diese Prüfung entsteht **in C2** zusammen mit Migration 010, weil es vorher keine Holds und Bestellungen gibt. C1 hält Platz-UUIDs über Revisionen stabil, damit C2 darauf aufbauen kann.
 
 ### Vertrag `packages/contracts/src/seat-plan.ts`
 
@@ -55,7 +55,7 @@ Fehler: doppelte oder leere Kennungen, Sitze ohne Bereich, Bereich ohne Kontinge
 
 ### API
 
-`GET/PUT /api/v1/events/:id/seat-plan`, `POST /api/v1/events/:id/seat-plan/check`, `POST /api/v1/events/:id/seat-plan/publish` (mit `expectedRevision`), `GET/POST /api/v1/seat-plan-templates`, `POST /api/v1/events/:id/seat-plan/from-template`. Alle mit `salesAccess`, Protokoll wie bestehende Revisionen.
+`GET/PUT /api/v1/events/:id/seat-plan`, `POST /api/v1/events/:id/seat-plan/check`, `POST /api/v1/events/:id/seat-plan/publish` (mit `expectedRevision`), `POST /api/v1/events/:id/seat-plan/copy-from/:sourceEventId` (nur ohne vorhandene Freigabe des Ziels oder mit `expectedRevision`). Alle Routen sind veranstaltungsbezogen und prüfen `salesAccess`, die Kopierroute auf Quelle und Ziel. Protokoll wie bei bestehenden Revisionen.
 
 ### Browser
 
@@ -63,11 +63,11 @@ Eigener Bereich „Saalplan“ in der Veranstaltung, eigene Module (`apps/web/sr
 
 ### Nicht in C1
 
-Holds, Bestellungen, Käuferansicht, Gruppen, interne Reservierungen, Papierkontingente, automatische Platzvorschläge, Bestandsdruck, Offlineübertragung des Plans.
+Holds, Bestellungen und der Schutz belegter Plätze (C2), Käuferansicht, Vorlagenbibliothek mit eigenem Rechtebereich (P8), Gruppen, interne Reservierungen, Papierkontingente, automatische Platzvorschläge, Bestandsdruck, Offlineübertragung des Plans.
 
 ### Prüfungen
 
-Unit: Vertrag, Kennungsvergabe, Prüffunktion, Drehung/Überschneidung. API-Integration (CI mit PostgreSQL): Rechte je Rolle inklusive `live`, `technik`, `mitglied` verboten, MFA, Revisionskonflikt, Freigabe mit Fehlern abgelehnt, Vorlage anwenden, Offlineexport mit Verkauf-Grant. Browser (eigener Port/Datenbank wie `scene-editor.spec.ts`): Tisch und Reihe anlegen, Kennungen, Fehler beheben, freigeben, Neuladen zeigt Serverstand.
+Unit: Vertrag, Kennungsvergabe, Prüffunktion, Drehung/Überschneidung. API-Integration (CI mit PostgreSQL): Rechte je Rolle inklusive `live`, `technik`, `mitglied` verboten, MFA, Revisionskonflikt, Freigabe mit Fehlern abgelehnt, stabile Platz-UUIDs über Revisionen, Kopieren nur mit Recht auf Quelle und Ziel, Offlineexport mit Verkauf-Grant nach P7. Browser (eigener Port/Datenbank wie `scene-editor.spec.ts`): Tisch und Reihe anlegen, Kennungen, Fehler beheben, freigeben, Neuladen zeigt Serverstand.
 
 ## 2 Paket C2: Gastshop als Käufervorschau, Holds und Bestellungen
 
@@ -82,7 +82,9 @@ Anforderung Kapitel 11 verlangt eine Käufervorschau, die keinen echten Bestand 
 ### Datenmodell (Migration 010)
 
 - `shop_settings`: Postversand an/aus, `shipping_fee_cents` je Bestellung (Vorschlag P3). Haltezeit fest 15 Minuten als Konstante. Keine Spalte für „öffentlich“.
-- `ticket_holds` (Modus, Sitzungsschlüssel als Hash, `expires_at` serverseitig) und `seat_claims` mit `UNIQUE(event_id, mode, seat_id)` als datenbankseitiger Doppelbuchungsschutz. Abgelaufene Claims im selben Vorgang vor dem Einfügen entfernen, zusätzlich Aufräumen im Worker.
+- `ticket_holds` (Modus, Sitzungsschlüssel als Hash, `expires_at` serverseitig) und `seat_claims` mit `UNIQUE(event_id, mode, seat_id)` als datenbankseitiger Doppelbuchungsschutz. Jeder Claim gehört entweder einem Hold oder einer Bestellung (`hold_id` oder `order_id`, genau eines gesetzt). Abgelaufene Claims im selben Vorgang vor dem Einfügen entfernen, zusätzlich Aufräumen im Worker.
+- **Bestellen als eine gesperrte Transaktion:** Der Abschluss sperrt den Hold der eigenen Sitzung (`FOR UPDATE`), prüft, dass er noch nicht abgelaufen ist, legt die Bestellung an und überträgt jeden Claim im selben Vorgang vom Hold auf die Bestellung. Abgelaufen heißt abgelehnt, auch wenn der Platz noch frei wirkt. Bereichskapazität bei freier Platzwahl wird dabei unter derselben Kontingentsperre erneut geprüft.
+- Schutz belegter Plätze bei der Planfreigabe (aus C1 hierher verschoben): Freigabe einer Revision, die Plätze mit Claims löscht, umbenennt oder deaktiviert, wird abgelehnt.
 - Freie Platzwahl, Kontingente und Ticketartenlimits: Kontingentzeile mit `SELECT … FOR UPDATE` sperren, aktive Holds plus Bestellungen zählen, gegen Kapazität, Typlimit und `max_tickets_per_order` prüfen.
 - `orders` (Modus, Referenz ohne Personenbezug, z. B. `SN-XXXX-XXXX`, Status `offen`, Name, E-Mail, Telefon, Versandart `digital|post`, Anschrift nur bei Post und dann Pflicht, Versandgebühr und Summe als Momentaufnahme, Hash des Bestelllink-Tokens) und `order_items` (Ticketart, Platz oder Bereich, Preis als Momentaufnahme).
 
@@ -103,7 +105,7 @@ Anforderung Kapitel 11 verlangt eine Käufervorschau, die keinen echten Bestand 
 
 ### Prüfungen
 
-A24-Nebenläufigkeit gegen echtes PostgreSQL: viele gleichzeitige Holds auf denselben Platz → genau einer gelingt; Wettlauf um die letzte Kapazität eines Bereichs mit freier Platzwahl; Ablauf und erneute Verfügbarkeit; Vorschaubestand berührt echten Bestand nicht; Freigabe einer Planrevision, die einen gehaltenen Platz entfernt, wird abgelehnt. Außerdem: Lückenregel, Fallenfeld, Anfragelimit, Pflichtfelder und Postanschrift, Gebühr und Summe, falscher Bestelllink → 404, Mailjob bleibt `test` auch bei `MAIL_DELIVERY_ENABLED=true`, Rechte je Rolle. Browser: vollständiger Vorschauweg mobil und am Desktop, Countdown, Ablauf.
+A24-Nebenläufigkeit gegen echtes PostgreSQL: viele gleichzeitige Holds auf denselben Platz → genau einer gelingt; Wettlauf um die letzte Kapazität eines Bereichs mit freier Platzwahl; Ablauf und erneute Verfügbarkeit; Vorschaubestand berührt echten Bestand nicht; Freigabe einer Planrevision, die einen gehaltenen oder bestellten Platz entfernt, wird abgelehnt; Wettlauf zwischen Ablauf und Bestellabschluss (abgelaufener Hold wird nicht zur Bestellung, ein anderer Käufer erhält den Platz genau einmal). Außerdem: Lückenregel, Fallenfeld, Anfragelimit, Pflichtfelder und Postanschrift, Gebühr und Summe, falscher Bestelllink → 404, Mailjob bleibt `test` auch bei `MAIL_DELIVERY_ENABLED=true`, Rechte je Rolle. Browser: vollständiger Vorschauweg mobil und am Desktop, Countdown, Ablauf.
 
 ## 3 Paket C3: Live-Bühnenmonitor (D024)
 
@@ -113,7 +115,7 @@ Timer und Regiehinweise laufen im lokalen Livezustand und erscheinen auf einer V
 
 ### Umfang
 
-1. **Paketübertragung:** Timerentwürfe (Migration 007, `stage-timer-vorbereitung.md`) werden bisher nicht in Offlinepakete übernommen. Paketvertrag (`packages/contracts/src/index.ts`, Paketversion 2) abwärtskompatibel um optionale Timerentwürfe je Show erweitern, lokal importieren, ältere Pakete ohne Timer weiter annehmen.
+1. **Paketübertragung:** Timerentwürfe (Migration 007, `stage-timer-vorbereitung.md`) werden bisher nicht in Offlinepakete übernommen. Heute wählt `apps/api/src/packages.ts` Version 1 ohne Szenen und Version 2 mit Szenen, und Version 2 verlangt mindestens eine Szene. Ein optionales Feld in Version 2 reicht deshalb nicht für Shows mit Timer, aber ohne Szene. Neue **Paketversion 3** mit optionalen Szenen und optionalen Timerentwürfen; der Export wählt 3, sobald Timer vorhanden sind, sonst wie bisher. Der lokale Server nimmt 1–3 an. Regressionstests: Timer ohne Szenen, Timer mit Szenen, alte Pakete 1 und 2 unverändert.
 2. **Lokaler Livezustand** (`apps/local/src/live.ts`, `packages/contracts/src/live.ts`): neue Befehle `timer.load`, `timer.start`, `timer.pause`, `timer.resume`, `timer.reset`, `timer.adjust` (±Sekunden), `hint.show`, `hint.hide` mit `commandId`, `expectedLiveRevision` und Idempotenz wie bei GO. Serverzeit maßgeblich: Zustand speichert Anker und Restzeit, Anzeigen rechnen mit gemessenem Uhrversatz. Zustand in SQLite, damit ein Neustart ihn nicht verliert. Hinweisablauf unabhängig von Timerpause (Regel aus der Vorbereitung). Countdown, Laufzeit und Zieluhrzeit, Überziehung, Warnfarben.
 3. **Monitorseite** (`apps/local-web`): nur Timer und Hinweise, große Schrift, Vollbildschaltfläche, Bildschirm-Wachhaltung wo verfügbar, automatisches Wiederverbinden. Bei Verbindungsverlust kompakte Ausfallmeldung mit Zeitpunkt des letzten Stands (F20) statt stillem Einfrieren.
 4. **Bedienung** in der Liveansicht aus #56: Timersteuerung und Hinweise mit Schnelltexten.
@@ -179,4 +181,6 @@ Die Umsetzung beginnt mit den markierten Vorschlägen nur, wenn der Betreiber si
 | P4 | Vorschau mit getrenntem Vorschaubestand, löschbar? | Ja (Abschnitt 2) | #43 |
 | P5 | Wer darf die Monitorseite ansehen: nur angemeldete Teammitglieder oder zusätzlich ein widerrufbarer Anzeige-Link für Tablets? | Zunächst Anmeldung mit beliebiger Veranstaltungsrolle; Anzeige-Link erst nach Bestätigung | #41 |
 | P6 | Videoende „Folgeinhalt/Folgeaktion“ erst mit Showablauf Paket 2? | Ja; C4 nur „letztes Bild“ und „Wiederholen“ | #44 |
+| P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | Weglassen, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren | #43 |
+| P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | Zunächst nur Kopieren zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später | #43 |
 | O11 | Veranstalter-, Datenschutz- und Vertragsangaben | Voraussetzung für jeden öffentlichen Link | #43 |
