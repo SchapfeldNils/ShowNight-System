@@ -15,6 +15,7 @@ import { SceneDrafts } from "./scenes.js";
 import { Account } from "./account.js";
 import { Recovery } from "./recovery.js";
 import { TimerPreparationEditor } from "./timer-preparation.js";
+import { QuizPreparation } from "./quiz.js";
 import type { SceneRecord } from "../../../packages/contracts/src/scene.js";
 type Me = {
   id: string;
@@ -601,6 +602,7 @@ function App() {
   const nav = [
     "Übersicht",
     ...(!active || active.modules.includes("shows") ? ["Shows", "Medien"] : []),
+    ...(active?.modules.includes("spiele") ? ["Quiz"] : []),
     "Teams & Rechte",
     ...(me.admin ? ["Diagnose"] : []),
   ];
@@ -721,6 +723,24 @@ function App() {
               endSession(
                 "Passwort geändert. Bitte melde dich mit deinem neuen Passwort erneut an.",
               );
+            }}
+          />
+        )}
+        {page === "Quiz" && active && (
+          <QuizPreparation
+            key={active.id}
+            eventId={active.id}
+            api={api}
+            onShowRevision={(showId, before, after) => {
+              // Nur nachziehen, wenn niemand sonst die Show dazwischen geändert hat.
+              const bump = <T extends { id: string; revision: number }>(
+                s: T,
+              ) =>
+                s.id === showId && s.revision === before
+                  ? { ...s, revision: after }
+                  : s;
+              setShows((list) => list.map(bump));
+              setEditShow((current) => current && bump(current));
             }}
           />
         )}

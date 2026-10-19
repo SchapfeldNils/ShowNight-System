@@ -835,3 +835,47 @@ button:focus-visible {
   color: #b8c0cc;
   font-size: 13px;
 }
+.quiz-list,
+.quiz-questions {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.2em;
+}
+.quiz-questions li {
+  border-bottom: 1px solid var(--border, #465360);
+  padding: 6px 0;
+}
+.quiz-questions .badge {
+  margin-left: 6px;
+}
+.quiz-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.quiz-form textarea {
+  min-height: 4em;
+}
+.quiz-round {
+  border: 1px solid var(--border, #465360);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.quiz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.quiz-actions button {
+  width: auto;
+}
+.quiz-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quiz-check input {
+  width: auto;
+}

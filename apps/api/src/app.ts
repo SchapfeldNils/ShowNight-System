@@ -29,6 +29,7 @@ import type { Config } from "./config.js";
 import { migrationVersions, type DB } from "./db.js";
 import { authRoutes, actor } from "./auth.js";
 import { timerRoutes } from "./timers.js";
+import { quizRoutes } from "./quiz.js";
 import { accountRoutes } from "./account.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
@@ -44,6 +45,15 @@ import {
   pairingInput,
   diagnosticInput,
 } from "../../../packages/contracts/src/agent.js";
+import {
+  quizLibraryCreate,
+  quizLibraryPatch,
+  quizQuestionCreate,
+  quizQuestionUpdate,
+  quizRoundCreate,
+  quizRoundUpdate,
+  quizRoundOrder,
+} from "../../../packages/contracts/src/quiz.js";
 import { HttpError, forbidden } from "./errors.js";
 export async function createApp(db: DB, cfg: Config, logging = false) {
   const app = Fastify({
@@ -88,6 +98,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   await app.register(websocket, { options: { maxPayload: 4096 } });
   authRoutes(app, db, cfg);
   timerRoutes(app, db);
+  quizRoutes(app, db);
   accountRoutes(app, db, cfg);
   contentRoutes(app, db, cfg);
   sceneRoutes(app, db);
@@ -306,6 +317,13 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       "/events/{id}/show-copies": ["post", showCopy],
       "/devices/pairings": ["post", pairingInput],
       "/devices/{id}/diagnostics": ["post", diagnosticInput],
+      "/events/{id}/quiz/libraries": ["post", quizLibraryCreate],
+      "/quiz-libraries/{id}": ["patch", quizLibraryPatch],
+      "/quiz-libraries/{id}/questions": ["post", quizQuestionCreate],
+      "/quiz-questions/{id}": ["put", quizQuestionUpdate],
+      "/shows/{id}/quiz-rounds": ["post", quizRoundCreate],
+      "/quiz-rounds/{id}": ["put", quizRoundUpdate],
+      "/shows/{id}/quiz-rounds/order": ["put", quizRoundOrder],
     };
     const paths = Object.fromEntries(
       Object.entries(specs).map(([path, [method, schema]]) => [
