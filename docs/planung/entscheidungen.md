@@ -194,7 +194,7 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 - Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) erbeten.
 - Entscheidung: S8-02 umfasst Saalplan-Editor und Gastshop; Shop zunächst nur als Käufervorschau, öffentlicher Link erst nach O11 und Betreiberfreigabe je Veranstaltung; Haltezeit 15 Minuten; Missbrauchsschutz über Limits und Fallenfeld ohne Captcha; Pflichtdaten Name, E-Mail, Telefon; optional Postversand mit Pflichtanschrift und einstellbarer Versandgebühr; neue Veranstaltungsrolle „Verkauf“ zusätzlich zu Admin und Leitung; Bestellmails nur Testmodus bis zur Freigabe.
 - Betroffen: [ticketshop-s8-02.md](ticketshop-s8-02.md), [anforderungen.md](../anforderungen.md) Kapitel 11–13.
-- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #43 erbeten): Die Rolle „Verkauf“ wird bis zum Einlass-/Abendkassenpaket nicht ins Offlinepaket übertragen (P7). Saalpläne werden zunächst nur zwischen Veranstaltungen kopiert, mit Recht auf beide; eine veranstaltungsübergreifende Vorlagenbibliothek folgt später (P8). Ebenfalls im Claude-Chat beantwortet: „Verkauf“ ohne MFA-Pflicht (P1), „Verkauf“ bearbeitet auch Ticketarten, Preise, Kontingente und Verkaufszeiten (P2), Versandgebühr pauschal je Bestellung (P3), Vorschau mit getrenntem, löschbarem Testbestand (P4).
+- Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #43 erbeten): Die Rolle „Verkauf“ wird bis zum Einlass-/Abendkassenpaket nicht ins Offlinepaket übertragen (P7). Saalpläne werden zunächst nur zwischen Veranstaltungen kopiert, mit Recht auf beide; eine veranstaltungsübergreifende Vorlagenbibliothek folgt später (P8). Ebenfalls im Claude-Chat beantwortet: „Verkauf“ ohne MFA-Pflicht (P1), „Verkauf“ bearbeitet auch Ticketarten, Preise, Kontingente und Verkaufszeiten (P2), Versandgebühr pauschal je Bestellung (P3), Vorschau mit getrenntem, löschbarem Testbestand (P4). Weitere Einzelheiten (Claude-Chat, 19\. Oktober 2026): Lückenregel neuer Bereiche standardmäßig „Hinweis“; Reihen ab Bühne mit 1, 2, …, Plätze von links in Blickrichtung zur Bühne; Bereiche mit freier Platzwahl gehören dazu; Postversand nur innerhalb Deutschlands; Käufervorschau nur für Admin, Leitung und Verkauf; Käuferdaten werden 6 Monate nach der Veranstaltung anonymisiert; Bestelllink gültig bis 30 Tage nach der Veranstaltung.
 
 ## D023 – Szeneneditor Paket 2: zuerst Videoebenen
 
@@ -209,3 +209,23 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 - Entscheidung: Der Live-Bühnenmonitor zeigt Timer und Hinweise zuerst auf einer eigenen Vollbildseite des lokalen Servers (Rechner oder Tablet am Bühnenmonitor), nicht über den nativen Renderer-Ausgang. Bedienen dürfen globale Admins sowie die Rollen Live und Technik, wie GO in D021.
 - Betroffen: [s4-showablauf.md](../entwicklung/s4-showablauf.md) (nach Merge von #56), [stage-timer-vorbereitung.md](../entwicklung/stage-timer-vorbereitung.md).
 - Nachtrag 19\. Oktober 2026 (Claude-Chat, direkte Bestätigung in #41 erbeten): Die Monitorseite ist für angemeldete Teammitglieder und zusätzlich über einen widerrufbaren, nur lesenden Anzeige-Link erreichbar, den Admins, Live und Technik erzeugen (P5).
+
+## D025 – Zeitplan und Pflichtumfang bis zur ersten Veranstaltung
+
+- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43) erbeten.
+- Entscheidung: Erste Veranstaltung am 10\. April 2027, öffentlicher Kartenverkauf ab Anfang Januar 2027. Zum Verkaufsstart zwingend: Überweisung mit manueller Bestätigung (Standardfrist 7 Tage, keine automatische Stornierung), Tickets als ein PDF je Bestellung mit einem QR je Karte per E-Mail, Gruppenbuchungen. Interner Verkauf durch das Team ist zum Januar nicht zwingend. Papierkarten bei Postversand druckt und verschickt das Verkaufsteam. Einlass per QR-Scan mit Smartphone/Tablet über den lokalen Server. Veranstalter ist der Verein (e. V.); O11-Angaben folgen vom Betreiber.
+- Zuständigkeit: Codex implementiert die Ticketlinie, Claude prüft; Claude implementiert parallel Bühnenmonitor (C3) und Videoebenen (C4), Codex prüft.
+- Betroffen: [implementierungsplan-codex.md](../entwicklung/implementierungsplan-codex.md) Abschnitt 8.
+
+## D026 – Merge durch den unabhängigen Prüfer
+
+- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [PR #63](https://github.com/SchapfeldNils/ShowNight-System/pull/63) erbeten.
+- Entscheidung: Der Agent, der einen PR unabhängig geprüft und nicht selbst implementiert hat, darf ihn mergen, wenn die CI am geprüften Commit vollständig grün ist und keine Befunde offen sind. Gilt für Code- und Dokumentations-PRs, nie für Produktivupdates oder echte Geräteaktionen.
+- Betroffen: [zusammenarbeit.md](../entwicklung/zusammenarbeit.md) Abschnitt 7, [AGENTS.md](../../AGENTS.md).
+
+## D027 – Betrieb: Schema-7-Update und Sicherungsziel
+
+- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet; direkte Bestätigung in [PR #53](https://github.com/SchapfeldNils/ShowNight-System/pull/53) und [Issue #3](https://github.com/SchapfeldNils/ShowNight-System/issues/3) erbeten.
+- Entscheidung: Codex führt das Netcup-Update auf Schema 7 nach Merge von #53 und #59 gemäß Anleitung durch. Die verschlüsselte externe Sicherung geht auf einen Netcup Storage Space; Aufbewahrung 7 tägliche, 4 wöchentliche und 3 monatliche Archive.
+- Betroffen: [netcup-update-schema7.md](../entwicklung/netcup-update-schema7.md) (nach Merge von #53), [backup-betrieb.md](../entwicklung/backup-betrieb.md).
+

@@ -1,23 +1,23 @@
-# Implementierungsplan für Codex: Ticketshop S8-02, Live-Bühnenmonitor, Videoebenen
+# Implementierungsplan bis zur ersten Veranstaltung (10\. April 2027): Ticketlinie, Bühnenmonitor, Videoebenen
 
-Stand: 19\. Oktober 2026, überarbeitet nach Codex-Review 5571293868. Status: **Plan**, vom Betreiber im Claude-Chat angefragt; keine umgesetzte Software. Erstellt von Claude anhand von `main` (`0834409`) und der offenen PRs #49, #56 und #61.
+Stand: 19\. Oktober 2026, überarbeitet nach Codex-Review 5571293868 und den Betreiberantworten vom selben Tag (Abschnitte 7 und 8). Status: **Plan**, vom Betreiber im Claude-Chat angefragt; keine umgesetzte Software. Erstellt von Claude anhand von `main` (`0834409`) und der offenen PRs #49, #56 und #61.
 
 Grundlage: [D022–D024](../planung/entscheidungen.md) (PR #61, Bestätigung in #43, #41 und #44 erbeten), [ticketshop-s8-02.md](../planung/ticketshop-s8-02.md), Kapitel 11–13 und F20/F38–F40/A10/A24 in [anforderungen.md](../anforderungen.md), [zusammenarbeit.md](zusammenarbeit.md).
 
 ## 0 Zuständigkeit und Voraussetzungen
 
-**Abweichung vom Standard (zusammenarbeit.md Abschnitt 2):** Für die Pakete C1–C4 implementiert Codex, Claude übernimmt Review und Nachprüfung. Der Betreiber hat dem im Claude-Chat am 19\. Oktober 2026 zugestimmt; die direkte Bestätigung im jeweiligen Issue steht aus. Erst danach setzt Codex den Zuständigkeitskommentar (Vorlage in Abschnitt 6).
+**Zuständigkeit (Betreiberentscheidung im Claude-Chat, 19\. Oktober 2026):** Codex implementiert die Ticketlinie (C1, C2 und die Folgepakete C5–C8), Claude prüft. Claude implementiert parallel C3 und danach C4, Codex prüft. Für die Ticketlinie ist das eine dokumentierte Abweichung vom Standard (zusammenarbeit.md Abschnitt 2); die direkte Bestätigung im jeweiligen Issue steht aus. Erst danach setzt Codex den Zuständigkeitskommentar (Vorlage in Abschnitt 6).
 
 | Paket | Issue | Branch (Vorschlag) | Basis | Migration | Startbedingung |
 |---|---|---|---|---|---|
 | C1 Rolle „Verkauf“ und Saalplan | #43 | `codex/s8-02a-saalplan` | `main` nach Merge von #49 und #61 | 009 | D022 in #43 bestätigt |
 | C2 Gastshop-Vorschau, Holds, Bestellungen | #43 | `codex/s8-02b-gastshop` | `main` nach Merge von C1 | 010 | C1 gemergt |
-| C3 Live-Bühnenmonitor | #41 | `codex/issue-41-buehnenmonitor` | `main` nach Merge von #56 | keine online | D024 in #41 bestätigt |
-| C4 Szeneneditor: Videoebenen | #44 | `codex/issue-44-videoebenen` | `main` | keine (Szenen-JSON) | D023 in #44 bestätigt |
+| C3 Live-Bühnenmonitor (Claude) | #41 | `claude/issue-41-buehnenmonitor` | `main` nach Merge von #56 | keine online | D024 in #41 bestätigt |
+| C4 Szeneneditor: Videoebenen (Claude) | #44 | `claude/issue-44-videoebenen` | `main` | keine (Szenen-JSON) | D023 in #44 bestätigt |
 
-**Reihenfolge (vom Betreiber im Claude-Chat gewählt):** C1 → C2 → C3 → C4. Begründung: Betreiberpriorität „zuerst sichtbare Online-Funktionen“; C2 baut direkt auf C1 auf. C3 und C4 berühren den Ticketcode nicht und können nach Betreiberentscheidung vorgezogen oder parallel von Claude implementiert werden (dann reviewt Codex). Keine zwei Verantwortlichen für dasselbe Paket.
+**Reihenfolge:** Ticketlinie Codex C1 → C2 → C5 → C6 → C7, danach C8 (Einlass). Parallel Claude C3 → C4. Begründung: öffentlicher Verkaufsstart Anfang Januar 2027 (Abschnitt 8); C3 und C4 berühren den Ticketcode nicht. Keine zwei Verantwortlichen für dasselbe Paket.
 
-**Empfohlene Merge-Reihenfolge der offenen PRs vor C1:** #60 und #58 (CI) → #61 (Entscheidungen, inklusive dieses Plans) → #49 (S8-01, Migration 008) → #56 (Showablauf) → #62, #53/#59 (Betrieb) → #51/#52 nach Codex-Review. Merges entscheidet der Betreiber.
+**Empfohlene Merge-Reihenfolge der offenen PRs vor C1:** #60 und #58 (CI) → #61 (Entscheidungen, inklusive dieses Plans) → #49 (S8-01, Migration 008) → #56 (Showablauf) → #62, #53/#59 (Betrieb) → #51/#52 nach Codex-Review. Merges: Nach Betreiberentscheidung vom 19\. Oktober 2026 darf der unabhängige Prüfer einen Code- oder Doku-PR mergen, wenn die CI am geprüften Commit grün ist und keine Befunde offen sind; nie Produktivupdates oder Geräteaktionen (zusammenarbeit.md Abschnitt 7).
 
 **Netcup:** Kein Paket enthält ein Produktivupdate. #54 deckt Schema 8 ab; C1/C2 bringen Schema 9 und 10 und brauchen später ein eigenes Update-Issue mit eigener Freigabe.
 
@@ -47,7 +47,9 @@ Admins, Veranstaltungsleitung und die neue Veranstaltungsrolle „Verkauf“ zei
 
 - Elemente: runder Tisch (Sitzanzahl, Radius), rechteckiger Tisch (Sitze je Seite), Sitzreihe (Anzahl, Abstand), Einzelsitz, Bühne, gesperrter Bereich, Bereichsgrenze. Je Element Position, Größe, Drehung, Bereich, öffentlicher und interner Hinweis.
 - Grenzen festlegen und testen, Vorschlag: höchstens 1000 Elemente, 5000 Sitze, Definition höchstens 1 MB, Koordinaten im festen logischen Raster.
-- Kennungen automatisch nach Richtung (Reihen A–Z, Platz 1…n links→rechts oder rechts→links) oder manuell.
+- Kennungen automatisch oder manuell. Standard (Betreiberentscheidung): Reihen 1, 2, … beginnend an der Bühne, Plätze von links nach rechts in Blickrichtung zur Bühne; je Bereich umstellbar (Reihen als Buchstaben, Plätze von rechts).
+- Lückenregel neuer Bereiche standardmäßig `hinweis` (Betreiberentscheidung).
+- Bereiche mit freier Platzwahl und Kapazität gehören zu C1/C2 (Betreiberentscheidung).
 
 ### Prüfung vor Freigabe (reine Funktion, Server und Browser gemeinsam)
 
@@ -86,18 +88,18 @@ Anforderung Kapitel 11 verlangt eine Käufervorschau, die keinen echten Bestand 
 - **Bestellen als eine gesperrte Transaktion:** Der Abschluss sperrt den Hold der eigenen Sitzung (`FOR UPDATE`), prüft, dass er noch nicht abgelaufen ist, legt die Bestellung an und überträgt jeden Claim im selben Vorgang vom Hold auf die Bestellung. Abgelaufen heißt abgelehnt, auch wenn der Platz noch frei wirkt. Bereichskapazität bei freier Platzwahl wird dabei unter derselben Kontingentsperre erneut geprüft.
 - Schutz belegter Plätze bei der Planfreigabe (aus C1 hierher verschoben): Freigabe einer Revision, die Plätze mit Claims löscht, umbenennt oder deaktiviert, wird abgelehnt.
 - Freie Platzwahl, Kontingente und Ticketartenlimits: Kontingentzeile mit `SELECT … FOR UPDATE` sperren, aktive Holds plus Bestellungen zählen, gegen Kapazität, Typlimit und `max_tickets_per_order` prüfen.
-- `orders` (Modus, Referenz ohne Personenbezug, z. B. `SN-XXXX-XXXX`, Status `offen`, Name, E-Mail, Telefon, Versandart `digital|post`, Anschrift nur bei Post und dann Pflicht, Versandgebühr und Summe als Momentaufnahme, Hash des Bestelllink-Tokens) und `order_items` (Ticketart, Platz oder Bereich, Preis als Momentaufnahme).
+- `orders` (Modus, Referenz ohne Personenbezug, z. B. `SN-XXXX-XXXX`, Status `offen`, Name, E-Mail, Telefon, Versandart `digital|post`, Anschrift nur bei Post und dann Pflicht (nur Deutschland: Land fest, Postleitzahl fünfstellig), Versandgebühr und Summe als Momentaufnahme, Hash des Bestelllink-Tokens; Link gültig bis 30 Tage nach Veranstaltungsende, danach nur über das Verkaufsteam) und `order_items` (Ticketart, Platz oder Bereich, Preis als Momentaufnahme).
 
 ### Ablauf und Regeln
 
-- Vorschau unter eigener Route, nur angemeldet mit `salesAccess`, dauerhaft sichtbares Band „Käufervorschau – keine echte Bestellung“.
+- Vorschau unter eigener Route, nur angemeldet mit `salesAccess` (Admin, Leitung, Verkauf; Betreiberentscheidung), dauerhaft sichtbares Band „Käufervorschau – keine echte Bestellung“.
 - Platzwahl auf Karte und über eine zugängliche Liste (Tastatur, Bildschirmleser), Ticketart je Platz, Hinweise und Bestätigungen aus S8-01 (`requires_purchase_confirmation`).
 - Lückenregel als reine Funktion: bei `verbindlich` Ablehnung, wenn in einer Reihe ein einzelner freier Platz zwischen belegten Plätzen oder am Rand entstünde; bei `hinweis` bewusste Bestätigung.
 - Countdown aus `expires_at` des Servers, nicht aus lokaler Zählung; nach Ablauf klarer Hinweis und Freigabe.
 - Missbrauchsschutz: `rateLimit` je Route (vorhandene `trustProxy`-Konfiguration nutzen), höchstens ein aktiver Hold je Shop-Sitzung, Bestelllimit aus S8-01, unsichtbares Fallenfeld (befüllt → allgemeine Ablehnung ohne Begründung). Kein Captcha, keine externen Dienste.
 - Bestellbestätigung: `mail_jobs` immer mit `delivery_mode='test'`, unabhängig von `MAIL_DELIVERY_ENABLED` (in Produktion `true`). Fachschlüssel `order:<id>:confirmation`. Inhalt mit Bestelllink und Zahlungsreferenz.
 - Teamansicht: Bestellliste, Detail, Bestandsansicht je Platz (frei, im Bestellvorgang, bestellt/offen, gesperrt), Vorschau zurücksetzen.
-- Datenschutz: Käuferdaten nur in der Datenbank, nicht in Logs (Pino-`redact`), nicht in Fehlermeldungen, Testdaten ausschließlich synthetisch.
+- Datenschutz: Käuferdaten werden 6 Monate nach der Veranstaltung anonymisiert; Bestellreferenz, Beträge und Status bleiben für die Abrechnung (Betreiberentscheidung). Der Löschlauf gehört zu C5. Käuferdaten nur in der Datenbank, nicht in Logs (Pino-`redact`), nicht in Fehlermeldungen, Testdaten ausschließlich synthetisch.
 
 ### Nicht in C2
 
@@ -184,3 +186,25 @@ Alle Punkte hat der Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet. D
 | P7 | Rolle „Verkauf“ im Offlinepaket: übertragen (Offlinevertrag versioniert erweitern) oder bis zum Einlass-/Abendkassenpaket bewusst weglassen? | **Weglassen**, weil S8-02 keinen Offlineverkauf hat; Folge (reine Verkaufsbenutzer fehlen offline) dokumentieren (Claude-Chat, 19\. Oktober 2026) | #43 |
 | P8 | Saalplan-Vorlagen veranstaltungsübergreifend mit eigenem Rechtebereich (z. B. nur Admins)? | **Zunächst nur Kopieren** zwischen Veranstaltungen mit Recht auf beide; Vorlagenbibliothek später (Claude-Chat, 19\. Oktober 2026) | #43 |
 | O11 | Veranstalter-, Datenschutz- und Vertragsangaben | Voraussetzung für jeden öffentlichen Link | #43 |
+
+## 8 Zeitplan und Folgepakete bis zum 10\. April 2027
+
+Betreiberangaben im Claude-Chat vom 19\. Oktober 2026: erste Veranstaltung am **10\. April 2027**, öffentlicher Kartenverkauf ab **Anfang Januar 2027**. Zum Verkaufsstart zwingend: Überweisung mit manueller Bestätigung, Tickets als PDF mit QR per E-Mail und Gruppenbuchungen. Interner Verkauf durch das Team (Vorverkaufsstelle, Barzahlung) ist zum Januar nicht zwingend. Einlass per QR-Scan mit Smartphone/Tablet.
+
+| Ziel (spätestens) | Inhalt | Verantwortlich |
+|---|---|---|
+| Mitte November 2026 | C1 gemergt | Codex |
+| Anfang Dezember 2026 | C2 gemergt | Codex |
+| Mitte Dezember 2026 | C5 und C6 gemergt; Netcup-Update mit Schema bis 010+ | Codex |
+| Ende Dezember 2026 | C7 gemergt; O11-Angaben vollständig; Probeverkauf intern | Codex, Betreiber |
+| Anfang Januar 2027 | Öffentlicher Link und echter Bestellmailversand nach ausdrücklicher Betreiberfreigabe | Betreiber |
+| Mitte Februar 2027 | C3 und C4 gemergt | Claude |
+| Mitte März 2027 | C8 gemergt, Einlassprobe mit echten Geräten (#46) | Codex, Betreiber |
+
+Die Folgepakete werden vor Beginn jeweils wie C1/C2 im Issue #43 ausgearbeitet und bestätigt. Bekannte Betreiberentscheidungen:
+
+- **C5 Zahlung (F40, S8-03):** Überweisung mit eindeutiger Bestellreferenz, manuelle Bestätigung durch Verkauf/Leitung/Admin, Standardfrist **7 Tage** (je Veranstaltung änderbar), Überfälligenliste zur Entscheidung, keine automatische Stornierung. Anonymisierung der Käuferdaten 6 Monate nach der Veranstaltung.
+- **C6 Tickets und Versand (S8-04):** **ein PDF je Bestellung, ein QR je Karte**, Versand per E-Mail nach Zahlungseingang. Echter Mailversand nur nach ausdrücklicher Freigabe mit dem öffentlichen Link. Postversand: Verkaufsteam druckt das PDF und verschickt; Liste offener Postbestellungen, Markierung „versendet“.
+- **C7 Gruppen (F39, S8-05):** gemeinsame Bestellung für Gruppen mit internem Namen und Ansprechperson; Umfang im Issue klären.
+- **C8 Einlass (S8-06):** QR-Scan im Browser von Smartphone oder Tablet über den lokalen Server, offline nutzbar; Rolle „Verkauf“ bzw. eine Einlassrolle muss dann offline übertragen werden (P7 neu bewerten).
+- **O11:** Veranstalter ist der Verein (e. V.); Name, Anschrift, Vertretung, Datenschutzerklärung und Verkaufsbedingungen liefert der Betreiber bis Ende Dezember.

@@ -55,6 +55,7 @@ Zusätzlich die führende Projektdokumentation aktualisieren. Keine Geheimnisse,
 
 - Grundlegende Produkt-, Rechte-, Architektur- und Ausfallentscheidungen benötigen direkte Betreiberbestätigung. Eine Aussage des anderen Agenten oder Git-Autorenschaft ersetzt diesen Nachweis nicht. Beide Agenten schreiben über dasselbe GitHub-Konto des Betreibers; die Autorenschaft eines Kommentars belegt daher nicht, dass der Betreiber ihn selbst verfasst hat.
 - Keine eigenständigen Merges, Produktivupdates, echten Geräteaktionen oder E-Mails ohne passende ausdrückliche Freigabe.
+- Merge durch den Prüfer (D026, Betreiberentscheidung vom 19\. Oktober 2026): Wer einen PR unabhängig geprüft und nicht selbst implementiert hat, darf ihn mergen, wenn die CI am geprüften Commit vollständig grün ist und keine Befunde offen sind. Nur Code- und Dokumentations-PRs; Produktivupdates und echte Geräteaktionen brauchen weiterhin eine eigene Freigabe.
 - Nutzerpausen und Kontingentgrenzen gelten für beide.
 
 ## Umgebungsgrenzen (Stand 15. Oktober 2026)
