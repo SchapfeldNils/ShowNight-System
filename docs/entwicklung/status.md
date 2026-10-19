@@ -4,7 +4,7 @@
 
 - **Produktiv auf Netcup:** Runtime `f232483` (Merge PR #38), Datenbankschema 6, Kontofunktionen und E-Mail-Passwortreset; Mailversand aktiv. Durchführung und Grenzen: [online-produktivupdate.md](online-produktivupdate.md).
 - **In `main`:** S1-Onlineserver, S2-Windows-Agent sowie alle S3-Bausteine (Paketablage, Offlinekonten/MFA, LAN, Renderer, Paketmedien, Szenenentwürfe, Erststart, Serverübersicht, lokale Technikrechte, native Szenen) und die Sicherungshärtung. Die Einzel-PRs wurden über PR #37/#38 zusammengeführt und danach geschlossen.
-- **In `main`, nicht produktiv:** Stage-Timer-Vorbereitung ([PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), gemergt als `c24d2cf`, Migration 7). Netcup läuft weiter auf Schema 6; ein Produktivupdate braucht eine eigene Freigabe.
+- **In `main`, nicht produktiv:** Stage-Timer-Vorbereitung ([PR #42](https://github.com/SchapfeldNils/ShowNight-System/pull/42), Migration 7) und Szeneneditor Paket 1 ([PR #55](https://github.com/SchapfeldNils/ShowNight-System/pull/55), `0834409`, keine Migration). Netcup läuft weiter auf Schema 6; ein Produktivupdate braucht eine eigene Freigabe.
 - **Offen als PR:** [#49 Ticketshop S8-01](https://github.com/SchapfeldNils/ShowNight-System/pull/49) mit Migration 8, Review durch Codex läuft.
 - **Fachlich offen:** Ticketshop über S8-01 hinaus (#43), Live-Bühnenmonitor (#41), Showablauf mit GO (#45), Szeneneditor (#44), regelmäßiger Sicherungsbetrieb (#3), echte E-Mail-Zustellung, alle Hardware-/Geräte-/Showabnahmen (#46).
 - Lokale Installation: Setup 0.3.8 (Stand Issue #24). Neuere Setups 0.3.9/0.3.10 wurden gebaut und hashgeprüft, aber nicht installiert.
@@ -13,7 +13,11 @@ Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle fol
 
 ## Showablauf Paket 1 (Issue #45, PR offen) – 15. Oktober 2026
 
-Claude setzt auf Branch `claude/issue-45-showablauf` (Basis `main` `06aa8f9`) im lokalen Server Liveaktivierung vorbereiteter Datenstände, Durchläufe und gleichberechtigtes GO um – ausschließlich als serverseitige, sichtbar gekennzeichnete Simulation (D021, Bestätigung in #45 ausstehend). Kein Renderer-Take, keine Geräte-/Ton-/HDMI-Ausgabe, keine Hardwareabnahme. Nicht gemergt, nicht produktiv. [Umfang, Prüfungen und Grenzen](s4-showablauf.md).
+Claude setzt auf Branch `claude/issue-45-showablauf` im lokalen Server Liveaktivierung vorbereiteter Datenstände, Durchläufe und gleichberechtigtes GO um – ausschließlich als serverseitige, sichtbar gekennzeichnete Simulation. D021 (Rechte, Simulationsumfang) ist vom Betreiber bestätigt, protokolliert von Codex in [#45](https://github.com/SchapfeldNils/ShowNight-System/issues/45#issuecomment-6195771736). Kein Renderer-Take, keine Geräte-/Ton-/HDMI-Ausgabe, keine Hardwareabnahme. Nicht gemergt, nicht produktiv. [Umfang, Prüfungen und Grenzen](s4-showablauf.md).
+
+## Szeneneditor Paket 1 (Issue #44) – 15. Oktober 2026
+
+Damaliger Stand vor dem Merge; inzwischen über PR #55 als `0834409` in `main`, nicht produktiv. Editorbedienung ohne Schemaänderung: Maus/Tastatur auf der Arbeitsfläche, Einrasten, Ebenenliste mit Namen und Miniaturen, Eigenschaftenleiste je Ebene, Ziehen aus der Medienleiste, Rückgängig/Wiederholen und Prüfübersicht. Vorlagen, Video/Animation, Drehung und Renderer bleiben Folgepakete. [Umfang, Prüfungen und Grenzen](s3-szeneneditor.md).
 
 ## Stage-Timer-Vorbereitung vor dem Merge (PR #42) – 15. Oktober 2026
 

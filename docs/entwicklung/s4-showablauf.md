@@ -2,7 +2,7 @@
 
 Stand: 15\. Oktober 2026. Status: als Pull Request in Umsetzung, nicht gemergt, nicht produktiv und nicht auf Windows-Hardware abgenommen.
 
-Grundlage: [live-regie.md](../planung/live-regie.md) (D007), [liveaktivierung.md](../planung/liveaktivierung.md) (D009), [durchlaeufe.md](../planung/durchlaeufe.md) (D010–D012), Schnittstellen „Livebefehle“ in [schnittstellen.md](schnittstellen.md) und D021 in [entscheidungen.md](../planung/entscheidungen.md). **D021 ist offen:** Die direkte Betreiberbestätigung fehlt und ist in Issue #45 angefragt. Rechte und Simulationsumfang sind bis dahin ein Vorschlag.
+Grundlage: [live-regie.md](../planung/live-regie.md) (D007), [liveaktivierung.md](../planung/liveaktivierung.md) (D009), [durchlaeufe.md](../planung/durchlaeufe.md) (D010–D012), Schnittstellen „Livebefehle“ in [schnittstellen.md](schnittstellen.md) und D021 in [entscheidungen.md](../planung/entscheidungen.md). **D021 ist bestätigt** (Betreiber am 15\. Oktober 2026, protokolliert in [#45](https://github.com/SchapfeldNils/ShowNight-System/issues/45#issuecomment-6195771736)).
 
 Verantwortlich: Claude (Umsetzung), Review: Codex.
 

@@ -191,7 +191,7 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 
 ## D021 – Liverechte und Simulationsumfang im ersten Showablauf
 
-- Status: **offen**. Vorschlag von Claude vom 15\. Oktober 2026. Die Auswahl im Claude-Chat ist nirgends nachvollziehbar belegt und gilt daher nicht als Bestätigung. Die direkte Betreiberbestätigung ist in [Issue #45](https://github.com/SchapfeldNils/ShowNight-System/issues/45) angefragt. Bis dahin ist PR #56 nicht freigabefähig. Aussagen eines Agenten oder dieselbe GitHub-Autorenschaft ersetzen die Bestätigung nicht.
+- Status: **bestätigt** am 15\. Oktober 2026. Der Betreiber hat Codex auf die vollständig ausgeschriebene Frage direkt geantwortet: „Ja, D021 genau so bestätigen“. Codex hat das in [Issue #45](https://github.com/SchapfeldNils/ShowNight-System/issues/45#issuecomment-6195771736) protokolliert. Die frühere Auswahl im Claude-Chat ist kein Nachweis.
 - Entscheidung:
   1. Nächsten Einsatz vorbereiten, GO, Durchlauf anlegen/starten/beenden: globale Admins sowie Veranstaltungsrollen `live` und `technik`. Leitung oder Inhaltsrechte allein genügen nicht.
   2. Datenstand live aktivieren und zum vorherigen Stand zurückkehren: globale Admins und Rolle `technik`.
