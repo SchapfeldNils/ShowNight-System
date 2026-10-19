@@ -12,21 +12,24 @@ Drei Teil-PRs, jeweils eigener Branch `claude/q1…` und eigener Zuständigkeits
 
 | Teil | Inhalt | Läuft auf | Voraussetzung |
 |---|---|---|---|
-| Q1a Fragenbibliothek | Bibliotheken je Veranstaltung mit Kategorien und Schwierigkeit; Fragen Auswahl/Freitext/Schätzung mit Lösung, Schreibvarianten und Leinwandmedium; Quizrunden einer Show mit fester Fragefolge, Frist (Standard 30 s), Bestätigungspflicht und Punkten; Show übernimmt festen Fragenstand (Revision). Rechte: Bearbeiten und Lösungen nur Showteam der Quizshow und Leitung. | Netcup-API, Web | Migration 011 reserviert |
-| Q1b Lokaler Quizablauf | Quizstand im Offlinepaket (nächste freie Paketversion nach L1, voraussichtlich 4). Lokal: Teams anlegen, Beitritt per QR-/Beitrittscode, Bestätigung durch die Regie, Ersatzgerät übernimmt Teamzustand. Frage öffnen, Frist, Abgabe ändern/bestätigen, Wertung (Auswahl automatisch, Freitextvorschlag mit Regieentscheidung, Schätzung geringste Abweichung), Korrektur mit Pflichtgrund nach Abschluss, ungültig für alle oder einzelne Teams, getrennter Arbeits- und veröffentlichter Stand, Probenstand getrennt. Teilnehmerseite und Quizregie in der lokalen Weboberfläche. | Lokaler Server, local-web | Q1a, #56 gemergt, L1-Paketversion 3 gemergt |
+| Q1a Fragenbibliothek | Bibliotheken je Veranstaltung mit Kategorien und Schwierigkeit; Fragen Auswahl/Freitext/Schätzung mit Lösung, Schreibvarianten, Leinwandmedium und der Einstellung je Frage, ob das Tablet zusätzlich den Fragetext zeigt (Standard nur Antwortfelder, D029 Punkt 5); Quizrunden einer Show mit fester Fragefolge, Frist (Standard 30 s), Bestätigungspflicht und Punkten; Show übernimmt festen Fragenstand (Revision). Rechte: Bearbeiten und Lösungen nur Showteam der Quizshow und Leitung. | Netcup-API, Web | Migration 011 reserviert |
+| Q1b Lokaler Quizablauf | Quizstand im Offlinepaket (nächste freie Paketversion nach L1, voraussichtlich 4). Lösungen sind dort gesondert geschützt: Online-Manifest/-Download und lokale Paketroute liefern Fragen und Lösungen nur an Admin, Leitung und das Showteam der Quizshow; alle anderen Konten der Veranstaltung erhalten das Paket ohne Quizinhalt. Lokal: Teams anlegen, Beitritt per QR-/Beitrittscode, Bestätigung durch die Regie, Ersatzgerät übernimmt Teamzustand. Frage öffnen (Tablet zeigt den Fragetext nur bei gesetzter Einstellung), Frist, Abgabe ändern/bestätigen (bei Bestätigungspflicht zählt nur die bestätigte Abgabe), Tabletverlust: Zeit läuft weiter, Regie kann pausieren, verlängern, Frage wiederholen und stellvertretend erfassen. Wertung (Auswahl automatisch, Freitextvorschlag mit Regieentscheidung, Schätzung geringste Abweichung, bei gleicher Abweichung erhalten alle betroffenen Teams die Punkte, Gleichstand im Stand ergibt gemeinsamen Platz), Korrektur mit Pflichtgrund nach Abschluss, ungültig für alle oder einzelne Teams, getrennter Arbeits- und veröffentlichter Stand, Probenstand getrennt. Teilnehmerseite und Quizregie in der lokalen Weboberfläche. | Lokaler Server, local-web | Q1a, #56 gemergt, L1-Paketversion 3 gemergt |
 | Q1c Leinwand und Bühnenmonitor | Feste Standardansichten Frage, Antworten, Countdown, Auflösung, Runden- und Gesamtstand, nur nach Veröffentlichung. Kompakter Tablet-Ausfallhinweis (Teamname) auf dem Bühnenmonitor aus L1, verschwindet bei Wiederverbindung. Solange die echte Rendererausgabe (L2) fehlt, deutlich als Vorschau markiert. | Lokaler Server, local-web, Renderer | Q1b, L1 gemergt |
 
-Veröffentlichen, Frage öffnen, Frist ändern und Korrekturen folgen D021 (globale Admins, `live`, `technik`), wie in D029 Punkt 7 festgelegt. Konkurrierende Regiebefehle ordnet und dedupliziert der Server wie bei GO.
+Veröffentlichen folgt D021 (globale Admins, `live`, `technik`), wie in D029 Punkt 7 festgelegt. Wer Fragen öffnen, Fristen ändern, pausieren und korrigieren darf, ist noch nicht entschieden; die Frage geht vor Beginn von Q1b gesammelt an den Betreiber (Vorschlag: ebenfalls wie GO). Konkurrierende Regiebefehle ordnet und dedupliziert der Server wie bei GO.
 
 ## Prüfungen (A12)
 
 - Frist serverseitig: Abgabe nach Fristende wird abgewiesen, auch mit falscher Tablet-Uhr.
 - Doppelte Abgabe (Wiederholung nach Verbindungsabbruch) wird nur einmal gewertet.
 - Ersatztablet erhält Teamzustand und bisherige Abgabe der laufenden Frage.
-- Tabletverlust: Zeit läuft weiter, Regie- und Monitorhinweis, Verschwinden bei Wiederverbindung.
+- Tabletverlust: Zeit läuft weiter, Regie- und Monitorhinweis, Verschwinden bei Wiederverbindung; Pausieren, Verlängern, Wiederholen und stellvertretende Erfassung durch die Regie wirken serverseitig und werden protokolliert.
+- Bestätigungspflicht: Ein bis Fristende nicht bestätigter Entwurf wird nicht gewertet; ohne Bestätigungspflicht zählt die letzte Abgabe vor Fristende.
+- Schätzung: Teams mit gleicher geringster Abweichung erhalten alle die Punkte; gleiche Punktzahl ergibt gemeinsamen Platz.
+- Tablet-Fragetext: ohne Einstellung enthalten Teilnehmerdaten nur Antwortfelder, mit Einstellung zusätzlich den Fragetext.
 - Zwei Regien gleichzeitig: gleicher Befehl wird einmal ausgeführt, widersprüchliche geordnet.
 - Lösung erscheint vor Veröffentlichung weder in Teilnehmer- noch Monitor- noch Leinwanddaten (Prüfung auf API- und WebSocket-Ebene, nicht nur UI).
-- Rechte: Showteam fremder Shows und `mitglied` sehen keine Lösungen.
+- Rechte: Showteam fremder Shows und `mitglied` sehen keine Lösungen, auch nicht über Online-Manifest, Paketdownload oder lokale Paketroute.
 - Korrektur abgeschlossener Wertung ohne Grund wird abgewiesen; veröffentlichter Stand ändert sich erst bei erneuter Veröffentlichung.
 - Probenstand zurücksetzen verändert keine Fragen und Regeln.
 
