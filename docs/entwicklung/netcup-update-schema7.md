@@ -37,6 +37,7 @@ Keine neuen Umgebungsvariablen, Volumes oder Proxyänderungen im Zielzustand.
    - Das S1-Artefakt `shownight-image-arm64` am selben Commit **nicht** laden: Es ist ein separater Build mit demselben Tag `shownight:<sha>-arm64` und würde den Tag still überschreiben.
    - ZIP-SHA256 gegen GitHub und Archiv-SHA256 gegen die `.sha256`-Datei prüfen.
    - Artefakte verfallen nach 7 Tagen; danach Rehearsal am Zielcommit erneut starten.
+   - Erwartete Werte laut Codex' Vorabprüfung ([#59](https://github.com/SchapfeldNils/ShowNight-System/pull/59), `docs/entwicklung/netcup-schema7-vorabpruefung.md`): Artefakt-ID `11984788808`, Archiv-SHA256 `a2591c6f0f96379c61c5223b55379cf7e20349c6faec70585f561b65bd56dfb2`, Config-ID `sha256:993ccfec69a225a515e235ee6996c258ddc439ffe7cfcd49b63f493a79b99996`, Tag `shownight:0834409abfbda494841ad4c47d79153cd8f0f3f6-arm64`. Bei der Ausführung erneut nachrechnen, nicht nur übernehmen.
 4. **Image auf die VM laden und vergleichen:** Archiv über den bisherigen autorisierten Weg übertragen, dann `sha256sum -c shownight-arm64.tar.gz.sha256 && docker load -i shownight-arm64.tar.gz`.
    - Wie am 15.10. Konfigurationsdigest und **alle RootFS-Schichten** mit dem Archiv vergleichen. Der containerd-Imagestore zeigt ggf. die Manifest-ID statt der Config-ID aus `image-info.txt`.
    - Das alte Image `f232483…-arm64` bleibt unverändert.
@@ -48,13 +49,17 @@ Keine neuen Umgebungsvariablen, Volumes oder Proxyänderungen im Zielzustand.
    - `command -v docker node flock sha256sum` müssen alle vorhanden sein.
    - Checkout des Repositorys **am Zielcommit** für `deploy/` und `scripts/`; diese Dateien sind identisch zu `f232483`.
    - Alle Befehle als **derselbe Benutzer**, der Docker aufruft und Eigentümer der Kennwortdatei ist.
-8. **Private `stack.env`** (Modus 600, außerhalb Git) bildet Stack 23 exakt ab: Compose-Projektname (`STACK_NAME`), altes Image, Volumes, Proxyname/-alias, Original-`MFA_ENCRYPTION_KEY`, `POSTGRES_PASSWORD`, SMTP-Werte. **Pflichtprüfung, sonst kein `backup.sh`:**
+8. **Private `stack.env`** (Modus 600, außerhalb Git) bildet Stack 23 exakt ab: Compose-Projektname (`STACK_NAME=shownight`; Portainer nutzt den Stacknamen als Projektnamen), altes Image, Volumes, Proxyname/-alias, Original-`MFA_ENCRYPTION_KEY`, `POSTGRES_PASSWORD`, SMTP-Werte. **Pflichtprüfung, sonst kein `backup.sh`:**
    - `docker compose --env-file stack.env -f deploy/compose.yaml config --hash postgres,app,worker` stimmt für **alle drei** Dienste mit dem Label `com.docker.compose.config-hash` der laufenden Container überein.
    - `docker inspect -f '{{range .Mounts}}{{.Name}} {{end}}'` für den Postgres- und den App-Container zeigt genau `DB_VOLUME_NAME` bzw. `MEDIA_VOLUME_NAME`.
    - Grund: Der Trap von `backup.sh` führt `compose up -d --wait app worker` aus und gleicht dabei auch die Abhängigkeit `postgres` an. Bei falschem Volume-Namen würde Postgres auf einem neuen leeren Volume neu erzeugt.
 9. **Sicherungskennwort:** separate Datei, 20–256 Zeichen, Modus 400 oder 600, eigener Benutzer, kein Symlink. `backup-vault.mjs` prüft die Länge erst beim Versiegeln, also nach der Unterbrechung.
-10. **Wartungssperre vorbereiten:** Den bestehenden Advanced-Block des NPM-Proxy-Hosts privat sichern und eine Sperrvariante bereithalten, die für `location /` nur `return 503;` liefert. Die Änderung ist reversibel und betrifft nur diesen Proxy-Host.
-11. **Betreiberfreigabe** in Issue #54 mit Zielcommit, Image (Archiv-SHA256, Config-ID) und Wartungsfenster.
+10. **Portainer-Stackstatus beachten** (Befund aus #59, am Portainer-Quellcode 2.45.2 nachvollzogen): Stack 23 steht auf Status „Fehler“, obwohl die Dienste laufen. In diesem Zustand führt **jedes** Stack-Update (Speichern, Redeploy) zuerst ein Undeploy aus – `compose down` mit `RemoveOrphans`, ohne Volumes – und danach ein neues Deploy. Dabei werden alle Container einschließlich PostgreSQL und das Projekt-Backendnetz neu erzeugt; benannte Volumes und das externe Proxy-Netz bleiben. Deshalb:
+    - Außerhalb von Schritt 4 und 5 **keine** Portainer-Stackaktion (Update, Redeploy, Stack-Stop/-Start), auch keine reine Statusreparatur.
+    - Einzelne Container stoppen/starten ist dagegen unkritisch.
+    - Nach jedem Stack-Update nicht nur auf den Portainer-Status vertrauen, sondern tatsächlich laufende Images, Mounts, Health und Schema prüfen.
+11. **Wartungssperre vorbereiten:** Den bestehenden Advanced-Block des NPM-Proxy-Hosts privat sichern und eine Sperrvariante bereithalten, die für `location /` nur `return 503;` liefert. Die Änderung ist reversibel und betrifft nur diesen Proxy-Host.
+12. **Betreiberfreigabe** in Issue #54 mit Zielcommit, Image (Archiv-SHA256, Config-ID) und Wartungsfenster.
 
 ## Durchgängiger Schreibstillstand – Grundsatz
 
@@ -83,7 +88,7 @@ Daher gilt von Schritt 1 bis zum Ende der Umschaltung (Schritt 4) ein Schreibsti
 1. `sh deploy/backup-run.sh /pfad/stack.env /pfad/archiv /pfad/kennwort` ausführen. Das Archivverzeichnis muss existieren; **vorher nicht** App/Worker stoppen.
    - Ablauf im Skript: `flock`, Stopp App/Worker, `database.dump` + `media.tar` + `SHA256SUMS`, Neustart, Versiegeln mitsamt `stack.env` zu genau einer `.snbackup`-Datei.
    - Meldet es „Wiederanlauf von App/Worker nicht bestätigt“, **existiert keine Sicherung**: Das Skript endet mit Fehler, versiegelt nicht und löscht das Staging. Die Sperre bleibt aktiv; nach Behebung Schritt 2 vollständig wiederholen.
-2. **Sofort danach** App und Worker von Stack 23 stoppen (`compose stop app worker` mit derselben `stack.env` oder in Portainer). Postgres läuft weiter, die Sperre bleibt.
+2. **Sofort danach** App und Worker von Stack 23 stoppen: `compose stop app worker` mit derselben `stack.env` oder die beiden **Container** in Portainer stoppen – **nicht** den Stack (siehe 0.10). Postgres läuft weiter, die Sperre bleibt.
 3. Produktions-Fingerabdruck **jetzt** erstellen (Anhang A) und mit Uhrzeit privat speichern.
 4. Unabhängige Kopie:
    - `.snbackup` nach `%LOCALAPPDATA%\ShowNight\backups\netcup` auf dem Windows-Betriebsrechner übertragen und SHA256 auf beiden Seiten vergleichen.
@@ -132,7 +137,8 @@ Daher gilt von Schritt 1 bis zum Ende der Umschaltung (Schritt 4) ein Schreibsti
    - `DB_VOLUME_NAME`/`MEDIA_VOLUME_NAME` → die migrierten Klon-Volumes
 
    Alles andere bleibt: MFA-Schlüssel, `POSTGRES_PASSWORD`, SMTP, Proxyalias, `PUBLIC_BASE_URL`, `MAIL_DELIVERY_ENABLED`.
-   - **Mit dem Speichern wird sofort deployt.** Keine Option zum Entfernen von Volumes oder „Prune“ wählen.
+   - **Mit dem Speichern wird sofort deployt**, und wegen des Fehlerstatus (0.10) zuerst alles abgebaut: Auch der noch laufende Produktions-Postgres auf den Originalvolumes wird entfernt; das ist hier gewollt, die Sicherung liegt vor und die Sperre ist aktiv. Danach entstehen Postgres, App und Worker neu auf den Klon-Volumes. Keine Option zum Entfernen von Volumes oder „Prune“ wählen.
+   - Scheitert das Deploy nach dem Abbau (frühere Fehlermeldung: „removal of container … is already in progress“), ist der Stack ganz unten. Dann warten, bis `docker ps -a --filter label=com.docker.compose.project=shownight` leer ist, und erneut speichern. Die Sperre bleibt so lange aktiv.
    - Compose kann melden, dass die Volumes von einem anderen Projekt angelegt wurden. Danach per `docker inspect` prüfen, dass die gemounteten Volumes genau die Klon-Volumes sind und keine neuen leeren entstanden.
 3. Intern prüfen, **vor** dem Aufheben der Sperre:
    - `/health/ready` liefert Schema 7.
@@ -146,7 +152,7 @@ Daher gilt von Schritt 1 bis zum Ende der Umschaltung (Schritt 4) ein Schreibsti
 
 ## 5. Rückweg
 
-- **Vor dem Aufheben der Sperre** (keine neuen Daten): Stack 23 wieder auf altes Image `f232483…` und Originalvolumes setzen, deployen, die private `stack.env` entsprechend zurücksetzen, Sperre aufheben. Keine SQL-Rückmigration.
+- **Vor dem Aufheben der Sperre** (keine neuen Daten): Stack 23 wieder auf altes Image `f232483…` und Originalvolumes setzen, deployen, die private `stack.env` entsprechend zurücksetzen, Sperre aufheben. Keine SQL-Rückmigration. Auch hier baut Portainer bei Fehlerstatus zuerst alles ab (0.10); danach Images, Mounts, Health und Schema 6 tatsächlich prüfen.
 - **Nach dem Aufheben der Sperre:** Neue Online-Eingaben gingen bei Rückkehr auf die Originalvolumes verloren, deshalb nur nach Betreiberentscheidung. Vorher Sperre setzen und eine Sicherung des neuen Stands erstellen (Schritte 0.8, 1, 2 gegen den neuen Stand).
 - **Aufbewahrung:** Originalvolumes und altes Image bleiben bis zur ausdrücklichen Betreiberfreigabe erhalten. Kein `docker volume prune`, kein `docker image prune`.
 - **Projektlabel:** Nach der Umschaltung tragen die Produktionsvolumes das Projektlabel des Klons. `clone.env` deshalb nach erfolgreicher Umschaltung löschen und **nie** wieder `compose down --volumes` damit ausführen.
@@ -194,7 +200,7 @@ Ticketvorbereitung (#49), Server stoppen (#51) und Softwareupdates (#52) folgen 
 ## Offene Punkte
 
 - Betreiberfreigabe für Zielcommit, Image und Wartungsfenster
-- `result.json` und Artefakte von Lauf `38759884920` prüfen, Image auf der VM laden und Schichten vergleichen
+- Image auf der VM laden und Schichten vergleichen (Archiv und Config-ID sind in #59 lokal geprüft; Laden auf der VM steht aus)
 - tatsächliche Übereinstimmung der Compose-Config-Hashes und Mounts (0.8)
 - konkrete NPM-Sperrvariante am realen Proxy-Host
 - Werkzeuge, Platz und Checkout auf der VM (0.6, 0.7)
