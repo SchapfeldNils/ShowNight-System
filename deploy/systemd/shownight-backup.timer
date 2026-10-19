@@ -1,0 +1,12 @@
+# VORLAGE – nicht automatisch aktiviert. Uhrzeit ist ein Vorschlag (Systemzeitzone der VM).
+[Unit]
+Description=Tägliche ShowNight-Wartungssicherung
+
+[Timer]
+OnCalendar=*-*-* 04:30:00
+RandomizedDelaySec=10min
+# Verpasste Läufe (VM aus) beim nächsten Start nachholen.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
