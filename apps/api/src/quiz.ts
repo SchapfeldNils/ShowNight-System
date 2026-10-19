@@ -167,6 +167,7 @@ async function roundDto(c: Queryable, row: any): Promise<QuizRound> {
       questionId: i.questionId,
       libraryId: i.libraryId,
       questionRevision: i.questionRevision,
+      deadlineSeconds: i.deadlineSeconds ?? null,
       newerRevision:
         now && now.revision > i.questionRevision ? now.revision : null,
       // Gelöschte Bibliothek zählt wie archiviert; der feste Stand bleibt nutzbar.
@@ -481,7 +482,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
       for (const item of input.items) {
         const existing = kept.get(item.questionId);
         if (existing && !item.refresh) {
-          items.push(existing);
+          items.push({ ...existing, deadlineSeconds: item.deadlineSeconds });
           continue;
         }
         // Neue oder aufgefrischte Fragen: nur aus erlaubten Bibliotheken derselben Veranstaltung.
@@ -507,6 +508,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
           questionId: found.q.id,
           libraryId: found.lib.id,
           questionRevision: found.q.revision,
+          deadlineSeconds: item.deadlineSeconds,
           question: quizQuestion.parse(found.q.content),
         });
       }

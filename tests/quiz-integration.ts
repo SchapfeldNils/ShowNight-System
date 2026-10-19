@@ -447,13 +447,18 @@ test(
               },
               items: [
                 { questionId: q3.id },
-                { questionId: q1.id },
+                { questionId: q1.id, deadlineSeconds: 90 },
                 { questionId: q2.id },
               ],
             },
             team.session,
           );
           round = updated.round;
+          // Frist je Frage (D029 Punkt 3): null nutzt die Rundenfrist.
+          assert.deepEqual(
+            round.items.map((i: any) => i.deadlineSeconds),
+            [null, 90, null],
+          );
           assert.deepEqual(
             round.items.map((i: any) => [i.questionId, i.questionRevision]),
             [

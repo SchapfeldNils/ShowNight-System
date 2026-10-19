@@ -97,6 +97,24 @@ test("Quizrunden: Standardfrist 30 s, Grenzen und eindeutige Fragen", () => {
     false,
   );
   assert.equal(
+    quizRoundUpdate.parse({ ...base, items: [{ questionId }] }).items[0]
+      .deadlineSeconds,
+    null,
+  );
+  for (const [deadlineSeconds, success] of [
+    [4, false],
+    [5, true],
+    [600, true],
+    [601, false],
+  ] as const)
+    assert.equal(
+      quizRoundUpdate.safeParse({
+        ...base,
+        items: [{ questionId, deadlineSeconds }],
+      }).success,
+      success,
+    );
+  assert.equal(
     quizRoundUpdate.safeParse({
       ...base,
       items: [{ questionId }, { questionId, refresh: true }],

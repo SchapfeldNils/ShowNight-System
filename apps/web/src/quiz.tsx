@@ -834,7 +834,7 @@ function RoundCard({
           />
         </label>
         <label>
-          Antwortfrist (Sekunden)
+          Antwortfrist der Runde (Sekunden)
           <input
             type="number"
             min={5}
@@ -881,6 +881,32 @@ function RoundCard({
               {item.archived && <span className="badge">archiviert</span>}
             </div>
             <p className="muted">Lösung: {solution(item.question)}</p>
+            <label>
+              Eigene Frist (Sekunden, leer = Runde)
+              <input
+                type="number"
+                min={5}
+                max={600}
+                aria-label={"Frist für " + item.question.prompt}
+                value={item.deadlineSeconds ?? ""}
+                onChange={(e) =>
+                  setItems((list) =>
+                    list.map((x, i) =>
+                      i === index
+                        ? {
+                            ...x,
+                            deadlineSeconds: Number.isNaN(
+                              e.target.valueAsNumber,
+                            )
+                              ? null
+                              : e.target.valueAsNumber,
+                          }
+                        : x,
+                    ),
+                  )
+                }
+              />
+            </label>
             <div className="quiz-actions">
               <button
                 type="button"
@@ -951,6 +977,7 @@ function RoundCard({
                 questionId: q.id,
                 libraryId: q.libraryId,
                 questionRevision: q.revision,
+                deadlineSeconds: null,
                 newerRevision: null,
                 archived: false,
                 question: q.question,
@@ -974,6 +1001,7 @@ function RoundCard({
               items: items.map((i) => ({
                 questionId: i.questionId,
                 refresh: i.refresh,
+                deadlineSeconds: i.deadlineSeconds,
               })),
             })
           }

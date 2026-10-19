@@ -84,7 +84,7 @@ test("Quiz Q1a: Bibliothek anlegen, Frage speichern und als festen Stand in eine
     const round = rounds.getByRole("article", { name: "Runde Runde 1" });
     await expect(round).toBeVisible();
     await expect(
-      round.getByLabel("Antwortfrist (Sekunden)", { exact: true }),
+      round.getByLabel("Antwortfrist der Runde (Sekunden)", { exact: true }),
     ).toHaveValue("30");
     await round
       .getByLabel("Frage hinzufügen", { exact: true })
@@ -93,8 +93,13 @@ test("Quiz Q1a: Bibliothek anlegen, Frage speichern und als festen Stand in eine
       .getByRole("button", { name: "Hinzufügen", exact: true })
       .click();
     await round
-      .getByLabel("Antwortfrist (Sekunden)", { exact: true })
+      .getByLabel("Antwortfrist der Runde (Sekunden)", { exact: true })
       .fill("45");
+    await round
+      .getByLabel("Frist für Welche Farbe hat der synthetische Vorhang?", {
+        exact: true,
+      })
+      .fill("90");
     await round.getByRole("button", { name: "Runde speichern" }).click();
     await expect(rounds.getByRole("status")).toHaveText("Runde gespeichert.");
 
@@ -113,8 +118,13 @@ test("Quiz Q1a: Bibliothek anlegen, Frage speichern und als festen Stand in eine
     );
     await expect(saved).toContainText("Fassung 1");
     await expect(
-      saved.getByLabel("Antwortfrist (Sekunden)", { exact: true }),
+      saved.getByLabel("Antwortfrist der Runde (Sekunden)", { exact: true }),
     ).toHaveValue("45");
+    await expect(
+      saved.getByLabel("Frist für Welche Farbe hat der synthetische Vorhang?", {
+        exact: true,
+      }),
+    ).toHaveValue("90");
     expect(errors).toEqual([]);
   } finally {
     await page.goto("about:blank").catch(() => {});

@@ -68,8 +68,10 @@ export const quizQuestion = z
   });
 export type QuizQuestion = z.infer<typeof quizQuestion>;
 
+const deadlineSeconds = z.int().min(5).max(600);
+// deadlineSeconds der Runde ist der Standard; eine Frage kann ihn überschreiben (D029 Punkt 3).
 export const quizRoundSettings = z.strictObject({
-  deadlineSeconds: z.int().min(5).max(600).default(30),
+  deadlineSeconds: deadlineSeconds.default(30),
   confirmRequired: z.boolean().default(false),
   points: z.int().min(0).max(100).default(1),
 });
@@ -110,6 +112,7 @@ export const quizRoundUpdate = z.strictObject({
       z.strictObject({
         questionId: z.uuid(),
         refresh: z.boolean().default(false),
+        deadlineSeconds: deadlineSeconds.nullable().default(null),
       }),
     )
     .max(quizLimits.questionsPerRound)
@@ -138,6 +141,8 @@ export type QuizRoundItem = {
   questionId: string;
   libraryId: string;
   questionRevision: number;
+  // Eigene Frist dieser Frage; null nutzt die Frist der Runde.
+  deadlineSeconds: number | null;
   // Aktuelle Bibliotheksfassung, falls neuer als der feste Stand; null bei Gleichstand.
   newerRevision: number | null;
   archived: boolean;

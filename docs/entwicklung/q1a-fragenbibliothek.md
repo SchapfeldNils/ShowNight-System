@@ -7,7 +7,7 @@ Stand: 19\. Oktober 2026. Teil 1 von Q1 laut [Paketplan](q1-quiz.md) (PR #67), f
 - **Bibliotheken** je Veranstaltung, optional einer Quizshow zugeordnet. Anlegen ohne Quizshow nur Admin und Leitung; das Showteam legt Bibliotheken für die eigene Quizshow an.
 - **Fragen** vom Typ Auswahl (2–8 Antworten, mindestens eine richtig), Freitext (Musterlösung plus Schreibvarianten) und Schätzung (Zahlenwert, Einheit). Dazu Lösungserklärung, Kategorie, Schwierigkeit und die Wahl, ob das Tablet zusätzlich den Fragetext zeigt (Standard: nur Antwortfelder).
 - **Archivieren** statt Löschen. Gelöschte Bibliotheken und archivierte Fragen bleiben in Runden als fester Stand erhalten.
-- **Quizrunden** je Show mit fester Fragefolge, Frist (5–600 s, Standard 30 s), verbindlichem Bestätigen (Standard aus) und Punkten je richtiger Antwort (Standard 1). Eine Runde übernimmt den aktuellen Stand einer Frage als feste Fassung. Spätere Änderungen in der Bibliothek erscheinen als „Neue Fassung“ und gelten erst nach bewusstem Übernehmen.
+- **Quizrunden** je Show mit fester Fragefolge, Frist der Runde (5–600 s, Standard 30 s) und optional eigener Frist je Frage (D029 Punkt 3), verbindlichem Bestätigen (Standard aus) und Punkten je richtiger Antwort (Standard 1). Eine Runde übernimmt den aktuellen Stand einer Frage als feste Fassung. Spätere Änderungen in der Bibliothek erscheinen als „Neue Fassung“ und gelten erst nach bewusstem Übernehmen.
 - **Rechte (D029 Punkt 7):** Bibliothek, Lösungen und Runden sehen und bearbeiten nur Admin, Leitung und das Showteam der zugeordneten Quizshow. Andere Showteams, `live`, `technik` und `mitglied` erhalten 404 bzw. 403 und keine Lösungsdaten. Das Modul „Spiele“ muss aktiv sein.
 - Gleichzeitiges Bearbeiten, auch Umsortieren der Runden: genau ein Gewinner, der andere erhält 409 mit aktuellem Stand. Umsortieren landet als eigener Eintrag in der Historie.
 
@@ -26,6 +26,7 @@ pnpm build && pnpm exec playwright test tests/browser/quiz.spec.ts
 ## Bekannte Grenzen
 
 - Nur Vorbereitung auf dem Onlineserver. Kein Offlinepaket, keine Teilnehmer, keine Tablets, keine Frist im Ablauf, keine Wertung oder Veröffentlichung: das folgt in Q1b und Q1c.
+- Fragen aus einer Bibliothek der Veranstaltung kann jede Show nutzen, deren Bearbeiter die Bibliothek sehen dürfen (in der Regel die Leitung). Die Runde enthält dann einen festen Stand samt Lösung, den das Showteam dieser Show sieht. Eine Freigabe von Fragenständen mit eigenem Teilrecht (anforderungen.md, Kapitel 8) fehlt noch und ist beim Betreiber angefragt.
 - Showkopie übernimmt Quizrunden noch nicht.
 - Keine Leinwandmedien an Fragen: Allgemeine Veranstaltungsmedien sind für alle Mitglieder lesbar und könnten Fragen oder Lösungen verraten. Geschützte Quizmedien mit den Rechten der Bibliothek kommen mit der Leinwand in Q1c.
 - Zufallsfolge, abgestufte Punkte, Toleranz und Stichfrage sind nach D029 nicht Teil von Q1.
