@@ -191,7 +191,7 @@ Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit ges
 
 ## D029 – Quiz Q1: Kernumfang am Abend
 
-- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet („Stimmt alles“ zu allen acht Vorschlägen); direkte Bestätigung in [Issue #65](https://github.com/SchapfeldNils/ShowNight-System/issues/65) erbeten. Punkt 7 am selben Tag im Claude-Chat präzisiert: Veröffentlichen wie GO nach D021.
+- Status: **bestätigt** am 19\. Oktober 2026. Antworten im Claude-Chat („Stimmt alles“, Punkt 7 auf Rückfrage „wie GO“); direkte Bestätigung des Betreibers in [Issue #65](https://github.com/SchapfeldNils/ShowNight-System/issues/65#issuecomment-6268763501): „D029 bestätigt“.
 - Entscheidung:
   1. Fragetypen Auswahl, Freitext und Schätzung. Bild, Audio und Video laufen nur auf der Leinwand, nicht auf dem Tablet.
   2. Bis 10 Teams mit je einem Gerät, Beitritt per QR-/Beitrittscode, die Regie bestätigt die Zuordnung und kann Ersatzgeräte verbinden.

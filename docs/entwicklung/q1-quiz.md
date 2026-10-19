@@ -1,6 +1,6 @@
 # Paketplan Q1 Quiz (Strang D)
 
-Stand: 19\. Oktober 2026. Status: **Plan**, keine Umsetzung. Fachliche Grundlage: [D029](../planung/entscheidungen.md) (Betreiberantworten vom selben Tag, Bestätigung in [#65](https://github.com/SchapfeldNils/ShowNight-System/issues/65) erbeten), F21, F22, A12, [anforderungen.md](../anforderungen.md) Kapitel 8. Ziel laut Gesamtplan (PR #63): Q1 bis KW45 gemergt. Verantwortlich Claude 2, Prüfung Codex 1.
+Stand: 19\. Oktober 2026. Status: **Plan**, keine Umsetzung. Fachliche Grundlage: [D029](../planung/entscheidungen.md) (vom Betreiber in [#65](https://github.com/SchapfeldNils/ShowNight-System/issues/65#issuecomment-6268763501) bestätigt), F21, F22, A12, [anforderungen.md](../anforderungen.md) Kapitel 8. Ziel laut Gesamtplan (PR #63): Q1 bis KW45 gemergt. Verantwortlich Claude 2, Prüfung Codex 1.
 
 ## Grundsatz
 
