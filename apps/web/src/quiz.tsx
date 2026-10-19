@@ -21,7 +21,6 @@ type Overview = {
   libraries: QuizLibrary[];
   shows: { id: string; name: string }[];
 };
-type Media = { id: string; name: string; mime: string; status: string };
 
 const typeLabel = {
   choice: "Auswahl",
@@ -46,7 +45,6 @@ function emptyQuestion(type: QuizQuestion["type"]): any {
     explanation: "",
     category: "",
     difficulty: "mittel",
-    mediaId: null,
     tabletShowsPrompt: false,
   };
   if (type === "choice")
@@ -195,7 +193,6 @@ export function QuizPreparation({
         <LibraryEditor
           key={libraryId}
           libraryId={libraryId}
-          eventId={eventId}
           api={api}
           onChanged={load}
           onDeleted={() => {
@@ -240,13 +237,11 @@ export function QuizPreparation({
 
 function LibraryEditor({
   libraryId,
-  eventId,
   api,
   onChanged,
   onDeleted,
 }: {
   libraryId: string;
-  eventId: string;
   api: Api;
   onChanged: () => void;
   onDeleted: () => void;
@@ -255,7 +250,6 @@ function LibraryEditor({
     library: QuizLibrary;
     questions: QuizQuestionRecord[];
   } | null>(null);
-  const [media, setMedia] = useState<Media[]>([]);
   const [editing, setEditing] = useState<QuizQuestionRecord | "new" | null>(
     null,
   );
@@ -273,28 +267,21 @@ function LibraryEditor({
   }
   useEffect(() => {
     void load();
-    api<Media[]>(`/media?eventId=${eventId}`)
-      .then((m) =>
-        setMedia(
-          m.filter(
-            (x) =>
-              x.status === "ready" && /^(image|audio|video)\//.test(x.mime),
-          ),
-        ),
-      )
-      .catch(() => setMedia([]));
   }, [libraryId]);
+  // Liefert true nur bei Erfolg; bei Fehlern (z. B. Revisionskonflikt) bleibt der Entwurf offen.
   const act = (work: () => Promise<unknown>, done: string) =>
     work()
-      .then(() => {
+      .then(async () => {
         setError("");
         setNotice(done);
-        return load();
+        await load();
+        onChanged();
+        return true;
       })
-      .then(onChanged)
       .catch((e: Error) => {
         setError(e.message);
         void load();
+        return false;
       });
   if (!data)
     return (
@@ -380,9 +367,6 @@ function LibraryEditor({
                 <span className="badge">{q.question.category}</span>
               )}
               <span className="badge">{q.question.difficulty}</span>
-              {q.question.mediaId && (
-                <span className="badge">Leinwandmedium</span>
-              )}
             </div>
             <p className="muted">
               Lösung: {solution(q.question)} · Fassung {q.revision}
@@ -426,7 +410,6 @@ function LibraryEditor({
         <QuestionForm
           key={editing === "new" ? "new" : editing.id + editing.revision}
           initial={editing === "new" ? null : editing.question}
-          media={media}
           onCancel={() => setEditing(null)}
           onSave={(question) =>
             act(
@@ -440,7 +423,9 @@ function LibraryEditor({
                       question,
                     }),
               "Frage gespeichert.",
-            ).then(() => setEditing(null))
+            ).then((saved) => {
+              if (saved) setEditing(null);
+            })
           }
         />
       ) : (
@@ -454,12 +439,10 @@ function LibraryEditor({
 
 function QuestionForm({
   initial,
-  media,
   onSave,
   onCancel,
 }: {
   initial: QuizQuestion | null;
-  media: Media[];
   onSave: (q: QuizQuestion) => Promise<unknown>;
   onCancel: () => void;
 }) {
@@ -535,21 +518,6 @@ function QuestionForm({
             maxLength={80}
             onChange={(e) => patch({ category: e.target.value })}
           />
-        </label>
-        <label>
-          Leinwandmedium
-          <select
-            aria-label="Leinwandmedium"
-            value={draft.mediaId ?? ""}
-            onChange={(e) => patch({ mediaId: e.target.value || null })}
-          >
-            <option value="">Kein Medium</option>
-            {media.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
         </label>
       </div>
       <label>
@@ -689,16 +657,18 @@ function RoundsEditor({
   api: Api;
 }) {
   const [rounds, setRounds] = useState<QuizRound[] | null>(null);
+  const [showRevision, setShowRevision] = useState(0);
   const [pool, setPool] = useState<QuizQuestionRecord[]>([]);
   const [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const [name, setName] = useState("");
   async function load() {
     try {
-      setRounds(
-        (await api<{ rounds: QuizRound[] }>(`/shows/${showId}/quiz-rounds`))
-          .rounds,
+      const data = await api<{ rounds: QuizRound[]; showRevision: number }>(
+        `/shows/${showId}/quiz-rounds`,
       );
+      setRounds(data.rounds);
+      setShowRevision(data.showRevision);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -739,7 +709,11 @@ function RoundsEditor({
     const ids = rounds.map((r) => r.id);
     [ids[index], ids[index + delta]] = [ids[index + delta], ids[index]];
     void act(
-      () => api(`/shows/${showId}/quiz-rounds/order`, "PUT", { roundIds: ids }),
+      () =>
+        api(`/shows/${showId}/quiz-rounds/order`, "PUT", {
+          expectedShowRevision: showRevision,
+          roundIds: ids,
+        }),
       "Reihenfolge gespeichert.",
     );
   };

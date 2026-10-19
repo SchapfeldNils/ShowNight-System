@@ -16,8 +16,8 @@ const common = {
   explanation: text(1000).default(""),
   category: text(80).default(""),
   difficulty: quizDifficulty.default("mittel"),
-  // Bild, Audio oder Video nur für die Leinwand (D029 Punkt 1), nie auf dem Tablet.
-  mediaId: z.uuid().nullable().default(null),
+  // Leinwandmedien (D029 Punkt 1) folgen in Q1c mit eigenem Schutz: allgemeine
+  // Veranstaltungsmedien sind für alle Mitglieder lesbar und dürfen Quizinhalte nicht verraten.
   // Standard: Tablet zeigt nur Antwortfelder (D029 Punkt 5).
   tabletShowsPrompt: z.boolean().default(false),
 };
@@ -153,6 +153,7 @@ export type QuizRound = {
   items: QuizRoundItem[];
 };
 export const quizRoundOrder = z.strictObject({
+  expectedShowRevision: z.int().positive(),
   roundIds: z
     .array(z.uuid())
     .max(quizLimits.roundsPerShow)

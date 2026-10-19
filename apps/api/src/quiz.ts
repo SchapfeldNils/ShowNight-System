@@ -14,7 +14,6 @@ import {
   quizRoundSettings,
   quizRoundUpdate,
   type QuizLibrary,
-  type QuizQuestion,
   type QuizQuestionRecord,
   type QuizRound,
   type QuizRoundItem,
@@ -67,6 +66,16 @@ async function assigned(c: Queryable, user: Actor, showId: string) {
 }
 
 /** Bibliothek mit Bearbeitungsrecht laden; ohne Recht 404 statt 403. */
+async function libraryState(c: Queryable, lib: any) {
+  const n = (
+    await c.query(
+      "SELECT count(*) AS n FROM quiz_questions WHERE library_id=$1 AND NOT archived",
+      [lib.id],
+    )
+  ).rows[0].n;
+  return libraryDto({ ...lib, question_count: n });
+}
+
 async function libraryAccess(
   c: Queryable,
   user: Actor,
@@ -124,29 +133,6 @@ async function roundShowAccess(c: Queryable, user: Actor, showId: string) {
     );
   await quizEvent(c, user, show.event_id);
   return show;
-}
-
-async function checkMedia(
-  c: Queryable,
-  eventId: string,
-  question: QuizQuestion,
-) {
-  if (!question.mediaId) return;
-  const found = (
-    await c.query(
-      `SELECT 1 FROM media m WHERE m.id=$1 AND m.status='ready'
-        AND (m.mime LIKE 'image/%' OR m.mime LIKE 'audio/%' OR m.mime LIKE 'video/%')
-        AND (m.event_id=$2 OR m.show_id IN (SELECT id FROM shows WHERE event_id=$2)
-          OR m.id IN (SELECT sm.media_id FROM show_media sm JOIN shows s ON s.id=sm.show_id WHERE s.event_id=$2))`,
-      [question.mediaId, eventId],
-    )
-  ).rowCount;
-  if (!found)
-    throw new HttpError(
-      400,
-      "MEDIA_INVALID",
-      "Das Medium ist nicht bereit oder gehört nicht zu dieser Veranstaltung.",
-    );
 }
 
 const libraryDto = (row: any): QuizLibrary => ({
@@ -315,7 +301,8 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     return transaction(db, async (c) => {
       const user = await fresh(c, req);
       const lib = await libraryAccess(c, user, libraryId, true);
-      if (lib.revision !== input.expectedRevision) conflict(libraryDto(lib));
+      if (lib.revision !== input.expectedRevision)
+        conflict(await libraryState(c, lib));
       const row = (
         await c.query(
           "UPDATE quiz_libraries SET name=$2,revision=revision+1,updated_by=$3,updated_at=now() WHERE id=$1 RETURNING *",
@@ -333,7 +320,8 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     return transaction(db, async (c) => {
       const user = await fresh(c, req);
       const lib = await libraryAccess(c, user, libraryId, true);
-      if (lib.revision !== input.expectedRevision) conflict(libraryDto(lib));
+      if (lib.revision !== input.expectedRevision)
+        conflict(await libraryState(c, lib));
       // Quizrunden behalten ihre festen Stände; sie zeigen die Fragen danach als archiviert.
       await remember(
         c,
@@ -351,7 +339,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
       input = quizQuestionCreate.parse(req.body);
     return transaction(db, async (c) => {
       const user = await fresh(c, req);
-      const lib = await libraryAccess(c, user, libraryId, true);
+      await libraryAccess(c, user, libraryId, true);
       const count = Number(
         (
           await c.query(
@@ -366,7 +354,6 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
           "LIMIT",
           `Höchstens ${quizLimits.questionsPerLibrary} Fragen je Bibliothek.`,
         );
-      await checkMedia(c, lib.event_id, input.question);
       const row = (
         await c.query(
           "INSERT INTO quiz_questions(id,library_id,content,sort,created_by,updated_by) VALUES($1,$2,$3,(SELECT COALESCE(max(sort),0)+1 FROM quiz_questions WHERE library_id=$2),$4,$4) RETURNING *",
@@ -383,7 +370,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
       input = quizQuestionUpdate.parse(req.body);
     return transaction(db, async (c) => {
       const user = await fresh(c, req);
-      const { q, lib } = await questionAccess(c, user, questionId, true);
+      const { q } = await questionAccess(c, user, questionId, true);
       if (q.revision !== input.expectedRevision) conflict(questionDto(q));
       if (q.archived)
         throw new HttpError(
@@ -391,7 +378,6 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
           "QUESTION_ARCHIVED",
           "Archivierte Fragen können nicht mehr geändert werden.",
         );
-      await checkMedia(c, lib.event_id, input.question);
       const row = (
         await c.query(
           "UPDATE quiz_questions SET content=$2,revision=revision+1,updated_by=$3,updated_at=now() WHERE id=$1 RETURNING *",
@@ -581,21 +567,32 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     return transaction(db, async (c) => {
       await c.query("SELECT id FROM shows WHERE id=$1 FOR UPDATE", [showId]);
       const user = await fresh(c, req);
-      await roundShowAccess(c, user, showId);
+      const show = await roundShowAccess(c, user, showId);
       const existing = (
         await c.query("SELECT id FROM quiz_rounds WHERE show_id=$1", [showId])
       ).rows.map((r) => r.id as string);
+      // Veraltete Reihenfolge (andere Änderung an der Show dazwischen) überschreibt nichts.
       if (
+        show.revision !== input.expectedShowRevision ||
         existing.length !== input.roundIds.length ||
         existing.some((r) => !input.roundIds.includes(r))
       )
-        conflict(await rounds(c, showId));
+        conflict({
+          showRevision: show.revision,
+          rounds: await rounds(c, showId),
+        });
       for (const [index, roundId] of input.roundIds.entries())
         await c.query("UPDATE quiz_rounds SET sort=$2 WHERE id=$1", [
           roundId,
           index + 1,
         ]);
       const showRevision = await touchShow(c, showId, user.id);
+      await remember(
+        c,
+        "quiz-round-order",
+        { id: showId, revision: showRevision, roundIds: input.roundIds },
+        user.id,
+      );
       return { rounds: await rounds(c, showId), showRevision };
     });
   });

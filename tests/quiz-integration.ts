@@ -353,48 +353,22 @@ test(
               ),
               400,
             );
-          const other = await ok("/events", "POST", {
-            name: "Anderer synthetischer Abend",
-            template: "spieleabend",
-          });
-          const foreignMedia = randomUUID(),
-            ownMedia = randomUUID(),
-            pending = randomUUID();
-          for (const [mediaId, eventId, mediaStatus] of [
-            [foreignMedia, other.id, "ready"],
-            [ownMedia, event.id, "ready"],
-            [pending, event.id, "processing"],
-          ])
-            await db.query(
-              "INSERT INTO media(id,event_id,created_by,name,blob_key,size_bytes,sha256,mime,status) SELECT $1::uuid,$2,id,'synthetisch.png',$1::text,1,'0','image/png',$3 FROM users WHERE login='admin'",
-              [mediaId, eventId, mediaStatus],
-            );
-          for (const mediaId of [foreignMedia, pending, randomUUID()])
-            assert.equal(
-              (
-                await req(`/quiz-libraries/${library.id}/questions`, "POST", {
-                  question: { ...choice, mediaId },
-                })
-              ).json().error.code,
-              "MEDIA_INVALID",
-            );
+          // Leinwandmedien sind bis Q1c gesperrt: allgemeine Medien wären für alle Mitglieder lesbar.
+          const mediaId = randomUUID();
+          await db.query(
+            "INSERT INTO media(id,event_id,created_by,name,blob_key,size_bytes,sha256,mime,status) SELECT $1::uuid,$2,id,'synthetisch.png',$1::text,1,'0','image/png','ready' FROM users WHERE login='admin'",
+            [mediaId, event.id],
+          );
+          assert.equal(
+            await status(
+              `/quiz-libraries/${library.id}/questions`,
+              "POST",
+              { question: { ...choice, mediaId } },
+              admin,
+            ),
+            400,
+          );
           assert.deepEqual(await ok(`/quiz-libraries/${library.id}`), before);
-          const withMedia = await ok(
-            `/quiz-libraries/${library.id}/questions`,
-            "POST",
-            {
-              question: {
-                ...choice,
-                mediaId: ownMedia,
-                prompt: "Mit Leinwandbild",
-              },
-            },
-          );
-          assert.equal(withMedia.question.mediaId, ownMedia);
-          await ok(
-            `/quiz-questions/${withMedia.id}?expectedRevision=1`,
-            "DELETE",
-          );
         },
       );
 
@@ -636,16 +610,48 @@ test(
         async () => {
           const rounds = `/shows/${quizShow.id}/quiz-rounds`;
           const second = (await ok(rounds, "POST", { name: "Runde 2" })).round;
+          const { showRevision } = await ok(rounds);
+          // Zwei Bearbeiter sortieren gleichzeitig vom selben Stand: genau einer gewinnt.
+          const racing = await Promise.all(
+            [
+              [second.id, round.id],
+              [round.id, second.id],
+            ].map((roundIds, index) =>
+              req(
+                `${rounds}/order`,
+                "PUT",
+                { expectedShowRevision: showRevision, roundIds },
+                index ? team.session : admin,
+              ),
+            ),
+          );
+          assert.deepEqual(racing.map((r) => r.statusCode).sort(), [200, 409]);
+          const stale = racing.find((r) => r.statusCode === 409)!.json().error
+            .details.current;
           const order = await ok(`${rounds}/order`, "PUT", {
+            expectedShowRevision: stale.showRevision,
             roundIds: [second.id, round.id],
           });
           assert.deepEqual(
             order.rounds.map((r: any) => r.name),
             ["Runde 2", "Runde 1"],
           );
+          const history = await db.query(
+            "SELECT payload FROM revisions WHERE entity_type='quiz-round-order' AND entity_id=$1 ORDER BY revision",
+            [quizShow.id],
+          );
+          assert.equal(history.rowCount, 2);
+          assert.deepEqual(history.rows[1].payload.roundIds, [
+            second.id,
+            round.id,
+          ]);
           assert.equal(
-            (await req(`${rounds}/order`, "PUT", { roundIds: [second.id] }))
-              .statusCode,
+            (
+              await req(`${rounds}/order`, "PUT", {
+                expectedShowRevision: order.showRevision,
+                roundIds: [second.id],
+              })
+            ).statusCode,
             409,
           );
           const concurrent = await Promise.all(
@@ -695,6 +701,17 @@ test(
             { expectedRevision: lib.library.revision, name: "Hauptquiz 2026" },
             team.session,
           );
+          // Konfliktantwort enthält den echten Stand einschließlich Fragenzahl.
+          const stale = await req(`/quiz-libraries/${library.id}`, "PATCH", {
+            expectedRevision: lib.library.revision,
+            name: "Veraltet",
+          });
+          assert.equal(stale.statusCode, 409);
+          assert.equal(
+            stale.json().error.details.current.questionCount,
+            lib.library.questionCount,
+          );
+          assert.ok(lib.library.questionCount > 0);
           assert.equal(
             (
               await req(

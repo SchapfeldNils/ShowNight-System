@@ -20,7 +20,11 @@ test("Quizfragen: Typen, Vorgaben und Lösungsprüfung (D029)", () => {
   assert.equal(choice.prompt, "Welche Antwort ist richtig?");
   assert.equal(choice.difficulty, "mittel");
   assert.equal(choice.tabletShowsPrompt, false);
-  assert.equal(choice.mediaId, null);
+  // Leinwandmedien folgen in Q1c mit eigenem Schutz.
+  assert.equal(
+    quizQuestion.safeParse({ ...choice, mediaId: null }).success,
+    false,
+  );
   assert.equal(
     quizQuestion.safeParse({ ...choice, correct: ["c"] }).success,
     false,
