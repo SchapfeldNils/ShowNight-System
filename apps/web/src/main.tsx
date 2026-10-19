@@ -15,6 +15,7 @@ import { SceneDrafts } from "./scenes.js";
 import { Account } from "./account.js";
 import { Recovery } from "./recovery.js";
 import { TimerPreparationEditor } from "./timer-preparation.js";
+import { TicketPreparation } from "./tickets.js";
 import type { SceneRecord } from "../../../packages/contracts/src/scene.js";
 type Me = {
   id: string;
@@ -601,6 +602,9 @@ function App() {
   const nav = [
     "Übersicht",
     ...(!active || active.modules.includes("shows") ? ["Shows", "Medien"] : []),
+    ...(active?.canEdit && active.modules.includes("tickets")
+      ? ["Tickets"]
+      : []),
     "Teams & Rechte",
     ...(me.admin ? ["Diagnose"] : []),
   ];
@@ -723,6 +727,9 @@ function App() {
               );
             }}
           />
+        )}
+        {page === "Tickets" && active && (
+          <TicketPreparation key={active.id} eventId={active.id} api={api} />
         )}
         {page === "Übersicht" && (
           <>

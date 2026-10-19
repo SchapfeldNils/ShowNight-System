@@ -11,9 +11,13 @@
 
 Offene Arbeit je Issue: [issue-arbeitsliste.md](issue-arbeitsliste.md). Alle folgenden Abschnitte sind datierte Nachweise in umgekehrter Reihenfolge. Aussagen darin wie „kein Merge“, „nicht bereitgestellt“ oder „in Arbeit“ beschreiben den jeweiligen damaligen Stand.
 
-## Szeneneditor Paket 1 (Issue #44, PR offen) – 15. Oktober 2026
+## Ticketshop S8-01 (PR #49) – 15. Oktober 2026
 
-Claude setzt auf Branch `claude/issue-44-szeneneditor` (Basis `main` `06aa8f9`) die Editorbedienung ohne Schemaänderung um: Maus/Tastatur auf der Arbeitsfläche, Einrasten, Ebenenliste mit Namen und Miniaturen, Eigenschaftenleiste je Ebene, Ziehen aus der Medienleiste, Rückgängig/Wiederholen und Prüfübersicht. Vorlagen, Video/Animation, Drehung und Renderer bleiben Folgepakete. Nicht gemergt, nicht produktiv. [Umfang, Prüfungen und Grenzen](s3-szeneneditor.md).
+Umsetzung Claude, unabhängiger Review Codex. Korrekturrunde 1 (`9015e10`): Actor nach Eventsperre neu geladen, DST-Lücken/-Dopplungen, Preisgruppierung, Entwürfe bei 409, doppelter D018 – von Codex am `7f94d1c` als behoben bestätigt (inkl. eigener Warte-/Widerrufsprobe). Korrekturrunde 2: unveränderte Zeitpunkte mit Sekunden bleiben auch bei doppelter Uhrzeit exakt erhalten; Datenmodell/Schnittstellen nachgetragen; Abgleich mit `main` nach #47/#50. CI und erneute Prüfung werden im PR an den abschließenden Head gebunden. Kein Merge, kein Produktivupdate. [Spezifikation, Umsetzungsstand, Grenzen](s8-01-ticketvorbereitung.md).
+
+## Szeneneditor Paket 1 (Issue #44) – 15. Oktober 2026
+
+Damaliger Stand vor dem Merge; inzwischen über PR #55 als `0834409` in `main`. Claude setzte auf Branch `claude/issue-44-szeneneditor` (Basis `main` `06aa8f9`) die Editorbedienung ohne Schemaänderung um: Maus/Tastatur auf der Arbeitsfläche, Einrasten, Ebenenliste mit Namen und Miniaturen, Eigenschaftenleiste je Ebene, Ziehen aus der Medienleiste, Rückgängig/Wiederholen und Prüfübersicht. Vorlagen, Video/Animation, Drehung und Renderer bleiben Folgepakete. Nicht gemergt, nicht produktiv. [Umfang, Prüfungen und Grenzen](s3-szeneneditor.md).
 
 ## Stage-Timer-Vorbereitung vor dem Merge (PR #42) – 15. Oktober 2026
 

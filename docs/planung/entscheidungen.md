@@ -151,7 +151,17 @@
 - Erster weiterer Baustein: S3-01 Inhaltspakete mit lokaler SQLite-Ablage. Kein neues Rechte-/Ausfallmodell, keine Liveaktivierung und keine Ablösung des geplanten Windows-Renderers durch Browserausgabe.
 - Dokumente: [Arbeitspakete](../entwicklung/arbeitspakete.md), [Paketablage](../entwicklung/s3-paketablage.md), [Status](../entwicklung/status.md).
 
-## Weitere Entscheidungen nach D017
+## D019 – Ticketshop S8-01: Bearbeitung durch Admin und Leitung
+
+- Status: bestätigt durch Betreiber in [Issue #43, Kommentar vom 15. Oktober 2026, 10:01 Uhr](https://github.com/SchapfeldNils/ShowNight-System/issues/43#issuecomment-6187406279); laut Betreiber selbst verfasst (Hinweis: Claude und Codex schreiben über dasselbe GitHub-Konto)
+- Datum: 15. Oktober 2026
+- Nachweis: Auf die Rückfrage „Wer darf im ersten Ticketshop-Paket Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung bearbeiten?“ wählte der Betreiber „Admin + Leitung“ statt „Neue Einzelrechte sofort“. Diese Unterhaltung ist für Codex nicht einsehbar; Git-Autorenschaft ist kein Nachweis.
+- Ticketarten, Preise, Kontingente und Verkaufszeiten einer Veranstaltung lesen und bearbeiten im ersten Ticketshop-Paket ausschließlich Systemadmin und Veranstaltungsleitung, mit bestehender MFA-Pflicht.
+- Die Einzelrechte der Rolle „Verkauf und Einlass“ (Saalplan, Verkauf, Zahlung, Stornierung, Erstattung, Freikarten, manueller Einlass, Wiedereintritt) bleiben verbindliches Ziel und werden als eigenes, vorher abgestimmtes Paket eingeführt.
+- Umsetzung von S8-01 durch Claude (Betreiberauftrag vom 15. Oktober 2026), unabhängiger Review durch Codex in PR #49.
+- Dokument: [S8-01 Ticketvorbereitung](../entwicklung/s8-01-ticketvorbereitung.md), [Issue #43](https://github.com/SchapfeldNils/ShowNight-System/issues/43).
+
+## Weitere technische Konkretisierungen (ohne eigene D-Nummer)
 
 ### Native Szenenkomposition – technische Konkretisierung, 14. Oktober 2026
 

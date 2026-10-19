@@ -29,6 +29,7 @@ import type { Config } from "./config.js";
 import { migrationVersions, type DB } from "./db.js";
 import { authRoutes, actor } from "./auth.js";
 import { timerRoutes } from "./timers.js";
+import { ticketRoutes } from "./tickets.js";
 import { accountRoutes } from "./account.js";
 import { contentRoutes, visibleEvents } from "./content.js";
 import { mediaRoutes } from "./media.js";
@@ -44,6 +45,13 @@ import {
   pairingInput,
   diagnosticInput,
 } from "../../../packages/contracts/src/agent.js";
+import {
+  ticketSettingsInput,
+  contingentCreate,
+  contingentPatch,
+  ticketTypeCreate,
+  ticketTypePatch,
+} from "../../../packages/contracts/src/tickets.js";
 import { HttpError, forbidden } from "./errors.js";
 export async function createApp(db: DB, cfg: Config, logging = false) {
   const app = Fastify({
@@ -88,6 +96,7 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
   await app.register(websocket, { options: { maxPayload: 4096 } });
   authRoutes(app, db, cfg);
   timerRoutes(app, db);
+  ticketRoutes(app, db);
   accountRoutes(app, db, cfg);
   contentRoutes(app, db, cfg);
   sceneRoutes(app, db);
@@ -306,6 +315,11 @@ export async function createApp(db: DB, cfg: Config, logging = false) {
       "/events/{id}/show-copies": ["post", showCopy],
       "/devices/pairings": ["post", pairingInput],
       "/devices/{id}/diagnostics": ["post", diagnosticInput],
+      "/events/{id}/tickets/settings": ["put", ticketSettingsInput],
+      "/events/{id}/tickets/contingents": ["post", contingentCreate],
+      "/ticket-contingents/{id}": ["patch", contingentPatch],
+      "/events/{id}/tickets/types": ["post", ticketTypeCreate],
+      "/ticket-types/{id}": ["patch", ticketTypePatch],
     };
     const paths = Object.fromEntries(
       Object.entries(specs).map(([path, [method, schema]]) => [
