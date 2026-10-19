@@ -23,7 +23,7 @@ Veröffentlichen folgt D021 (globale Admins, `live`, `technik`), wie in D029 Pun
 - Frist serverseitig: Abgabe nach Fristende wird abgewiesen, auch mit falscher Tablet-Uhr.
 - Doppelte Abgabe (Wiederholung nach Verbindungsabbruch) wird nur einmal gewertet.
 - Ersatztablet erhält Teamzustand und bisherige Abgabe der laufenden Frage; das alte Gerät kann danach weder ändern noch bestätigen, auch wenn es wieder online kommt.
-- Beitritt: Vor der Bestätigung durch die Regie kann ein Gerät weder antworten noch den Teamzustand lesen; danach beides.
+- Beitritt: Vor der Bestätigung durch die Regie kann ein Gerät weder antworten noch den Teamzustand lesen; danach beides, aber nur für das eigene Team: Mit zwei Teams scheitern Lesen, Ändern und Bestätigen über eine fremde Teamkennung.
 - Zehn Teams: automatisierter Mehrclient-Test mit zehn Teilnehmerverbindungen für Beitritt, gleichzeitige Abgaben und Wiederverbindung (D029 Punkt 2). Offen bleibt nur die Prüfung mit realen Geräten und WLAN.
 - Frage öffnen: Antwortfreigabe, Fristbeginn und Leinwandzustand werden gemeinsam sichtbar; vorher nimmt der Server keine Abgabe an.
 - Tabletverlust: Zeit läuft weiter, Regie- und Monitorhinweis, Verschwinden bei Wiederverbindung; Pausieren, Verlängern, Wiederholen und stellvertretende Erfassung durch die Regie wirken serverseitig und werden protokolliert.
@@ -31,7 +31,9 @@ Veröffentlichen folgt D021 (globale Admins, `live`, `technik`), wie in D029 Pun
 - Schätzung: Teams mit gleicher geringster Abweichung erhalten alle die Punkte; gleiche Punktzahl ergibt gemeinsamen Platz.
 - Tablet-Fragetext: ohne Einstellung enthalten Teilnehmerdaten nur Antwortfelder, mit Einstellung zusätzlich den Fragetext.
 - Zwei Regien gleichzeitig: gleicher Befehl wird einmal ausgeführt, widersprüchliche geordnet.
+- Runden-, Gesamtstand und Gewinner erscheinen vor ihrer ersten Veröffentlichung weder in Teilnehmer- noch Leinwanddaten (API und WebSocket).
 - Lösung erscheint vor Veröffentlichung weder in Teilnehmer- noch Leinwanddaten (Prüfung auf API- und WebSocket-Ebene, nicht nur UI). Bühnenmonitordaten enthalten weder vor noch nach Veröffentlichung Fragen oder Lösungen.
+- Schreibrechte der Bibliothek (Q1a): Leitung und das Showteam der zugeordneten Quizshow dürfen Bibliotheken, Fragen und Runden anlegen, ändern und archivieren; fremdes Showteam, `live`, `technik` und `mitglied` nicht.
 - Rechte: Showteam fremder Shows und `mitglied` sehen keine Lösungen, auch nicht über Online-Manifest, Paketdownload, lokale Paketroute oder die allgemeinen Medienwege (online und lokal).
 - Korrektur abgeschlossener Wertung ohne Grund wird abgewiesen; eine Korrektur mit Grund berechnet Wertung und Platzierung neu; veröffentlichter Stand ändert sich erst bei erneuter Veröffentlichung.
 - Ungültig für ein einzelnes Team betrifft nur dieses Team, ungültig für alle alle Teams.
@@ -39,6 +41,7 @@ Veröffentlichen folgt D021 (globale Admins, `live`, `technik`), wie in D029 Pun
 - Probenstand: Zurücksetzen leert Probeantworten und -punkte, lässt Fragen und Regeln unverändert, und der Probenlauf verändert weder Aufführungsstand noch veröffentlichte Anzeigen.
 - Ohne Internet: vollständiger Quizablauf mit importiertem Paket bei gesperrtem Online-Endpunkt (Beitritt, Medien, Abgabe, Wertung, Veröffentlichung).
 - Quizmedien: Bild, Audio und Video der geöffneten Frage werden auf der Leinwandvorschau angezeigt bzw. gestartet; ein Medienaustausch nach Übernahme ändert die Runde nicht.
+- Fester Fragenstand: Änderungen an Fragetext, Antwortmöglichkeiten oder Lösung nach der Übernahme ändern die Runde nicht, bis die neue Fassung bewusst übernommen wird (in Q1a bereits geprüft).
 - Frist je Frage: eine Runde mit unterschiedlichen Fristen wendet je Frage die eigene an.
 
 Browser-Demos ersetzen keine Prüfung mit realen Tablets im Veranstaltungs-WLAN (O14, #46).
@@ -51,4 +54,4 @@ Browser-Demos ersetzen keine Prüfung mit realen Tablets im Veranstaltungs-WLAN 
 
 ## Nicht in Q1
 
-Abgestufte Punkte, Toleranz und Stichfrage; Zufallsfolge; Medien auf dem Tablet; getrennter Start von Frageanzeige und Antwortfreigabe; freie Leinwandgestaltung im Szeneneditor; Buzzer, Jury und allgemeine Punkteverwaltung (Q2); Moderatorgerät mit Quizansicht (Q3); Hardwareabnahme.
+Excel-/CSV-Import von Quizfragen (anforderungen.md, Installation und Betrieb; F50): kommt mit dem gemeinsamen Importpaket für Aufgaben, Requisiten, Mitwirkende und Quizfragen, importierte Fragen werden dort als prüfbedürftig markiert und von den zuständigen Bearbeitern bestätigt; abgestufte Punkte, Toleranz und Stichfrage; Zufallsfolge; Medien auf dem Tablet; getrennter Start von Frageanzeige und Antwortfreigabe; freie Leinwandgestaltung im Szeneneditor; Buzzer, Jury und allgemeine Punkteverwaltung (Q2); Moderatorgerät mit Quizansicht (Q3); Hardwareabnahme.
