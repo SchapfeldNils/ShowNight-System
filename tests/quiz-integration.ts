@@ -723,6 +723,49 @@ test(
       );
 
       await t.test(
+        "Während der Sperre widerrufene Sitzung schreibt nicht mehr",
+        async () => {
+          const editor = await user(
+            "quiz-leitung-widerruf",
+            "leitung",
+            event.id,
+          );
+          const temp = await ok(
+            `/events/${event.id}/quiz/libraries`,
+            "POST",
+            { name: "Widerruf" },
+            editor.session,
+          );
+          const holder = await db.connect();
+          try {
+            await holder.query("BEGIN");
+            await holder.query(
+              "SELECT 1 FROM quiz_libraries WHERE id=$1 FOR UPDATE",
+              [temp.id],
+            );
+            const rename = req(
+              `/quiz-libraries/${temp.id}`,
+              "PATCH",
+              { expectedRevision: temp.revision, name: "Nach Widerruf" },
+              editor.session,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            await holder.query("DELETE FROM sessions WHERE user_id=$1", [
+              editor.id,
+            ]);
+            await holder.query("COMMIT");
+            assert.equal((await rename).statusCode, 401);
+          } finally {
+            holder.release();
+          }
+          assert.equal(
+            (await ok(`/quiz-libraries/${temp.id}`)).library.name,
+            "Widerruf",
+          );
+        },
+      );
+
+      await t.test(
         "Gelöschte Bibliothek: Runde behält festen Stand; Migration wiederholbar",
         async () => {
           const lib = await ok(`/quiz-libraries/${library.id}`);

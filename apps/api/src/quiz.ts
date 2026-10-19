@@ -105,30 +105,42 @@ async function libraryAccess(
   return lib;
 }
 
+/** Sperrt die Bibliothek; vor fresh() aufrufen, damit eine während des Wartens widerrufene Sitzung nicht mehr schreibt. */
+async function lockLibrary(c: Queryable, libraryId: string) {
+  await c.query("SELECT 1 FROM quiz_libraries WHERE id=$1 FOR UPDATE", [
+    libraryId,
+  ]);
+}
+
+/** Erst die Bibliothek, dann die Frage sperren (wie beim Löschen der Bibliothek):
+ *  sonst speichert eine Änderung, die das laufende Löschen gleich wieder entfernt. */
+async function lockQuestion(c: Queryable, questionId: string) {
+  const libraryId = (
+    await c.query("SELECT library_id FROM quiz_questions WHERE id=$1", [
+      questionId,
+    ])
+  ).rows[0]?.library_id;
+  if (
+    !libraryId ||
+    !(
+      await c.query("SELECT 1 FROM quiz_libraries WHERE id=$1 FOR SHARE", [
+        libraryId,
+      ])
+    ).rowCount
+  )
+    missing();
+  await c.query("SELECT 1 FROM quiz_questions WHERE id=$1 FOR UPDATE", [
+    questionId,
+  ]);
+}
+
 async function questionAccess(
   c: Queryable,
   user: Actor,
   questionId: string,
   lock = false,
 ) {
-  if (lock) {
-    // Erst die Bibliothek, dann die Frage sperren (wie beim Löschen der Bibliothek):
-    // sonst speichert eine Änderung, die das laufende Löschen gleich wieder entfernt.
-    const libraryId = (
-      await c.query("SELECT library_id FROM quiz_questions WHERE id=$1", [
-        questionId,
-      ])
-    ).rows[0]?.library_id;
-    if (
-      !libraryId ||
-      !(
-        await c.query("SELECT 1 FROM quiz_libraries WHERE id=$1 FOR SHARE", [
-          libraryId,
-        ])
-      ).rowCount
-    )
-      missing();
-  }
+  if (lock) await lockQuestion(c, questionId);
   const q = (
     await c.query(
       "SELECT * FROM quiz_questions WHERE id=$1" + (lock ? " FOR UPDATE" : ""),
@@ -318,6 +330,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     const libraryId = id.parse((req.params as any).id),
       input = quizLibraryPatch.parse(req.body);
     return transaction(db, async (c) => {
+      await lockLibrary(c, libraryId);
       const user = await fresh(c, req);
       const lib = await libraryAccess(c, user, libraryId, true);
       if (lib.revision !== input.expectedRevision)
@@ -337,6 +350,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     const libraryId = id.parse((req.params as any).id),
       input = expectedRevision.parse(req.query);
     return transaction(db, async (c) => {
+      await lockLibrary(c, libraryId);
       const user = await fresh(c, req);
       const lib = await libraryAccess(c, user, libraryId, true);
       if (lib.revision !== input.expectedRevision)
@@ -357,6 +371,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     const libraryId = id.parse((req.params as any).id),
       input = quizQuestionCreate.parse(req.body);
     return transaction(db, async (c) => {
+      await lockLibrary(c, libraryId);
       const user = await fresh(c, req);
       await libraryAccess(c, user, libraryId, true);
       const count = Number(
@@ -388,6 +403,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     const questionId = id.parse((req.params as any).id),
       input = quizQuestionUpdate.parse(req.body);
     return transaction(db, async (c) => {
+      await lockQuestion(c, questionId);
       const user = await fresh(c, req);
       const { q } = await questionAccess(c, user, questionId, true);
       if (q.revision !== input.expectedRevision) conflict(questionDto(q));
@@ -413,6 +429,7 @@ export function quizRoutes(app: FastifyInstance, db: DB) {
     const questionId = id.parse((req.params as any).id),
       input = expectedRevision.parse(req.query);
     return transaction(db, async (c) => {
+      await lockQuestion(c, questionId);
       const user = await fresh(c, req);
       const { q } = await questionAccess(c, user, questionId, true);
       if (q.revision !== input.expectedRevision) conflict(questionDto(q));

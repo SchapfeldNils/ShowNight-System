@@ -265,8 +265,11 @@ function LibraryEditor({
   async function load() {
     try {
       const d = await api<typeof data>(`/quiz-libraries/${libraryId}`);
+      // Einen noch nicht gespeicherten neuen Namen nicht überschreiben.
+      setRename((current) =>
+        !data || current === data.library.name ? d!.library.name : current,
+      );
       setData(d);
-      setRename(d!.library.name);
       return d;
     } catch (e) {
       setError((e as Error).message);
@@ -364,7 +367,11 @@ function LibraryEditor({
                 "DELETE",
               )
                 .then(onDeleted)
-                .catch((e: Error) => setError(e.message));
+                .catch((e: Error) => {
+                  setError(e.message);
+                  // Nach einem Konflikt mit dem aktuellen Stand erneut löschen können.
+                  void load();
+                });
           }}
         >
           Bibliothek löschen
@@ -1001,7 +1008,7 @@ function RoundCard({
           Frage hinzufügen
           <select
             aria-label="Frage hinzufügen"
-            value={pick}
+            value={available.some((q) => q.id === pick) ? pick : ""}
             onChange={(e) => setPick(e.target.value)}
           >
             <option value="">Frage wählen</option>
@@ -1014,9 +1021,10 @@ function RoundCard({
         </label>
         <button
           type="button"
-          disabled={!pick}
+          disabled={!available.some((q) => q.id === pick)}
           onClick={() => {
-            const q = pool.find((x) => x.id === pick)!;
+            const q = available.find((x) => x.id === pick);
+            if (!q) return setPick("");
             setItems((list) => [
               ...list,
               {
