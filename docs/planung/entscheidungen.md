@@ -188,3 +188,18 @@ Status: ausdrücklich beauftragt, keine neue Fachentscheidung. Bestehende lokale
 ## Online-Kontowiederherstellung – 15. Oktober 2026
 
 Status: ausdrücklich bestätigt. Nutzer beauftragt E-Mail-Passwortreset mit gestalteter Mail; auf Rückfrage erhält jedes Konto eine eigene bestätigte E-Mail-Adresse, auch bei reinem Benutzernamen. Bestätigung bleibt Voraussetzung für Wiederherstellung. MFA und Rollen bleiben erhalten. Geeignete Entwicklungsstände sollen zu einer sichtbaren Online-Version zusammengeführt/mergt werden; weitere lokale Fachentwicklung folgt danach. Ticketshop und Stage Timer bleiben offen und im Gesamtumfang. Keine Produktionsbereitstellung oder echte E-Mail durch die Softwareprüfungen.
+
+## D029 – Quiz Q1: Kernumfang am Abend
+
+- Status: vom Betreiber am 19\. Oktober 2026 im Claude-Chat beantwortet („Stimmt alles“ zu allen acht Vorschlägen); direkte Bestätigung in [Issue #65](https://github.com/SchapfeldNils/ShowNight-System/issues/65) erbeten. Punkt 7 enthält einen Widerspruch zu D021 und bleibt bis zur Klärung offen (siehe dort).
+- Entscheidung:
+  1. Fragetypen Auswahl, Freitext und Schätzung. Bild, Audio und Video laufen nur auf der Leinwand, nicht auf dem Tablet.
+  2. Bis 10 Teams mit je einem Gerät, Beitritt per QR-/Beitrittscode, die Regie bestätigt die Zuordnung und kann Ersatzgeräte verbinden.
+  3. Frageanzeige und Antwortfreigabe starten gemeinsam. Frist je Frage einstellbar, Standard 30 Sekunden, serverseitig maßgeblich. Ändern bis Fristende; verbindliches Bestätigen je Runde wählbar.
+  4. Wertung: Auswahl automatisch; Freitext mit automatischem Vorschlag aus richtigen Antworten und Schreibvarianten, Entscheidung durch die Regie; Schätzung nach geringster Abweichung (nächstliegende Antwort erhält die Punkte). Gleichstand ergibt gemeinsamen Platz. Abgestufte Punkte, Toleranz und Stichfrage folgen nach Q1.
+  5. Gestellte Tablets und private Handys im Browser über das Veranstaltungs-WLAN, keine App. Das Gerät zeigt standardmäßig nur die Antwortfelder, je Frage optional zusätzlich den Fragetext.
+  6. Leinwand: Frage, Antwortmöglichkeiten, Countdown, danach Auflösung, Runden- und Gesamtstand, jeweils erst nach bewusster Veröffentlichung durch die Regie. Feste Standardgestaltung; freie Gestaltung über den Szeneneditor folgt später. Der Bühnenmonitor zeigt nur Timer und kompakte Tablet-Ausfallhinweise (Teamname), nie Fragen oder Lösungen.
+  7. Fragenbibliothek bearbeiten und Lösungen sehen: Showteam der Quizshow und Leitung. Veröffentlichen „wie bei GO“. **Offen:** Der Vorschlag nannte „Admin, Leitung und Live“, GO ist nach D021 aber globalen Admins sowie `live` und `technik` vorbehalten, Leitung allein genügt nicht. Bis zur Klärung setzt Q1 die D021-Regel um.
+  8. Feste Fragefolge; Zufallsfolge folgt später.
+- Grundlage: F21, F22, A12, [anforderungen.md](../anforderungen.md) Kapitel 8.
+- Betroffen: [q1-quiz.md](../entwicklung/q1-quiz.md).
