@@ -10,6 +10,10 @@ mkdir "$backup_dir"
 # A maintenance window ensures DB references and immutable files match.
 running=$(compose ps --status running --services)
 printf '%s\n' "$running" | grep -qx app && printf '%s\n' "$running" | grep -qx worker || { echo 'App und Worker müssen vor Sicherung laufen; kein automatischer Start bisher gestoppter Dienste.' >&2; exit 1; }
+# Before anything is stopped: the env file must match the running stack exactly,
+# otherwise the restart below would recreate containers (wrong volume or image).
+command -v node >/dev/null || { echo 'Node fehlt für die Vorprüfung; keine Sicherung.' >&2; exit 1; }
+node "$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/scripts/stack-check.mjs" "$env_file" "$compose_file" postgres app worker
 restore_services() {
   code=$?
   trap - EXIT

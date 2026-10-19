@@ -6,8 +6,37 @@ import { tmpdir } from "node:os";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
+// Docker-Attrappe für Sicherungs-Tests. Unterstützt die Vorprüfung
+// (scripts/stack-check.mjs: config --format json, config --hash, ps -q, inspect).
+// TEST_MODE drift-hash / drift-volume simuliert eine abweichende stack.env.
+const fakeComposeChecks = `if [ "$1" = inspect ]; then
+  shift
+  printf '['; first=1
+  for id in "$@"; do
+    svc=\${id#id-}; hash="hash-$svc"; vol=media-vol
+    [ "$svc" = postgres ] && vol=db-vol
+    [ "\${TEST_MODE:-}" = drift-hash ] && [ "$svc" = app ] && hash=other-hash
+    [ "\${TEST_MODE:-}" = drift-volume ] && [ "$svc" = postgres ] && vol=shownight-database
+    [ $first = 1 ] || printf ','; first=0
+    printf '{"Config":{"Labels":{"com.docker.compose.config-hash":"%s"}},"Mounts":[{"Type":"volume","Name":"%s"}]}' "$hash" "$vol"
+  done
+  printf ']\\n'; exit 0
+fi
+shift 5
+printf '%s\\n' "$*" >> "$TEST_LOG"
+if [ "$1" = config ]; then
+  if [ "$2" = --format ]; then
+    printf '%s\\n' '{"services":{"postgres":{"volumes":[{"type":"volume","source":"database"}]},"app":{"volumes":[{"type":"volume","source":"media"}]},"worker":{"volumes":[{"type":"volume","source":"media","read_only":true}]}},"volumes":{"database":{"name":"db-vol"},"media":{"name":"media-vol"}}}'
+  else
+    for svc in $(printf '%s' "$3" | tr , ' '); do printf '%s hash-%s\\n' "$svc" "$svc"; done
+  fi
+  exit 0
+fi
+if [ "$1" = ps ] && [ "$2" = -q ]; then printf 'id-%s\\n' "$3"; exit 0; fi
+`;
+
 test(
-  "Linux-Wartungsbackup: Dump-/Stopfehler starten Dienste wieder, gestoppte Dienste bleiben aus, Wiederanlauffehler bleibt Fehler",
+  "Linux-Wartungsbackup: Dump-/Stopfehler starten Dienste wieder, gestoppte Dienste bleiben aus, Wiederanlauffehler bleibt Fehler, abweichende stack.env stoppt nichts",
   { skip: process.platform === "win32" },
   async () => {
     const root = await mkdtemp(join(tmpdir(), "shownight-backup-runner-"));
@@ -17,8 +46,7 @@ test(
       join(bin, "docker"),
       `#!/bin/sh
 set -eu
-shift 5
-printf '%s\\n' "$*" >> "$TEST_LOG"
+${fakeComposeChecks}
 case "$1" in
   ps) if [ "$TEST_MODE" = stopped ]; then printf 'postgres\\napp\\n'; else printf 'postgres\\napp\\nworker\\n'; fi ;;
   stop) [ "$TEST_MODE" != stop-fails ] ;;
@@ -37,6 +65,8 @@ esac
       "dump-fails",
       "stop-fails",
       "restart-fails",
+      "drift-hash",
+      "drift-volume",
     ]) {
       const log = join(root, mode + ".log");
       const task = run(
@@ -58,8 +88,9 @@ esac
       if (mode === "ok") await task;
       else await assert.rejects(task);
       const calls = await readFile(log, "utf8");
-      if (mode === "stopped") {
-        assert.doesNotMatch(calls, /stop|up -d/);
+      if (mode === "stopped" || mode.startsWith("drift-")) {
+        // Nothing is stopped or restarted when the env file does not match.
+        assert.doesNotMatch(calls, /stop|up -d|exec|run /);
       } else {
         assert.match(calls, /up -d --wait app worker/);
       }
@@ -83,8 +114,7 @@ test(
       join(bin, "docker"),
       `#!/bin/sh
 set -eu
-shift 5
-printf '%s\\n' "$*" >> "$TEST_LOG"
+${fakeComposeChecks}
 case "$1" in
   ps) printf 'postgres\\napp\\nworker\\n' ;;
   stop) if [ "$TEST_REPLACE" = yes ]; then mv "$TEST_PASSWORD" "$TEST_PASSWORD.old"; printf 'different-synthetic-password-123456' > "$TEST_PASSWORD"; fi ;;

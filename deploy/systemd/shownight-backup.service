@@ -1,0 +1,21 @@
+# VORLAGE – nicht automatisch installiert. Platzhalter in <…> ersetzen.
+# Einrichtung nur nach Betreiberfreigabe (Issue #3), siehe
+# docs/entwicklung/backup-betrieb.md, Abschnitt „Zeitgesteuerte Sicherung“.
+[Unit]
+Description=ShowNight verschlüsselte Wartungssicherung (Datenbank, Medien, private Konfiguration)
+Wants=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+# Konto mit Docker-Zugriff, Eigentümer der Kennwortdatei (Modus 0400/0600).
+User=<BETRIEBSKONTO>
+# Checkout am produktiv laufenden Commit (deploy/ und scripts/ werden genutzt).
+WorkingDirectory=<CHECKOUT>
+# Staging liegt hier; Platz für Dump + Medien + Archiv einplanen.
+Environment=TMPDIR=<PRIVATES_TEMPVERZEICHNIS>
+ExecStart=/bin/sh deploy/backup-run.sh <PRIVAT>/stack.env <ARCHIVVERZEICHNIS> <PRIVAT>/backup-password
+UMask=0077
+NoNewPrivileges=true
+Nice=10
+TimeoutStartSec=2h

@@ -1,5 +1,7 @@
 # Sicherung und unabhängige Wiederherstellung – Issue #3
 
+19\. Oktober 2026 (PR offen, nicht eingerichtet): `deploy/backup.sh` prüft vor jedem Stopp mit `scripts/stack-check.mjs`, ob die private `stack.env` exakt zum laufenden Stack passt (Compose-Konfigurations-Hash und aufgelöste Volume-Namen von `postgres`, `app`, `worker`). Dazu kommen systemd-Vorlagen für einen täglichen Lauf. Details unten unter „Vorprüfung“ und „Zeitgesteuerte Sicherung“.
+
 15\. Oktober 2026: Netcup hat Vorrang. [Sicherungshärtung](netcup-backup-haertung.md) auf eigenem Folgebranch zu PR #22: atomare Archivveröffentlichung und Prüfung der geöffneten Kennwortdatei vor Wartung implementiert, neue Vaultregression 6/6 lokal bestanden, unabhängiger Codereview ohne Befund; S1-CI 38648600570 vollständig erfolgreich auf Windows/AMD64/ARM64 einschließlich echtem verschlüsseltem Containerrestore. Kein produktiver Sicherungsjob/Update. Die getrennte Worker-Korrektur PR #34 ist vollständig geprüft, aber in dieser älteren Basis nicht enthalten. PR #2 ist gemergt und Issue #1 geschlossen; ältere Tabellen unten historisch einordnen.
 
 14\. Oktober 2026 · `codex/issue-3-external-backup`. Vorbereiteter Softwareablauf; kein eingerichteter produktiver Backupjob.
@@ -13,6 +15,29 @@ Der Betreiber stellt klar: keine externe Festplatte verfügbar; er geht von eine
 Das neue `scripts/backup-vault.mjs` verschlüsselt Datenbank, Medienarchiv, SHA256SUMS und private Stackkonfiguration als eine `.snbackup`-Datei. Node-Bordmittel: AES-256-GCM, authentifizierter Formatheader, pro Archiv frisches Salt/IV, scrypt (N=32768, r=8, p=1), Streaming statt vollständigem Medienarchiv im RAM. Quelldateien und vorhandene Dump-/Medienprüfsummen werden geprüft; Änderungen beim Lesen brechen ab. Das Sicherungskennwort ist separat und mindestens 20 Zeichen lang. Es ist weder Betreiberlogin noch Windows-DPAPI-Schlüssel und gehört an ein unabhängiges, noch festzulegendes Wiederherstellungsziel. Kennwortverlust verhindert Entschlüsselung.
 
 `open` entschlüsselt ausschließlich in ein neues privates Verzeichnis: Windows-ACL für aktuellen Benutzer/SYSTEM, Unix 0700. Vor dem Herauslösen der vier festen Dateien muss die GCM-Authentifizierung bestanden sein. Namen und Größen werden geprüft, enthaltene SHA256 erneut verglichen; Fehler entfernen nur eigene feste Ausgabedateien. Bestehende Ausgaben werden nicht überschrieben. Kein Restore in laufende Produktivvolumes und keine automatische Migration. Erfolgreiche Dateientschlüsselung ersetzt keinen PostgreSQL-/MFA-/Anwendungsrestore.
+
+## Vorprüfung vor jeder Sicherung
+
+`backup.sh` startet App und Worker nach dem Dump mit `docker compose up -d --wait app worker` neu. Passt die verwendete `stack.env` nicht exakt zum laufenden Stack (zum Beispiel abweichender Volume-Name oder ein anderes Image als in Portainer), erzeugt Compose dabei Container mit der abweichenden Konfiguration neu. Bei falschem `DB_VOLUME_NAME` liefe Postgres dann auf einem leeren Volume. Erkannt bei der Vorbereitung des Schema-7-Updates (#53, #59).
+
+Deshalb ruft `backup.sh` vor jedem Stopp `node scripts/stack-check.mjs <stack.env> deploy/compose.yaml postgres app worker` auf:
+- Je Dienst muss der Compose-Konfigurations-Hash (`docker compose config --hash`) dem Label `com.docker.compose.config-hash` des laufenden Containers entsprechen.
+- Weil dieser Hash nur den Volume-Schlüssel enthält, nicht den aufgelösten Namen, werden zusätzlich die tatsächlich eingebundenen Volumes mit den aufgelösten Namen aus `docker compose config --format json` verglichen.
+- Bei Abweichung bricht die Sicherung ab, **bevor** etwas gestoppt wird, und nennt den betroffenen Dienst. Die Prüfung liest nur.
+- Node ist damit auch für `backup.sh` allein Voraussetzung (für `backup-run.sh` war es das bereits).
+
+Nach jeder Änderung am Portainer-Stack (Image, Volumes, Umgebungswerte) muss die private `stack.env` nachgeführt werden, sonst verweigert der nächste Lauf die Sicherung. Das ist gewollt.
+
+Geprüft durch `tests/backup-runner.test.mjs` mit Docker-Attrappe (abweichender Hash, abweichendes Volume: kein Stopp, kein Neustart) sowie in CI durch die echten Containerabläufe (`tests/container-smoke.sh`, Netcup-Rehearsal), in denen die Vorprüfung gegen echte Compose-Stacks läuft.
+
+## Zeitgesteuerte Sicherung (Vorlage)
+
+`deploy/systemd/shownight-backup.service` und `.timer` sind **Vorlagen** mit Platzhaltern; nichts davon ist auf Netcup eingerichtet.
+- Vorschlag: täglich 04:30 Uhr VM-Zeit mit bis zu 10 Minuten Zufallsverzögerung, verpasste Läufe werden nachgeholt (`Persistent=true`).
+- Jeder Lauf unterbricht App und Worker für die Dauer von Dump und Medienarchiv (Wartungsfenster); während eines öffentlichen Ticketverkaufs ist die Uhrzeit neu abzustimmen.
+- Einrichtung (durch Codex, nur nach Betreiberfreigabe): Platzhalter ersetzen, Dateien nach `/etc/systemd/system/` kopieren, `systemctl daemon-reload`, einmal manuell `systemctl start shownight-backup.service` und Ergebnis prüfen, erst dann `systemctl enable --now shownight-backup.timer`.
+- Sichtbarkeit: `systemctl status shownight-backup.service`, `journalctl -u shownight-backup.service`, `systemctl list-timers`. Eine aktive Benachrichtigung bei Fehlern oder ausbleibenden Läufen ist **noch nicht** vorhanden.
+- Weiter offen: externes Sicherungsziel (ein Ordner auf derselben VM ist kein externes Ziel), Aufbewahrung und Löschung, unabhängige Kennwortverwahrung, periodischer Restore-Nachweis.
 
 ## Benutzung ohne Geheimnisse in der Kommandozeile
 
@@ -33,7 +58,7 @@ Für den eigentlichen isolierten Restore die entschlüsselte `stack.env` privat 
 RESTORE_CONFIRM=EMPTY_ISOLATED_STACK sh deploy/restore.sh /PRIVATE/restore.env /PRIVATE/new-restore
 ```
 
-Es wurde kein Cron-/Systemd-/Windows-Timer auf Produktivsystemen eingerichtet. Vor Aktivierung: konkretes unabhängiges Sicherungs-/Kennwortziel, Aufbewahrung, Wartungszeit und Monitoring klären; erstmalige verschlüsselte externe Kopie plus isolierten Restore mit MFA/Dateihashes bestätigen. Fehlerstatus und ausbleibende Läufe müssen im festgelegten Monitor sichtbar sein. Ein Netcup-VM-Snapshot erfüllt diese Punkte erst nach konkreter Prüfung seiner Abdeckung und eines Restores.
+Es wurde kein Cron-/Systemd-/Windows-Timer auf Produktivsystemen eingerichtet; die systemd-Dateien in `deploy/systemd/` sind nur Vorlagen. Vor Aktivierung: konkretes unabhängiges Sicherungs-/Kennwortziel, Aufbewahrung, Wartungszeit und Monitoring klären; erstmalige verschlüsselte externe Kopie plus isolierten Restore mit MFA/Dateihashes bestätigen. Fehlerstatus und ausbleibende Läufe müssen im festgelegten Monitor sichtbar sein. Ein Netcup-VM-Snapshot erfüllt diese Punkte erst nach konkreter Prüfung seiner Abdeckung und eines Restores.
 
 ## Tatsächliche Prüfungen
 
